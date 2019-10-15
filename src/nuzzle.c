@@ -66,6 +66,13 @@ int main() {
 	raw();
 	noecho();
 
+	keypad(stdscr, TRUE);
+
+	//
+	// Register mouse events
+	//
+	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
+
 	for (int y = 0; y < 11; y++) {
 		for (int x = 0; x < 11; x++) {
 
@@ -86,7 +93,43 @@ int main() {
 
 	refresh();
 
-	getch();
+	for (;;) {
+		int c = wgetch(stdscr);
+
+		//
+		// Exit with 'q'
+		//
+		if (c == 'q')
+			break;
+
+		char buffer[512];
+		size_t max_size = sizeof(buffer);
+
+		if (c == ERR) {
+			snprintf(buffer, max_size, "Nothing happened.");
+
+		} else if (c == KEY_MOUSE) {
+			MEVENT event;
+
+			if (getmouse(&event) != OK) {
+				log_exit_str("Unable to get mouse event!");
+			}
+
+			snprintf(buffer, max_size, "Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
+
+			event.y, event.x, event.bstate,
+
+			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
+
+		} else {
+			snprintf(buffer, max_size, "Pressed key %d (%s)", c, keyname(c));
+		}
+
+		move(0, 0);
+		addstr(buffer);
+		clrtoeol();
+		move(0, 0);
+	}
 
 	endwin();
 
