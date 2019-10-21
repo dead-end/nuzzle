@@ -1,10 +1,9 @@
 #include <ncurses.h>
 #include <locale.h>
+#include <s_area.h>
 #include <time.h>
 
 #include "common.h"
-#include "s_matrix.h"
-
 #include "colors.h"
 
 #define GAME_SIZE 11

@@ -54,7 +54,7 @@ LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm
 SRC_LIBS = \
 	$(SRC_DIR)/common.c \
 	$(SRC_DIR)/colors.c \
-	$(SRC_DIR)/s_matrix.c \
+	$(SRC_DIR)/s_area.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
