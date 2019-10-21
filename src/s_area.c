@@ -27,7 +27,7 @@ s_area* s_area_create(const int blk_rows, const int blk_cols) {
  * The function initializes the s_area with color_none.
  *****************************************************************************/
 
-void s_area_init(s_area *area) {
+void s_area_init_null(s_area *area) {
 
 	for (int row = 0; row < area->blk_rows; row++) {
 		for (int col = 0; col < area->blk_cols; col++) {
@@ -86,3 +86,40 @@ bool s_area_contains(const s_area *area, const s_point *pixel) {
 
 	return true;
 }
+
+/******************************************************************************
+ * The function initializes a s_area with random blocks. It is ensured that at
+ * least one block is not empty.
+ *****************************************************************************/
+
+void s_area_init_random(s_area *area) {
+	int count = 0;
+
+	for (int row = 0; row < area->blk_rows; row++) {
+		for (int col = 0; col < area->blk_cols; col++) {
+
+			//
+			// First check if the color is set
+			//
+			if (rand() % 100 < 60) {
+				area->blocks[row][col] = color_none;
+
+			} else {
+				area->blocks[row][col] = (rand() % 4) + 1;
+				count++;
+			}
+
+			log_debug("row: %d col: %d color: %d", row, col, area->blocks[row][c]);
+		}
+	}
+
+	//
+	// If all blocks are empty, try again.
+	//
+	if (count == 0) {
+		log_debug_str("Filling failed, try again!");
+
+		s_area_init_random(area);
+	}
+}
+

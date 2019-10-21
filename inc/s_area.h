@@ -45,7 +45,9 @@ s_area* s_area_create(const int rows, const int cols);
 
 #define s_area_set_size(a,r,c) (a)->size_row = (r); (a)->size_col = (c)
 
-void s_area_init(s_area *area);
+void s_area_init_null(s_area *area);
+
+void s_area_init_random(s_area *area);
 
 void s_area_free(s_area *area);
 
