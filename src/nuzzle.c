@@ -62,14 +62,14 @@ void add_matrix_fill(s_area *matrix) {
 			// First check if the color is set
 			//
 			if (rand() % 100 < 60) {
-				matrix->block[r][c] = color_none;
+				matrix->blocks[r][c] = color_none;
 
 			} else {
-				matrix->block[r][c] = (rand() % 4) + 1;
+				matrix->blocks[r][c] = (rand() % 4) + 1;
 				count++;
 			}
 
-			log_debug("row: %d col: %d color: %d", r,c,matrix->block[r][c]);
+			log_debug("row: %d col: %d color: %d", r,c,matrix->blocks[r][c]);
 		}
 	}
 
@@ -89,14 +89,14 @@ void add_matrix_print_old(const int offset_row, const int offset_col, const s_ar
 	for (int r = 0; r < add_matrix->blk_rows; r++) {
 		for (int c = 0; c < add_matrix->blk_cols; c++) {
 
-			if (add_matrix->block[r][c] != color_none) {
+			if (add_matrix->blocks[r][c] != color_none) {
 
 				row = offset_row + r * add_matrix->size_row;
 				col = offset_col + c * add_matrix->size_col;
 
-				block_print(row, col, add_matrix->size_row, add_matrix->size_col, COLOR_PAIR(add_matrix->block[r][c]), BLOCK_FULL);
+				block_print(row, col, add_matrix->size_row, add_matrix->size_col, COLOR_PAIR(add_matrix->blocks[r][c]), BLOCK_FULL);
 
-				log_debug("row: %d col: %d color: %d" ,row, col, add_matrix->block[r][c]);
+				log_debug("row: %d col: %d color: %d" ,row, col, add_matrix->blocks[r][c]);
 			}
 		}
 	}
@@ -111,12 +111,12 @@ void add_matrix_print_old2(const int offset_row, const int offset_col, const s_a
 	for (int r = 0; r < add_matrix->blk_rows; r++) {
 		for (int c = 0; c < add_matrix->blk_cols; c++) {
 
-			if (add_matrix->block[r][c] != color_none) {
+			if (add_matrix->blocks[r][c] != color_none) {
 
 				row = offset_row + r * add_matrix->size_row;
 				col = offset_col + c * add_matrix->size_col;
 
-				attrset(COLOR_PAIR(add_matrix->block[r][c]));
+				attrset(COLOR_PAIR(add_matrix->blocks[r][c]));
 
 				for (int r = 0; r < add_matrix->size_row; r++) {
 					for (int c = 0; c < add_matrix->size_col; c++) {
@@ -124,7 +124,7 @@ void add_matrix_print_old2(const int offset_row, const int offset_col, const s_a
 					}
 				}
 
-				log_debug("row: %d col: %d color: %d" ,row, col, add_matrix->block[r][c]);
+				log_debug("row: %d col: %d color: %d" ,row, col, add_matrix->blocks[r][c]);
 			}
 		}
 	}
@@ -138,7 +138,7 @@ static short game_get_color_pair(const s_area *matrix, const s_point *idx, const
 	}
 #endif
 
-	int color = matrix->block[idx->row][idx->col];
+	int color = matrix->blocks[idx->row][idx->col];
 
 	if (color == color_none && fg == color_none) {
 		return (idx->row % 2) == (idx->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
@@ -159,7 +159,7 @@ void add_matrix_print(const int offset_row, const int offset_col, const s_area *
 	for (int ir = 0; ir < add_matrix->blk_rows; ir++) {
 		for (int ic = 0; ic < add_matrix->blk_cols; ic++) {
 
-			if (add_matrix->block[ir][ic] != color_none) {
+			if (add_matrix->blocks[ir][ic] != color_none) {
 
 				offset_block_row = offset_row + ir * add_matrix->size_row;
 				offset_block_col = offset_col + ic * add_matrix->size_col;
@@ -172,14 +172,14 @@ void add_matrix_print(const int offset_row, const int offset_col, const s_area *
 
 						if (s_area_contains(game_matrix, &abs_pos_pix)) {
 
-							s_area_get_index(game_matrix, &abs_pos_pix, &game_idx);
+							s_area_get_block(game_matrix, &abs_pos_pix, &game_idx);
 
-							short color_pair = game_get_color_pair(game_matrix, &game_idx, add_matrix->block[ir][ic]);
+							short color_pair = game_get_color_pair(game_matrix, &game_idx, add_matrix->blocks[ir][ic]);
 
 							attrset(COLOR_PAIR(color_pair));
 
-							if (add_matrix->block[ir][ic] != color_none) {
-								if (game_matrix->block[game_idx.row][game_idx.col] != color_none) {
+							if (add_matrix->blocks[ir][ic] != color_none) {
+								if (game_matrix->blocks[game_idx.row][game_idx.col] != color_none) {
 									chr = BLOCK_BOTH;
 								} else {
 									chr = BLOCK_FULL;
@@ -190,14 +190,14 @@ void add_matrix_print(const int offset_row, const int offset_col, const s_area *
 
 							mvprintw(abs_pos_pix.row, abs_pos_pix.col, "%lc", chr);
 
-							log_debug("inside row: %d col: %d color: %d", offset_block_row, offset_block_col, add_matrix->block[ir][ic]);
+							log_debug("inside row: %d col: %d color: %d", offset_block_row, offset_block_col, add_matrix->blocks[ir][ic]);
 
 						} else {
 
-							attrset(COLOR_PAIR(add_matrix->block[ir][ic]));
+							attrset(COLOR_PAIR(add_matrix->blocks[ir][ic]));
 							mvprintw(abs_pos_pix.row, abs_pos_pix.col, "%lc", BLOCK_FULL);
 
-							log_debug("outside row: %d col: %d color: %d", abs_pos_pix.row, abs_pos_pix.col, add_matrix->block[ir][ic]);
+							log_debug("outside row: %d col: %d color: %d", abs_pos_pix.row, abs_pos_pix.col, add_matrix->blocks[ir][ic]);
 						}
 					}
 				}
@@ -214,7 +214,7 @@ short game_get_color_pair_old(const s_area *matrix, const s_point *idx) {
 	}
 #endif
 
-	int color = matrix->block[idx->row][idx->col];
+	int color = matrix->blocks[idx->row][idx->col];
 
 	switch (color) {
 
@@ -250,7 +250,7 @@ void add_matrix_delete(const int offset_row, const int offset_col, const s_area 
 	for (int ir = 0; ir < add_matrix->blk_rows; ir++) {
 		for (int ic = 0; ic < add_matrix->blk_cols; ic++) {
 
-			if (add_matrix->block[ir][ic] != color_none) {
+			if (add_matrix->blocks[ir][ic] != color_none) {
 				abs_block_row = offset_row + ir * add_matrix->size_row;
 				abs_block_col = offset_col + ic * add_matrix->size_col;
 
@@ -265,7 +265,7 @@ void add_matrix_delete(const int offset_row, const int offset_col, const s_area 
 //
 //							attrset(game_empty_color(index.row, index.col));
 
-							s_area_get_index(game_matrix, &abs_pos, &index);
+							s_area_get_block(game_matrix, &abs_pos, &index);
 
 							short color_pair = game_get_color_pair(game_matrix, &index, color_none);
 
@@ -299,7 +299,7 @@ void game_print_empty(const s_area *matrix) {
 			point.row = matrix->abs_row + matrix->size_row * r;
 			point.col = matrix->abs_col + matrix->size_col * c;
 
-			s_area_get_index(matrix, &point, &idx);
+			s_area_get_block(matrix, &point, &idx);
 
 			color_pair = game_get_color_pair(matrix, &idx, color_none);
 

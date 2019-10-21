@@ -21,7 +21,7 @@ typedef struct s_point {
 
 typedef struct s_area {
 
-	char **block;
+	char **blocks;
 
 	int blk_rows;
 
@@ -49,7 +49,7 @@ void s_area_init(s_area *area);
 
 void s_area_free(s_area *area);
 
-void s_area_get_index(const s_area *area, const s_point *pos, s_point *index);
+void s_area_get_block(const s_area *area, const s_point *pos, s_point *block);
 
 bool s_area_contains(const s_area *area, const s_point *point);
 
