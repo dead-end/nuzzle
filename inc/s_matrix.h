@@ -19,13 +19,13 @@ typedef struct s_point {
  *
  *****************************************************************************/
 
-typedef struct s_matrix {
+typedef struct s_area {
 
-	char **data;
+	char **block;
 
-	int rows;
+	int blk_rows;
 
-	int cols;
+	int blk_cols;
 
 	int abs_row;
 
@@ -35,22 +35,22 @@ typedef struct s_matrix {
 
 	int size_col;
 
-} s_matrix;
+} s_area;
 
 #define s_point_set(p,r,c) (p)->row = (r);(p)->col = (c)
 
-s_matrix* s_matrix_create(const int rows, const int cols);
+s_area* s_area_create(const int rows, const int cols);
 
-#define s_matrix_set_abs(m,r,c) (m)->abs_row = (r); (m)->abs_col = (c)
+#define s_area_set_abs(a,r,c) (a)->abs_row = (r); (a)->abs_col = (c)
 
-#define s_matrix_set_size(m,r,c) (m)->size_row = (r); (m)->size_col = (c)
+#define s_area_set_size(a,r,c) (a)->size_row = (r); (a)->size_col = (c)
 
-void s_matrix_init(s_matrix *matrix);
+void s_area_init(s_area *area);
 
-void s_matrix_free(s_matrix *matrix);
+void s_area_free(s_area *area);
 
-void s_matrix_get_index(const s_matrix *matrix, const s_point *pos, s_point *index);
+void s_area_get_index(const s_area *area, const s_point *pos, s_point *index);
 
-bool s_matrix_contains(const s_matrix *matrix, const s_point *point);
+bool s_area_contains(const s_area *area, const s_point *point);
 
 #endif /* INC_S_MATRIX_H_ */

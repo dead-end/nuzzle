@@ -5,30 +5,31 @@
  *
  *****************************************************************************/
 
-s_matrix* s_matrix_create(const int rows, const int cols) {
+s_area* s_area_create(const int rows, const int cols) {
 
-	s_matrix *matrix = xmalloc(sizeof(s_matrix));
+	s_area *area = xmalloc(sizeof(s_area));
 
-	matrix->rows = rows;
-	matrix->cols = cols;
+	area->blk_rows = rows;
+	area->blk_cols = cols;
 
-	matrix->data = xmalloc(sizeof(char*) * rows);
+	area->block = xmalloc(sizeof(char*) * rows);
 
 	for (int r = 0; r < rows; r++) {
-		matrix->data[r] = xmalloc(sizeof(char) * cols);
+		area->block[r] = xmalloc(sizeof(char) * cols);
 	}
 
-	return matrix;
+	return area;
 }
 
 /******************************************************************************
  *
  *****************************************************************************/
 
-void s_matrix_init(s_matrix *matrix) {
-	for (int row = 0; row < matrix->rows; row++) {
-		for (int col = 0; col < matrix->cols; col++) {
-			matrix->data[row][col] = 0;
+void s_area_init(s_area *area) {
+
+	for (int row = 0; row < area->blk_rows; row++) {
+		for (int col = 0; col < area->blk_cols; col++) {
+			area->block[row][col] = 0;
 		}
 	}
 }
@@ -37,31 +38,31 @@ void s_matrix_init(s_matrix *matrix) {
  *
  *****************************************************************************/
 
-void s_matrix_free(s_matrix *matrix) {
+void s_area_free(s_area *area) {
 
-	for (int r = 0; r < matrix->rows; r++) {
-		free(matrix->data[r]);
+	for (int r = 0; r < area->blk_rows; r++) {
+		free(area->block[r]);
 	}
 
-	free(matrix->data);
+	free(area->block);
 
-	free(matrix);
+	free(area);
 }
 
 /******************************************************************************
  *
  *****************************************************************************/
 
-void s_matrix_get_index(const s_matrix *matrix, const s_point *pos, s_point *index) {
+void s_area_get_index(const s_area *area, const s_point *pos, s_point *index) {
 
 #ifdef DEBUG
-	if (matrix->size_row == 0 || matrix->size_col == 0) {
+	if (area->size_row == 0 || area->size_col == 0) {
 		log_exit_str("Size not set!");
 	}
 #endif
 
-	index->row = (pos->row - matrix->abs_row) / matrix->size_row;
-	index->col = (pos->col - matrix->abs_col) / matrix->size_col;
+	index->row = (pos->row - area->abs_row) / area->size_row;
+	index->col = (pos->col - area->abs_col) / area->size_col;
 
 	log_debug("pos - row: %d col: %d idx - row: %d col: %d", pos->row, pos->col, index->row, index->col);
 }
@@ -70,13 +71,13 @@ void s_matrix_get_index(const s_matrix *matrix, const s_point *pos, s_point *ind
  *
  *****************************************************************************/
 
-bool s_matrix_contains(const s_matrix *matrix, const s_point *point) {
+bool s_area_contains(const s_area *area, const s_point *point) {
 
-	if (point->row < matrix->abs_row || point->col < matrix->abs_col) {
+	if (point->row < area->abs_row || point->col < area->abs_col) {
 		return false;
 	}
 
-	if (point->row >= matrix->abs_row + matrix->rows * matrix->size_row || point->col >= matrix->abs_col + matrix->cols * matrix->size_col) {
+	if (point->row >= area->abs_row + area->blk_rows * area->size_row || point->col >= area->abs_col + area->blk_cols * area->size_col) {
 		return false;
 	}
 
