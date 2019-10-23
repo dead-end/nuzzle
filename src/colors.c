@@ -27,8 +27,8 @@
  *****************************************************************************/
 
 #define FULL 999
-#define LIGH 800
-#define DARK 400
+#define LIGH 600
+#define DARK 300
 
 /******************************************************************************
  * Simple wrapper that initializes a color pair with error handling.
