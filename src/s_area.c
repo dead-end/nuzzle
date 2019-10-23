@@ -123,3 +123,13 @@ void s_area_init_random(s_area *area) {
 	}
 }
 
+/******************************************************************************
+ * The function computes the absolute position of the block, which is the upper
+ * left pixel.
+ *****************************************************************************/
+
+void s_area_abs_block(const s_area *area, const s_point *block, s_point *abs_blk) {
+
+	abs_blk->row = area->abs_row + area->size_row * block->row;
+	abs_blk->col = area->abs_col + area->size_col * block->col;
+}
