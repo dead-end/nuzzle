@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "colors.h"
+#include "info_area.h"
 
 #define GAME_SIZE 11
 
@@ -101,6 +102,9 @@ void add_matrix_print(const s_area *game_area, const s_area *new_area) {
 
 						log_debug("inside row: %d col: %d color: %d", offset_block_row, offset_block_col, new_area->blocks[ir][ic]);
 
+					} else if (info_area_contains(&abs_pos_pix)) {
+						info_area_print_pixel(&abs_pos_pix, new_area->blocks[new_block.row][new_block.col]);
+
 					} else {
 
 						attrset(COLOR_PAIR(new_area->blocks[new_block.row][new_block.col]));
@@ -153,8 +157,13 @@ void add_matrix_delete(const s_area *game_area, const s_area *new_area) {
 						attrset(COLOR_PAIR(color_pair));
 
 						mvprintw(new_block_pixel.row, new_block_pixel.col, "%lc", BLOCK_EMPTY);
+
+					} else if (info_area_contains(&new_block_pixel)) {
+						//attrset(COLOR_PAIR(CP_DEFAULT));
+						info_area_print_pixel(&new_block_pixel, color_none);
+
 					} else {
-						attrset(COLOR_PAIR(0));
+						attrset(COLOR_PAIR(CP_DEFAULT));
 						mvprintw(new_block_pixel.row, new_block_pixel.col, "%lc", BLOCK_EMPTY);
 					}
 				}
@@ -265,6 +274,10 @@ int main() {
 	s_area_init_random(add_matrix);
 	log_debug_str("print add_matrix");
 	add_matrix_print(game_matrix, add_matrix);
+
+	info_area_init(0);
+	info_area_set_pos(2, abs_home.col);
+	info_area_print();
 
 	//
 	// Move the cursor to the initial position (which prevents flickering) and
