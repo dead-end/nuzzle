@@ -9,13 +9,16 @@ enum e_colors {
 	color_none = 0, color_red = 1, color_green = 2, color_blue = 3, color_yellow = 4,
 };
 
+#define CP_DEFAULT 0
+
+//
+// Used by: attrset(COLOR_PAIR(area->blocks[block.row][block.col]));
+//
+// TODO: rename
 #define CP_RED_BLACK 1
 #define CP_GREEN_BLACK 2
 #define CP_BLUE_BLACK 3
 #define CP_YELLOW_BLACK 4
-
-//#define CP_G_LIGHT_BLACK 5
-//#define CP_G_DARK_BLACK 6
 
 #define CP_LGR_LGR 5
 #define CP_DGR_DGR 6
