@@ -6,6 +6,7 @@
 #include "common.h"
 #include "colors.h"
 #include "info_area.h"
+#include "bg_area.h"
 
 #define GAME_SIZE 11
 
@@ -106,11 +107,7 @@ void add_matrix_print(const s_area *game_area, const s_area *new_area) {
 						info_area_print_pixel(&abs_pos_pix, new_area->blocks[new_block.row][new_block.col]);
 
 					} else {
-
-						attrset(COLOR_PAIR(new_area->blocks[new_block.row][new_block.col]));
-						mvprintw(abs_pos_pix.row, abs_pos_pix.col, "%lc", BLOCK_FULL);
-
-						log_debug("outside row: %d col: %d color: %d", abs_pos_pix.row, abs_pos_pix.col, new_area->blocks[ir][ic]);
+						bg_area_print_pixel(&abs_pos_pix, new_area->blocks[new_block.row][new_block.col], BLOCK_FULL);
 					}
 				}
 			}
@@ -159,12 +156,10 @@ void add_matrix_delete(const s_area *game_area, const s_area *new_area) {
 						mvprintw(new_block_pixel.row, new_block_pixel.col, "%lc", BLOCK_EMPTY);
 
 					} else if (info_area_contains(&new_block_pixel)) {
-						//attrset(COLOR_PAIR(CP_DEFAULT));
 						info_area_print_pixel(&new_block_pixel, color_none);
 
 					} else {
-						attrset(COLOR_PAIR(CP_DEFAULT));
-						mvprintw(new_block_pixel.row, new_block_pixel.col, "%lc", BLOCK_EMPTY);
+						bg_area_print_pixel(&new_block_pixel, new_area->blocks[new_block.row][new_block.col], BLOCK_EMPTY);
 					}
 				}
 			}
