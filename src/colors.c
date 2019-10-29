@@ -129,6 +129,7 @@ void colors_init() {
 	colors_init_pair(CP_YEL_YEL, FG_YEL, BG_YEL);
 }
 
+// TODO: Deprecated
 short colors_get_pair(const enum e_colors fg, const enum e_colors bg) {
 	short result = 0;
 
@@ -187,4 +188,29 @@ void colors_info_area_attr(const enum e_colors color) {
 
 void colors_bg_attr(const enum e_colors color) {
 	attrset(COLOR_PAIR(color));
+}
+
+//TODO: currently unused
+void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool even) {
+	int color_pair;
+
+	if (bg == color_none && fg == color_none) {
+		color_pair = even ? CP_LGR_LGR : CP_DGR_DGR;
+
+	} else {
+
+		if (fg == color_none) {
+			color_pair = 10 + bg;
+
+		} else if (bg == color_none) {
+			color_pair = fg * 10 + 1;
+
+		} else {
+			color_pair = fg * 10 + bg;
+		}
+	}
+
+	log_debug("fg: %d bg: %d pair: %d", fg, bg, color_pair);
+
+	attrset(COLOR_PAIR(color_pair));
 }

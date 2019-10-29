@@ -54,4 +54,6 @@ void colors_info_area_attr(const enum e_colors color);
 
 void colors_bg_attr(const enum e_colors color);
 
+void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool even);
+
 #endif /* INC_COLORS_H_ */

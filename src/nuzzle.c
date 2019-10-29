@@ -27,9 +27,7 @@ s_point abs_old = { .row = 10, .col = 60 };
  *
  *****************************************************************************/
 
-static void block_print(const int row, const int col, const int size_row, const int size_col, const int attrs, const wchar_t ch) {
-
-	attrset(attrs);
+static void block_print(const int row, const int col, const int size_row, const int size_col, const wchar_t ch) {
 
 	for (int r = 0; r < size_row; r++) {
 		for (int c = 0; c < size_col; c++) {
@@ -38,21 +36,21 @@ static void block_print(const int row, const int col, const int size_row, const 
 	}
 }
 
-static short game_get_color_pair(const s_area *matrix, const s_point *idx, const enum e_colors fg) {
+static short game_get_color_pair(const s_area *matrix, const s_point *pixel, const enum e_colors fg) {
 
 #ifdef DEBUG
-	if (idx->row >= matrix->blk_rows || idx->col >= matrix->blk_cols) {
-		log_exit("Index out of range row: %d col: %d", idx->row, idx->col);
+	if (pixel->row >= matrix->blk_rows || pixel->col >= matrix->blk_cols) {
+		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
 	}
 #endif
 
-	int color = matrix->blocks[idx->row][idx->col];
+	int bg = matrix->blocks[pixel->row][pixel->col];
 
-	if (color == color_none && fg == color_none) {
-		return (idx->row % 2) == (idx->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
+	if (bg == color_none && fg == color_none) {
+		return (pixel->row % 2) == (pixel->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
 	}
 
-	return colors_get_pair(fg, color);
+	return colors_get_pair(fg, bg);
 }
 
 void add_matrix_print(const s_area *game_area, const s_area *new_area) {
@@ -153,6 +151,8 @@ void add_matrix_delete(const s_area *game_area, const s_area *new_area) {
 
 						attrset(COLOR_PAIR(color_pair));
 
+						//	colors_game_attr(color_none, area->blocks[block.row][block.col], (block.row % 2) == (block.col % 2));
+
 						mvprintw(new_block_pixel.row, new_block_pixel.col, "%lc", BLOCK_EMPTY);
 
 					} else if (info_area_contains(&new_block_pixel)) {
@@ -170,7 +170,6 @@ void add_matrix_delete(const s_area *game_area, const s_area *new_area) {
 void game_print_empty(const s_area *area) {
 	s_point pixel;
 	s_point block;
-	short color_pair;
 
 	for (block.row = 0; block.row < area->blk_rows; block.row++) {
 		for (block.col = 0; block.col < area->blk_cols; block.col++) {
@@ -181,9 +180,9 @@ void game_print_empty(const s_area *area) {
 			//
 			s_area_abs_block(area, &block, &pixel);
 
-			color_pair = game_get_color_pair(area, &block, color_none);
+			colors_game_attr(color_none, area->blocks[block.row][block.col], (block.row % 2) == (block.col % 2));
 
-			block_print(pixel.row, pixel.col, area->size_row, area->size_col, COLOR_PAIR(color_pair), BLOCK_EMPTY);
+			block_print(pixel.row, pixel.col, area->size_row, area->size_col, BLOCK_EMPTY);
 		}
 	}
 }
