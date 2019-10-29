@@ -146,3 +146,45 @@ short colors_get_pair(const enum e_colors fg, const enum e_colors bg) {
 
 	return result;
 }
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void colors_info_area_attr(const enum e_colors color) {
+
+	switch (color) {
+
+	case color_none:
+		attrset(COLOR_PAIR(CP_DEFAULT));
+		break;
+
+	case color_red:
+		attrset(A_REVERSE| COLOR_PAIR(CP_RED_BLACK));
+		break;
+
+	case color_green:
+		attrset(A_REVERSE| COLOR_PAIR(CP_GREEN_BLACK));
+		break;
+
+	case color_blue:
+		attrset(A_REVERSE| COLOR_PAIR(CP_BLUE_BLACK));
+		break;
+
+	case color_yellow:
+		attrset(A_REVERSE| COLOR_PAIR(CP_YELLOW_BLACK));
+		break;
+
+	default:
+		log_exit("Unknown color: %d", color)
+		;
+	}
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void colors_bg_attr(const enum e_colors color) {
+	attrset(COLOR_PAIR(color));
+}
