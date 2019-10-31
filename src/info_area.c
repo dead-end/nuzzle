@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 dead-end
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <ncurses.h>
 #include <stdio.h>
 
@@ -52,7 +76,7 @@ void info_area_init(const int hs) {
 
 /******************************************************************************
  * The function updates the current score, by adding something. After this the
- * updated info area has to be repreinted.
+ * updated info area has to be reprinted.
  *****************************************************************************/
 
 void info_area_add_to_score(const int add_2_score) {
@@ -82,6 +106,7 @@ void info_area_set_pos(const int row, const int col) {
 
 void info_area_print() {
 
+	// TODO: color to colors.h ???
 	attrset(COLOR_PAIR(CP_DEFAULT));
 
 	for (int i = 0; i < ROWS; i++) {
@@ -90,15 +115,22 @@ void info_area_print() {
 }
 
 /******************************************************************************
- *
+ * The function checks whether a pixel (terminal character) is inside the info
+ * area.
  *****************************************************************************/
 
 bool info_area_contains(const s_point *pixel) {
 
+	//
+	// Upper left corner
+	//
 	if (pixel->row < pos.row || pixel->col < pos.col) {
 		return false;
 	}
 
+	//
+	// Lower right corner
+	//
 	if (pixel->row >= pos.row + ROWS || pixel->col >= pos.col + COLS) {
 		return false;
 	}
@@ -106,14 +138,22 @@ bool info_area_contains(const s_point *pixel) {
 	return true;
 }
 
+/******************************************************************************
+ * The function prints a pixel (terminal character). It is assumed that the
+ * pixel is inside the info area.
+ *****************************************************************************/
+
 void info_area_print_pixel(const s_point *pixel, enum e_colors color) {
+
+	//
+	// Ensure that the pixel is
+	//
+	if (!info_area_contains(pixel)) {
+		log_exit("Wrong row: %d col: %d", pixel->row, pixel->col);
+	}
 
 	const int row = pixel->row - pos.row;
 	const int col = pixel->col - pos.col;
-
-	if (row >= ROWS || col >= COLS) {
-		log_exit("Wrong row: %d col: %d", row, col);
-	}
 
 	colors_info_area_attr(color);
 
