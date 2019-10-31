@@ -23,7 +23,6 @@
  */
 
 #include <ncurses.h>
-#include <stdio.h>
 
 #include "common.h"
 #include "colors.h"
