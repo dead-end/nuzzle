@@ -58,13 +58,13 @@ void s_area_free(s_area *area) {
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) {
 
 #ifdef DEBUG
-	if (area->size_row == 0 || area->size_col == 0) {
+	if (area->size.row == 0 || area->size.col == 0) {
 		log_exit_str("Size not set!");
 	}
 #endif
 
-	block->row = (pixel->row - area->abs_row) / area->size_row;
-	block->col = (pixel->col - area->abs_col) / area->size_col;
+	block->row = (pixel->row - area->abs.row) / area->size.row;
+	block->col = (pixel->col - area->abs.col) / area->size.col;
 
 	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block->row, block->col);
 }
@@ -76,11 +76,11 @@ void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) 
 
 bool s_area_contains(const s_area *area, const s_point *pixel) {
 
-	if (pixel->row < area->abs_row || pixel->col < area->abs_col) {
+	if (pixel->row < area->abs.row || pixel->col < area->abs.col) {
 		return false;
 	}
 
-	if (pixel->row >= area->abs_row + area->blk_rows * area->size_row || pixel->col >= area->abs_col + area->blk_cols * area->size_col) {
+	if (pixel->row >= area->abs.row + area->blk_rows * area->size.row || pixel->col >= area->abs.col + area->blk_cols * area->size.col) {
 		return false;
 	}
 
@@ -109,7 +109,7 @@ void s_area_init_random(s_area *area) {
 				count++;
 			}
 
-			log_debug("row: %d col: %d color: %d", row, col, area->blocks[row][c]);
+			log_debug("row: %d col: %d color: %d", row, col, area->blocks[row][col]);
 		}
 	}
 
@@ -130,6 +130,6 @@ void s_area_init_random(s_area *area) {
 
 void s_area_abs_block(const s_area *area, const s_point *block, s_point *abs_blk) {
 
-	abs_blk->row = area->abs_row + area->size_row * block->row;
-	abs_blk->col = area->abs_col + area->size_col * block->col;
+	abs_blk->row = area->abs.row + area->size.row * block->row;
+	abs_blk->col = area->abs.col + area->size.col * block->col;
 }

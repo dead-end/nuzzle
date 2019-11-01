@@ -27,13 +27,9 @@ typedef struct s_area {
 
 	int blk_cols;
 
-	int abs_row;
+	s_point abs;
 
-	int abs_col;
-
-	int size_row;
-
-	int size_col;
+	s_point size;
 
 } s_area;
 
@@ -41,9 +37,9 @@ typedef struct s_area {
 
 s_area* s_area_create(const int rows, const int cols);
 
-#define s_area_set_abs(a,r,c) (a)->abs_row = (r); (a)->abs_col = (c)
+#define s_area_set_abs(a,r,c) (a)->abs.row = (r); (a)->abs.col = (c)
 
-#define s_area_set_size(a,r,c) (a)->size_row = (r); (a)->size_col = (c)
+#define s_area_set_size(a,r,c) (a)->size.row = (r); (a)->size.col = (c)
 
 void s_area_init_null(s_area *area);
 
