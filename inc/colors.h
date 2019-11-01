@@ -56,4 +56,7 @@ void colors_bg_attr(const enum e_colors color);
 
 void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool even);
 
+// TODO: colors_get_random()
+void colors_init_random(char **blocks, const int rows, const int cols);
+
 #endif /* INC_COLORS_H_ */

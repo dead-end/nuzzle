@@ -91,8 +91,8 @@ void colors_init() {
 	colors_init_color(FG_BLU, DARK, DARK, FULL);
 	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
 
-	colors_init_color(FG_YEL, FULL, FULL, DARK);
-	colors_init_color(BG_YEL, FULL, FULL, LIGH);
+	colors_init_color(FG_YEL, FULL, FULL - 200, DARK);
+	colors_init_color(BG_YEL, FULL, FULL - 200, LIGH);
 
 	//
 	// Initialize color pairs
@@ -213,4 +213,42 @@ void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool
 	log_debug("fg: %d bg: %d pair: %d", fg, bg, color_pair);
 
 	attrset(COLOR_PAIR(color_pair));
+}
+
+/******************************************************************************
+ *
+ *
+ * The function initializes a s_area with random blocks. It is ensured that at
+ * least one block is not empty.
+ *****************************************************************************/
+
+void colors_init_random(char **blocks, const int rows, const int cols) {
+	int count = 0;
+
+	for (int row = 0; row < rows; row++) {
+		for (int col = 0; col < cols; col++) {
+
+			//
+			// First check if the color is set
+			//
+			if (rand() % 100 < 60) {
+				blocks[row][col] = color_none;
+
+			} else {
+				blocks[row][col] = (rand() % 4) + 1;
+				count++;
+			}
+
+			log_debug("row: %d col: %d color: %d", row, col, blocks[row][col]);
+		}
+	}
+
+	//
+	// If all blocks are empty, try again.
+	//
+	if (count == 0) {
+		log_debug_str("Filling failed, try again!");
+
+		colors_init_random(blocks, rows, cols);
+	}
 }

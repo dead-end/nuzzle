@@ -41,15 +41,7 @@ s_area* s_area_create(const int rows, const int cols);
 
 #define s_area_set_size(a,r,c) (a)->size.row = (r); (a)->size.col = (c)
 
-void s_area_init_null(s_area *area);
-
-void s_area_init_random(s_area *area);
-
 void s_area_free(s_area *area);
-
-void s_area_get_block(const s_area *area, const s_point *pos, s_point *block);
-
-bool s_area_contains(const s_area *area, const s_point *point);
 
 void s_area_abs_block(const s_area *area, const s_point *block, s_point *abs_blk);
 

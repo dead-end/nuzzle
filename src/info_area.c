@@ -37,21 +37,21 @@
 
 #define COLS 12
 
-char data[ROWS][COLS + 1];
+static char data[ROWS][COLS + 1];
 
 /******************************************************************************
  * The variables contain the score informations.
  *****************************************************************************/
 
-int high_score = 0;
+static int high_score = 0;
 
-int cur_score = 0;
+static int cur_score = 0;
 
 /******************************************************************************
  * The struct contains the absolute position of the info area.
  *****************************************************************************/
 
-s_point pos;
+static s_point pos;
 
 /******************************************************************************
  * The function initializes the info area.

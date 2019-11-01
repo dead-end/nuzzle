@@ -43,5 +43,6 @@ void* xmalloc(const size_t size);
 
 //#define BLOCK_BOTH L'\u2593'
 #define BLOCK_BOTH L'\u2592'
+//#define BLOCK_BOTH L'\u258C'
 
 #endif /* INC_COMMON_H_ */
