@@ -25,6 +25,9 @@
 #ifndef INC_GAME_AREA_H_
 #define INC_GAME_AREA_H_
 
+#include <stdbool.h>
+#include "colors.h"
+
 void game_area_init();
 
 void game_area_free();
