@@ -24,9 +24,6 @@
 
 #include <ncurses.h>
 
-#include "common.h"
-#include "colors.h"
-#include "s_area.h"
 #include "info_area.h"
 
 /******************************************************************************

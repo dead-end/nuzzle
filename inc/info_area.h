@@ -25,6 +25,9 @@
 #ifndef INC_INFO_AREA_H_
 #define INC_INFO_AREA_H_
 
+#include "common.h"
+#include "colors.h"
+
 void info_area_init(const int hs);
 
 void info_area_add_to_score(const int add_2_score);
