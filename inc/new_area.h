@@ -25,6 +25,9 @@
 #ifndef INC_NEW_AREA_H_
 #define INC_NEW_AREA_H_
 
+#define HOME_ROW -1
+#define HOME_COL -1
+
 void new_area_init();
 
 void new_area_free();
