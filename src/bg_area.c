@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "colors.h"
-#include "s_area.h"
 
 /******************************************************************************
  * The background area has only one function, which prints a pixel with a given
