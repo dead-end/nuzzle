@@ -26,6 +26,7 @@
 #define INC_GAME_AREA_H_
 
 #include <stdbool.h>
+#include "common.h"
 #include "colors.h"
 
 void game_area_init();
