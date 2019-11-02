@@ -22,17 +22,15 @@
  * SOFTWARE.
  */
 
-#include "common.h"
-
+#include "new_area.h"
 #include "game_area.h"
 #include "info_area.h"
 #include "bg_area.h"
 
-#include "colors.h"
 #include "blocks.h"
 
 /******************************************************************************
- *
+ * The file operates on the following variables and structs.
  *****************************************************************************/
 
 //
@@ -51,14 +49,14 @@ static s_point dim;
 static s_point pos;
 
 //
-// The home position (upper left corner) of the new blocks.
-//
-static s_point home;
-
-//
 // The size of a single block.
 //
 static s_point size;
+
+//
+// The home position (upper left corner) of the new blocks.
+//
+static s_point home;
 
 /******************************************************************************
  *
@@ -206,7 +204,7 @@ void new_area_process(const int row, const int col) {
 	//
 	// If the row or col is negative, we move to the home position.
 	//
-	if (row < 0 || col < 0) {
+	if (row == HOME_ROW || col == HOME_COL) {
 		s_point_set(&pos, home.row, home.col);
 
 	} else {
