@@ -22,17 +22,36 @@
  * SOFTWARE.
  */
 
-#include "common.h"
+#include <blocks.h>
 #include <ncurses.h>
-#include "s_area.h"
+
 #include "colors.h"
+#include "common.h"
 
 #define GAME_SIZE 11
 
-s_area *game_area;
+/******************************************************************************
+ * The file operates on the following variables and structs.
+ *****************************************************************************/
 
+//
+// The 2-dimensional array with the block colors.
+//
+static t_block **blocks;
+
+//
+// The dimensions of the 2-dimensional array.
+//
+static s_point dim;
+
+//
+// The current position (upper left corner) of the blocks.
+//
 static s_point pos;
 
+//
+// The size of a single block.
+//
 static s_point size;
 
 /******************************************************************************
@@ -57,19 +76,6 @@ static void game_area_get_block(const s_point *pixel, s_point *block) {
  *
  *****************************************************************************/
 
-static void init_null(char **blocks, const int rows, const int cols) {
-
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
-			blocks[row][col] = color_none;
-		}
-	}
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
 //TODO: static
 static void print_block(const int row, const int col, const int size_row, const int size_col, const wchar_t ch) {
 
@@ -84,13 +90,12 @@ static void print_block(const int row, const int col, const int size_row, const 
  *
  *****************************************************************************/
 
-#define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
-
+//#define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
 static void game_area_print_empty() {
 	int pixel_row, pixel_col;
 
-	for (int row = 0; row < game_area->blk_rows; row++) {
-		for (int col = 0; col < game_area->blk_cols; col++) {
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
 
 			//
 			// Get the absolute position of the upper left pixel of the current
@@ -99,7 +104,8 @@ static void game_area_print_empty() {
 			pixel_row = block_upper_left(pos.row, size.row, row);
 			pixel_col = block_upper_left(pos.col, size.col, col);
 
-			colors_game_attr(color_none, game_area->blocks[row][col], (row % 2) == (col % 2));
+			//colors_game_attr(color_none, game_area->blocks[row][col], (row % 2) == (col % 2));
+			colors_game_attr(color_none, blocks[row][col], (row % 2) == (col % 2));
 
 			print_block(pixel_row, pixel_col, size.row, size.col, BLOCK_EMPTY);
 		}
@@ -110,15 +116,15 @@ static void game_area_print_empty() {
  *
  *****************************************************************************/
 
-static short game_get_color_pair(const s_area *matrix, const s_point *pixel, const enum e_colors fg) {
+static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
 
 #ifdef DEBUG
-	if (pixel->row >= matrix->blk_rows || pixel->col >= matrix->blk_cols) {
+	if (pixel->row >= dim.row || pixel->col >= dim.col) {
 		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
 	}
 #endif
 
-	int bg = matrix->blocks[pixel->row][pixel->col];
+	int bg = blocks[pixel->row][pixel->col];
 
 	if (bg == color_none && fg == color_none) {
 		return (pixel->row % 2) == (pixel->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
@@ -136,7 +142,7 @@ static wchar_t get_char(const s_point *block, const enum e_colors color) {
 
 	if (color != color_none) {
 
-		if (game_area->blocks[block->row][block->col] != color_none) {
+		if (blocks[block->row][block->col] != color_none) {
 			chr = BLOCK_BOTH;
 
 		} else {
@@ -161,11 +167,11 @@ void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
 
 	log_debug("row: %d col: %d, color: %d", pixel->row, pixel->col, color);
 
-	log_debug("pos: %d/%d",pos.row, pos.col);
+	log_debug("pos: %d/%d", pos.row, pos.col);
 	game_area_get_block(pixel, &block);
-	log_debug("pos: %d/%d",pos.row, pos.col);
+	log_debug("pos: %d/%d", pos.row, pos.col);
 
-	short color_pair = game_get_color_pair(game_area, &block, color);
+	short color_pair = game_get_color_pair(&block, color);
 
 	attrset(COLOR_PAIR(color_pair));
 
@@ -180,15 +186,13 @@ void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
 
 bool game_area_contains(const s_point *pixel) {
 
-	//log_debug("pixel: %d/%d ul: %d/%d lr: %d/%d", pixel->row, pixel->col, pos.row, pos.col, pos.row + game_area->blk_rows * size.row, pos.col + game_area->blk_cols * size.col);
-
 	log_debug("pos: %d/%d", pos.row, pos.col);
 
 	if (pixel->row < pos.row || pixel->col < pos.col) {
 		return false;
 	}
 
-	if (pixel->row >= pos.row + game_area->blk_rows * size.row || pixel->col >= pos.col + game_area->blk_cols * size.col) {
+	if (pixel->row >= pos.row + dim.row * size.row || pixel->col >= pos.col + dim.col * size.col) {
 		return false;
 	}
 
@@ -200,7 +204,7 @@ bool game_area_contains(const s_point *pixel) {
  *****************************************************************************/
 
 void game_area_free() {
-	s_area_free(game_area);
+	blocks_free(blocks, dim.row);
 }
 
 /******************************************************************************
@@ -210,23 +214,18 @@ void game_area_free() {
 void game_area_init() {
 	log_debug_str("coming soon...");
 
-	game_area = s_area_create(GAME_SIZE, GAME_SIZE);
+	s_point_set(&dim, GAME_SIZE, GAME_SIZE);
 
-//	s_point_set(&game_area->abs, 2, 2);
-//	s_point_set(&game_area->size, 2, 4);
+	blocks = blocks_create(dim.row, dim.col);
 
 	s_point_set(&pos, 2, 2);
 	s_point_set(&size, 2, 4);
 
-	init_null(game_area->blocks, game_area->blk_rows, game_area->blk_cols);
+	blocks_init(blocks, dim.row, dim.col, color_none);
 
-	colors_init_random(game_area->blocks, game_area->blk_rows, game_area->blk_cols);
+	colors_init_random(blocks, dim.row, dim.col);
 
 	game_area_print_empty();
 
-	log_debug("pos: %d/%d",pos.row, pos.col);
-}
-
-void game_area_pos(char *msg) {
-	log_debug("pos: %d/%d %s", pos.row, pos.col, msg);
+	log_debug("pos: %d/%d", pos.row, pos.col);
 }
