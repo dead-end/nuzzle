@@ -41,8 +41,28 @@ void* xmalloc(const size_t size);
 
 #define BLOCK_EMPTY L' '
 
+// TODO: choose correct character
+
 //#define BLOCK_BOTH L'\u2593'
 #define BLOCK_BOTH L'\u2592'
 //#define BLOCK_BOTH L'\u258C'
+
+/******************************************************************************
+ * The s_point struct represents an element that has a row and a column. This
+ * can be a pixel (terminal character), an array dimension, a block size...
+ *****************************************************************************/
+
+typedef struct s_point {
+
+	int row;
+
+	int col;
+
+} s_point;
+
+//
+// The macro sets the row and column of a s_point struct.
+//
+#define s_point_set(p,r,c) (p)->row = (r);(p)->col = (c)
 
 #endif /* INC_COMMON_H_ */
