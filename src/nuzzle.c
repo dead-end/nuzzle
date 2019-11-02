@@ -31,14 +31,7 @@
 #include "bg_area.h"
 #include "new_area.h"
 
-#include "colors.h"
-#include "common.h"
-
-#define ADD_SIZE 3
-
 s_point abs_home = { .row = 10, .col = 60 };
-
-//s_point abs_old = { .row = 10, .col = 60 };
 
 /******************************************************************************
  *
@@ -132,14 +125,12 @@ int main() {
 		//
 		// Exit with 'q'
 		//
-		if (c == 'q')
+		if (c == 'q') {
 			break;
-
-		char buffer[512];
-		size_t max_size = sizeof(buffer);
+		}
 
 		if (c == ERR) {
-			snprintf(buffer, max_size, "Nothing happened.");
+			log_debug_str("Nothing happened.");
 
 		} else if (c == KEY_MOUSE) {
 			MEVENT event;
@@ -148,7 +139,7 @@ int main() {
 				log_exit_str("Unable to get mouse event!");
 			}
 
-			snprintf(buffer, max_size, "Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
+			log_debug("Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
 
 			event.y, event.x, event.bstate,
 
@@ -168,14 +159,14 @@ int main() {
 			}
 
 		} else {
-			snprintf(buffer, max_size, "Pressed key %d (%s)", c, keyname(c));
+			log_debug("Pressed key %d (%s)", c, keyname(c));
 		}
 
+		//
+		// Move the cursor to a save place and do the refreshing. If the cursor
+		// is not moved a flickering can occur.
+		//
 		move(0, 0);
-		addstr(buffer);
-		clrtoeol();
-		move(0, 0);
-
 		refresh();
 	}
 
