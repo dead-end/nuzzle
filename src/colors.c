@@ -191,6 +191,7 @@ void colors_bg_attr(const enum e_colors color) {
 }
 
 //TODO: currently unused
+// TODO:
 void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool even) {
 	int color_pair;
 
@@ -222,7 +223,7 @@ void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool
  * least one block is not empty.
  *****************************************************************************/
 
-void colors_init_random(char **blocks, const int rows, const int cols) {
+void colors_init_random(t_block **blocks, const int rows, const int cols) {
 	int count = 0;
 
 	for (int row = 0; row < rows; row++) {
