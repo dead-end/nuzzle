@@ -73,15 +73,19 @@ static void game_area_get_block(const s_point *pixel, s_point *block) {
 }
 
 /******************************************************************************
- *
+ * The function prints an individual block. It is called with the upper left
+ * corner and the size of the block. It iterate through the block pixels and
+ * prints the character.
  *****************************************************************************/
 
-//TODO: static
-static void print_block(const int row, const int col, const int size_row, const int size_col, const wchar_t ch) {
+static void print_block(const int ul_row, const int ul_col, const int size_row, const int size_col, const wchar_t ch) {
 
-	for (int r = 0; r < size_row; r++) {
-		for (int c = 0; c < size_col; c++) {
-			mvprintw(row + r, col + c, "%lc", ch);
+	const int lr_row = ul_row + size_row;
+	const int lr_col = ul_col + size_col;
+
+	for (int row = ul_row; row < lr_row; row++) {
+		for (int col = ul_col; col < lr_col; col++) {
+			mvprintw(row, col, "%lc", ch);
 		}
 	}
 }
@@ -90,7 +94,6 @@ static void print_block(const int row, const int col, const int size_row, const 
  *
  *****************************************************************************/
 
-//#define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
 static void game_area_print_empty() {
 	int pixel_row, pixel_col;
 
@@ -104,7 +107,6 @@ static void game_area_print_empty() {
 			pixel_row = block_upper_left(pos.row, size.row, row);
 			pixel_col = block_upper_left(pos.col, size.col, col);
 
-			//colors_game_attr(color_none, game_area->blocks[row][col], (row % 2) == (col % 2));
 			colors_game_attr(color_none, blocks[row][col], (row % 2) == (col % 2));
 
 			print_block(pixel_row, pixel_col, size.row, size.col, BLOCK_EMPTY);
@@ -134,7 +136,8 @@ static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
 }
 
 /******************************************************************************
- *
+ * The function determines the character to display for a pixel (terminal
+ * character).
  *****************************************************************************/
 
 static wchar_t get_char(const s_point *block, const enum e_colors color) {
@@ -161,17 +164,15 @@ static wchar_t get_char(const s_point *block, const enum e_colors color) {
 /******************************************************************************
  *
  *****************************************************************************/
-
+// TODO:
 void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
 	s_point block;
 
 	log_debug("row: %d col: %d, color: %d", pixel->row, pixel->col, color);
 
-	log_debug("pos: %d/%d", pos.row, pos.col);
 	game_area_get_block(pixel, &block);
-	log_debug("pos: %d/%d", pos.row, pos.col);
 
-	short color_pair = game_get_color_pair(&block, color);
+	const short color_pair = game_get_color_pair(&block, color);
 
 	attrset(COLOR_PAIR(color_pair));
 
@@ -181,36 +182,30 @@ void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
 }
 
 /******************************************************************************
- *
+ * The functions checks whether a pixel (terminal character) is inside the game
+ * area.
  *****************************************************************************/
 
 bool game_area_contains(const s_point *pixel) {
 
-	log_debug("pos: %d/%d", pos.row, pos.col);
-
-	if (pixel->row < pos.row || pixel->col < pos.col) {
-		return false;
-	}
-
-	if (pixel->row >= pos.row + dim.row * size.row || pixel->col >= pos.col + dim.col * size.col) {
-		return false;
-	}
-
-	return true;
+	return is_inside_area(&pos, &dim, &size, pixel->row, pixel->col);
 }
 
 /******************************************************************************
- *
+ * The function frees the allocated memory.
  *****************************************************************************/
 
 void game_area_free() {
+
+	log_debug_str("Freeing blocks.");
+
 	blocks_free(blocks, dim.row);
 }
 
 /******************************************************************************
  *
  *****************************************************************************/
-
+// TODO:
 void game_area_init() {
 	log_debug_str("coming soon...");
 
