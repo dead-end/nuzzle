@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /******************************************************************************
  * Definition of the print_debug macro. It is only defined if the DEBUG flag is
@@ -68,8 +69,10 @@ void* xmalloc(const size_t size);
 // TODO: choose correct character
 
 //#define BLOCK_BOTH L'\u2593'
-#define BLOCK_BOTH L'\u2592'
+
 //#define BLOCK_BOTH L'\u258C'
+
+#define BLOCK_BOTH L'\u2592'
 
 /******************************************************************************
  * The s_point struct represents an element that has a row and a column. This
@@ -88,5 +91,7 @@ typedef struct s_point {
 // The macro sets the row and column of a s_point struct.
 //
 #define s_point_set(p,r,c) (p)->row = (r);(p)->col = (c)
+
+bool is_inside_area(const s_point *a_pos, const s_point *a_dim, const s_point *a_size, const int row, const int col);
 
 #endif /* INC_COMMON_H_ */
