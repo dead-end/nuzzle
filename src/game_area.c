@@ -91,10 +91,11 @@ static void print_block(const int ul_row, const int ul_col, const int size_row, 
 }
 
 /******************************************************************************
- *
+ * The function prints the blocks of the game area. This means empty chars with
+ * the background color.
  *****************************************************************************/
 
-static void game_area_print_empty() {
+void game_area_print() {
 	int pixel_row, pixel_col;
 
 	for (int row = 0; row < dim.row; row++) {
@@ -115,7 +116,8 @@ static void game_area_print_empty() {
 }
 
 /******************************************************************************
- *
+ * The function gets the color pair of a pixel (terminal character) of the game
+ * area.
  *****************************************************************************/
 
 static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
@@ -126,12 +128,22 @@ static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
 	}
 #endif
 
+	//
+	// The game pixel defines the background color.
+	//
 	int bg = blocks[pixel->row][pixel->col];
 
+	//
+	// If foreground and background have no color, we use the default
+	// background.
+	//
 	if (bg == color_none && fg == color_none) {
 		return (pixel->row % 2) == (pixel->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
 	}
 
+	//
+	// The concrete color is defined in the colors.c file.
+	//
 	return colors_get_pair(fg, bg);
 }
 
@@ -213,14 +225,40 @@ void game_area_init() {
 
 	blocks = blocks_create(dim.row, dim.col);
 
-	s_point_set(&pos, 2, 2);
+	//s_point_set(&pos, 2, 2);
 	s_point_set(&size, 2, 4);
 
 	blocks_init(blocks, dim.row, dim.col, color_none);
 
 	colors_init_random(blocks, dim.row, dim.col);
 
-	game_area_print_empty();
+//	game_area_print_empty();
 
 	log_debug("pos: %d/%d", pos.row, pos.col);
+}
+
+/******************************************************************************
+ * The function returns a struct with the total size of the game area.
+ *****************************************************************************/
+
+s_point game_area_get_size() {
+	s_point result;
+
+	result.row = dim.row * size.row;
+	result.col = dim.col * size.col;
+
+	log_debug("size row: %d col: %d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
+ * The function sets the position of the game area. This is done on the
+ * initialization and on resizing the terminal.
+ *****************************************************************************/
+
+void game_area_set_pos(const int row, const int col) {
+
+	pos.row = row;
+	pos.col = col;
 }

@@ -38,4 +38,10 @@ bool game_area_contains(const s_point *pixel);
 
 void game_area_print_pixel(const s_point *pixel, const enum e_colors color);
 
+s_point game_area_get_size();
+
+void game_area_set_pos(const int row, const int col);
+
+void game_area_print();
+
 #endif /* INC_GAME_AREA_H_ */
