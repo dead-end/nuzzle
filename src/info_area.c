@@ -87,11 +87,27 @@ void info_area_add_to_score(const int add_2_score) {
 }
 
 /******************************************************************************
- * The function sets the absolute position of the info area. If this is defined
- * as a marco, the s_point struct has to be set in the global scope.
+ * The function returns a struct with the total size of the info area.
+ *****************************************************************************/
+
+s_point info_area_get_size() {
+	s_point result;
+
+	result.row = ROWS;
+	result.col = COLS;
+
+	log_debug("size row: %d col: %d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
+ * The function sets the position of the info area. This is done on the
+ * initialization and on resizing the terminal.
  *****************************************************************************/
 
 void info_area_set_pos(const int row, const int col) {
+
 	pos.row = row;
 	pos.col = col;
 }
@@ -101,6 +117,8 @@ void info_area_set_pos(const int row, const int col) {
  *****************************************************************************/
 
 void info_area_print() {
+
+	log_debug("row: %d col: %d", pos.row, pos.col);
 
 	// TODO: color to colors.h ???
 	attrset(COLOR_PAIR(CP_DEFAULT));
@@ -140,6 +158,8 @@ bool info_area_contains(const s_point *pixel) {
  *****************************************************************************/
 
 void info_area_print_pixel(const s_point *pixel, enum e_colors color) {
+
+	log_debug("row: %d col: %d", pos.row, pos.col);
 
 	//
 	// Ensure that the pixel is

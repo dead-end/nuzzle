@@ -34,6 +34,8 @@ void info_area_add_to_score(const int add_2_score);
 
 void info_area_set_pos(const int row, const int col);
 
+s_point info_area_get_size();
+
 void info_area_print();
 
 bool info_area_contains(const s_point *pixel);
