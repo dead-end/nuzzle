@@ -51,6 +51,7 @@
  *****************************************************************************/
 
 #define FULL 999
+#define CORR 100
 #define LIGH 600
 #define DARK 300
 
@@ -109,14 +110,14 @@ void colors_init() {
 	colors_init_color(FG_RED, FULL, DARK, DARK);
 	colors_init_color(BG_RED, FULL, LIGH, LIGH);
 
-	colors_init_color(FG_GRE, DARK, FULL, DARK);
+	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK);
 	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
 
 	colors_init_color(FG_BLU, DARK, DARK, FULL);
 	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
 
-	colors_init_color(FG_YEL, FULL, FULL - 200, DARK);
-	colors_init_color(BG_YEL, FULL, FULL - 200, LIGH);
+	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK);
+	colors_init_color(BG_YEL, FULL, FULL, LIGH);
 
 	//
 	// Initialize color pairs
