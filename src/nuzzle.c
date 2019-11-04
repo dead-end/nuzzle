@@ -31,13 +31,19 @@
 #include "bg_area.h"
 #include "new_area.h"
 
-s_point abs_home = { .row = 10, .col = 60 };
-
 /******************************************************************************
- *
+ * The exit callback function resets the terminal and frees the memory. This is
+ * important if the program terminates after an error.
  *****************************************************************************/
 
 static void exit_callback() {
+
+	//
+	// Free the allocated memory.
+	//
+	game_area_free();
+
+	new_area_free();
 
 	//
 	// Disable mouse movement events, as l = low
@@ -47,6 +53,65 @@ static void exit_callback() {
 	endwin();
 
 	log_debug_str("Exit callback finished!");
+}
+
+/******************************************************************************
+ * The function places the areas of the game in the center of the terminal. It
+ * is called after the initialization and on the resizing of the terminal.
+ *****************************************************************************/
+
+#define DELIM 4
+
+void do_center() {
+
+	//
+	// Get the sizes of the different areas.
+	//
+	const s_point game_size = game_area_get_size();
+
+	const s_point new_size = new_area_get_size();
+
+	const s_point info_size = info_area_get_size();
+
+	//
+	// Compute the size of all areas.
+	//
+	int total_rows = game_size.row;
+	int total_cols = game_size.col + DELIM + max(info_size.col, new_size.col);
+	//int total_cols = game_size.col + DELIM + info_size.col;
+
+	//
+	// Get the center positions
+	//
+	const int ul_row = (getmaxy(stdscr) - total_rows) / 2;
+	const int ul_col = (getmaxx(stdscr) - total_cols) / 2;
+
+	log_debug("upper left row: %d col: %d", ul_row, ul_col);
+
+	game_area_set_pos(ul_row, ul_col);
+
+	info_area_set_pos(ul_row, ul_col + game_size.col + DELIM);
+
+	new_area_set_pos(ul_row + info_size.row + DELIM, ul_col + game_size.col + DELIM);
+
+	//
+	// Delete the old content.
+	//
+	erase();
+
+	//
+	// Print the areas at the updated position
+	//
+	game_area_print();
+
+	info_area_print();
+
+	new_area_print();
+
+	//
+	// Call refresh to show the result
+	//
+	refresh();
 }
 
 /******************************************************************************
@@ -102,13 +167,11 @@ int main() {
 
 	new_area_init();
 
-	new_area_next();
+	new_area_fill();
 
 	info_area_init(0);
 
-	info_area_set_pos(2, abs_home.col);
-
-	info_area_print();
+	do_center();
 
 	//
 	// Move the cursor to the initial position (which prevents flickering) and
@@ -131,6 +194,9 @@ int main() {
 
 		if (c == ERR) {
 			log_debug_str("Nothing happened.");
+
+		} else if (c == KEY_RESIZE) {
+			do_center();
 
 		} else if (c == KEY_MOUSE) {
 			MEVENT event;
@@ -169,10 +235,6 @@ int main() {
 		move(0, 0);
 		refresh();
 	}
-
-	game_area_free();
-
-	new_area_free();
 
 	log_debug_str("Nuzzle finished!");
 
