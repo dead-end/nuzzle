@@ -28,12 +28,20 @@
 #define HOME_ROW -1
 #define HOME_COL -1
 
+#include "common.h"
+
 void new_area_init();
 
 void new_area_free();
 
-void new_area_next();
+void new_area_fill();
+
+void new_area_print();
 
 void new_area_process(const int row, const int col);
+
+s_point new_area_get_size();
+
+void new_area_set_pos(const int row, const int col);
 
 #endif /* INC_NEW_AREA_H_ */
