@@ -36,12 +36,22 @@ void new_area_free();
 
 void new_area_fill();
 
-void new_area_print();
+//void new_area_print();
+//
+//void new_area_delete();
+
+#define DO_PRINT true
+
+#define DO_DELETE false
+
+void new_area_process_blocks(const bool do_print);
 
 void new_area_process(const int row, const int col);
 
 s_point new_area_get_size();
 
 void new_area_set_pos(const int row, const int col);
+
+bool new_area_is_dropped();
 
 #endif /* INC_NEW_AREA_H_ */

@@ -106,7 +106,7 @@ void do_center() {
 
 	info_area_print();
 
-	new_area_print();
+	new_area_process_blocks(DO_PRINT);
 
 	//
 	// Call refresh to show the result
@@ -205,13 +205,24 @@ int main() {
 				log_exit_str("Unable to get mouse event!");
 			}
 
-			log_debug("Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
-
-			event.y, event.x, event.bstate,
-
-			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
+			//			log_debug("Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
+			//
+			//			event.y, event.x, event.bstate,
+			//
+			//			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
 
 			if (event.bstate & BUTTON1_RELEASED) {
+
+				if (new_area_is_dropped()) {
+
+					//
+					// Delete the current none-empty blocks. After calling
+					// new_area_fill(), the non-empty blocks may be different.
+					//
+					new_area_process_blocks(DO_DELETE);
+
+					new_area_fill();
+				}
 
 				new_area_process(HOME_ROW, HOME_COL);
 

@@ -77,7 +77,7 @@ static void do_print_block(const int blk_pixel_row, const int blk_pixel_col, con
 	for (pixel.row = blk_pixel_row; pixel.row < blk_pixel_row + size.row; pixel.row++) {
 		for (pixel.col = blk_pixel_col; pixel.col < blk_pixel_col + size.col; pixel.col++) {
 
-			if (game_area_contains(&pixel)) {
+			if (game_area_contains(pixel.row, pixel.col)) {
 				game_area_print_pixel(&pixel, color);
 
 			} else if (info_area_contains(&pixel)) {
@@ -100,7 +100,7 @@ static void do_delete_block(const int blk_pixel_row, const int blk_pixel_col, co
 	for (pixel.row = blk_pixel_row; pixel.row < blk_pixel_row + size.row; pixel.row++) {
 		for (pixel.col = blk_pixel_col; pixel.col < blk_pixel_col + size.col; pixel.col++) {
 
-			if (game_area_contains(&pixel)) {
+			if (game_area_contains(pixel.row, pixel.col)) {
 				game_area_print_pixel(&pixel, color_none);
 
 			} else if (info_area_contains(&pixel)) {
@@ -118,14 +118,7 @@ static void do_delete_block(const int blk_pixel_row, const int blk_pixel_col, co
  * (terminal character) is computed.
  *****************************************************************************/
 
-//
-//   do_process_blocks(DO_DELETE); vs do_process_blocks(false);
-//
-#define DO_PRINT true
-
-#define DO_DELETE false
-
-static void do_process_blocks(const bool do_print) {
+void new_area_process_blocks(const bool do_print) {
 	int pixel_row, pixel_col;
 
 	t_block color;
@@ -184,20 +177,8 @@ void new_area_free() {
  *
  *****************************************************************************/
 
-//void new_area_next() {
-//
-//	//s_point_set(&pos, home.row, home.col);
-//
-//	colors_init_random(blocks, dim.row, dim.col);
-//
-//	do_process_blocks(DO_PRINT);
-//}
 void new_area_fill() {
 	colors_init_random(blocks, dim.row, dim.col);
-}
-
-void new_area_print() {
-	do_process_blocks(DO_PRINT);
 }
 
 /******************************************************************************
@@ -246,7 +227,7 @@ void new_area_process(const int event_row, const int event_col) {
 
 	log_debug("Processing event row: %d col: %d", event_row, event_col);
 
-	do_process_blocks(DO_DELETE);
+	new_area_process_blocks(DO_DELETE);
 
 	//
 	// If the row or col is negative, we move to the home position.
@@ -274,7 +255,7 @@ void new_area_process(const int event_row, const int event_col) {
 		log_debug("pos: %d/%d offset:  %d/%d", pos.row, pos.col, offset.row, offset.col);
 	}
 
-	do_process_blocks(DO_PRINT);
+	new_area_process_blocks(DO_PRINT);
 }
 
 /******************************************************************************
@@ -314,4 +295,115 @@ void new_area_set_pos(const int row, const int col) {
 	pos.col = home.col;
 
 	log_debug("row: %d col: %d", pos.row, pos.col);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+static bool get_index(const int row, const int col, s_point *idx) {
+	s_point pixel;
+
+	pixel.row = pos.row + row * size.row;
+	pixel.col = pos.col + col * size.col;
+
+	if (!game_area_contains(pixel.row, pixel.col)) {
+		return false;
+	}
+
+	game_area_get_block(&pixel, idx);
+
+	return true;
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+bool new_area_is_dropped() {
+	s_point idx;
+
+	if (!game_area_is_aligned(&pos)) {
+		log_debug_str("New blocks are not aligned!");
+		return false;
+	}
+
+	//
+	// Ensure that are all none empty blocks are inside the game area and that
+	// the game area block is empty.
+	//
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			if (blocks[row][col] == color_none) {
+				continue;
+			}
+
+			//
+			// Found a block that is not empty and outside.
+			//
+			if (!get_index(row, col, &idx)) {
+				return false;
+			}
+
+			if (!game_area_is_empty(idx.row, idx.col)) {
+				return false;
+			}
+		}
+	}
+
+	//
+	// Drop
+	//
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			if (blocks[row][col] == color_none) {
+				continue;
+			}
+
+			if (!get_index(row, col, &idx)) {
+				continue;
+			}
+
+			game_area_set_color(idx.row, idx.col, blocks[row][col]);
+		}
+	}
+
+	int num;
+	bool collapsed = false;
+	//
+	//
+	//
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			if (blocks[row][col] == color_none) {
+				continue;
+			}
+
+			if (!get_index(row, col, &idx)) {
+				continue;
+			}
+
+			num = 0;
+			game_area_mark_neighbors(idx.row, idx.col, blocks[row][col], &num);
+			if (num < 4) {
+				game_area_reset_marked();
+			} else {
+				info_area_add_to_score(num);
+				game_area_remove_marked();
+				collapsed = true;
+			}
+		}
+	}
+
+	// TODO: return ???
+	if (collapsed) {
+		game_area_print();
+	}
+
+	log_debug_str("Is dropped!");
+
+	return true;
 }

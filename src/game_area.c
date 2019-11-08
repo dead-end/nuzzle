@@ -40,6 +40,11 @@
 static t_block **blocks;
 
 //
+// The 2-dimensional array with temporary data.
+//
+static t_block **marks;
+
+//
 // The dimensions of the 2-dimensional array.
 //
 static s_point dim;
@@ -58,7 +63,7 @@ static s_point size;
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
 
-static void game_area_get_block(const s_point *pixel, s_point *block) {
+void game_area_get_block(const s_point *pixel, s_point *block) {
 
 #ifdef DEBUG
 	if (size.row == 0 || size.col == 0) {
@@ -198,9 +203,27 @@ void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
  * area.
  *****************************************************************************/
 
-bool game_area_contains(const s_point *pixel) {
+bool game_area_contains(const int row, const int col) {
+	return is_inside_area(&pos, &dim, &size, row, col);
+}
 
-	return is_inside_area(&pos, &dim, &size, pixel->row, pixel->col);
+/******************************************************************************
+ *
+ *****************************************************************************/
+// TODO:
+void game_area_init() {
+
+	s_point_set(&dim, GAME_SIZE, GAME_SIZE);
+
+	blocks = blocks_create(dim.row, dim.col);
+
+	marks = blocks_create(dim.row, dim.col);
+
+	s_point_set(&size, 2, 4);
+
+	blocks_init(blocks, dim.row, dim.col, color_none);
+
+	log_debug("pos: %d/%d", pos.row, pos.col);
 }
 
 /******************************************************************************
@@ -212,29 +235,8 @@ void game_area_free() {
 	log_debug_str("Freeing blocks.");
 
 	blocks_free(blocks, dim.row);
-}
 
-/******************************************************************************
- *
- *****************************************************************************/
-// TODO:
-void game_area_init() {
-	log_debug_str("coming soon...");
-
-	s_point_set(&dim, GAME_SIZE, GAME_SIZE);
-
-	blocks = blocks_create(dim.row, dim.col);
-
-	//s_point_set(&pos, 2, 2);
-	s_point_set(&size, 2, 4);
-
-	blocks_init(blocks, dim.row, dim.col, color_none);
-
-	colors_init_random(blocks, dim.row, dim.col);
-
-//	game_area_print_empty();
-
-	log_debug("pos: %d/%d", pos.row, pos.col);
+	blocks_free(marks, dim.row);
 }
 
 /******************************************************************************
@@ -258,7 +260,106 @@ s_point game_area_get_size() {
  *****************************************************************************/
 
 void game_area_set_pos(const int row, const int col) {
-
 	pos.row = row;
 	pos.col = col;
 }
+
+/******************************************************************************
+ * The function checks if the current pixel is aligned with the game area. this
+ * does not mean that the pixel is inside the game area.
+ *****************************************************************************/
+
+bool game_area_is_aligned(const s_point *pixel) {
+	return (pixel->row - pos.row) % size.row == 0 && (pixel->col - pos.col) % size.col == 0;
+}
+
+/******************************************************************************
+ * The function recursively marks all neighbors, the have the same required
+ * color. The recursion stops if all neighbors have different colors or are
+ * already marked.
+ *****************************************************************************/
+
+void game_area_mark_neighbors(const int row, const int col, t_block color, int *num) {
+
+	//
+	// Ensure that we are on the game area.
+	//
+	if (row < 0 || row >= dim.row || col < 0 || col >= dim.row) {
+		log_debug("Outside: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Current block has the wrong color.
+	//
+	if (blocks[row][col] != color) {
+		log_debug("Wrong color: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Current block is already marked.
+	//
+	if (marks[row][col] != 0) {
+		log_debug("Already marked: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Increase the number and mark the block.
+	//
+	marks[row][col] = ++(*num);
+
+	log_debug("Mark: %d/%d num: %d color: %d", row, col, *num, color);
+
+	//
+	// Recursively process the neighbors.
+	//
+	game_area_mark_neighbors(row + 1, col, color, num);
+	game_area_mark_neighbors(row - 1, col, color, num);
+	game_area_mark_neighbors(row, col + 1, color, num);
+	game_area_mark_neighbors(row, col - 1, color, num);
+}
+
+/******************************************************************************
+ * The function removes all marked blocks from the game area. As a side effect
+ * the marked area is reset.
+ *****************************************************************************/
+
+void game_area_remove_marked() {
+
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			if (marks[row][col] > 0) {
+				blocks[row][col] = color_none;
+				marks[row][col] = 0;
+			}
+		}
+	}
+}
+
+/******************************************************************************
+ * The function checks whether the current block is empty or not.
+ *****************************************************************************/
+
+bool game_area_is_empty(const int row, const int col) {
+	return blocks[row][col] == color_none;
+}
+
+/******************************************************************************
+ * The function resets the marked array.
+ *****************************************************************************/
+
+void game_area_reset_marked() {
+	blocks_init(marks, dim.row, dim.col, 0);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_area_set_color(const int row, const int col, t_block color) {
+	blocks[row][col] = color;
+}
+
