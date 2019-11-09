@@ -185,7 +185,7 @@ static wchar_t get_char(const s_point *block, const enum e_colors color) {
 void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
 	s_point block;
 
-	log_debug("row: %d col: %d, color: %d", pixel->row, pixel->col, color);
+	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, color);
 
 	game_area_get_block(pixel, &block);
 
@@ -363,3 +363,33 @@ void game_area_set_color(const int row, const int col, t_block color) {
 	blocks[row][col] = color;
 }
 
+static bool check_block(const int row_start, const int col_start, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+
+	for (int row = 0; row < drop_dim->row; row++) {
+		for (int col = 0; col < drop_dim->col; col++) {
+			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] != color_none && blocks[row_start + row][col_start + col] != color_none) {
+				return false;
+			}
+		}
+	}
+
+	log_debug("can drop at: %d/%d", row_start, col_start);
+
+	return true;
+}
+//TODO: wrong
+bool game_area_can_drop(t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+
+	const int row_end = dim.row - drop_dim->row;
+	const int col_end = dim.col - drop_dim->col;
+
+	for (int row_start = 0; row_start < row_end; row_start++) {
+		for (int col_start = 0; col_start < col_end; col_start++) {
+			if (check_block(row_start, col_start, drop_blocks, drop_idx, drop_dim)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}

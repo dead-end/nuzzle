@@ -222,6 +222,10 @@ int main() {
 					new_area_process_blocks(DO_DELETE);
 
 					new_area_fill();
+
+					if (!new_area_can_drop()) {
+						log_debug_str("ENDDDDDDDDDDDDD");
+					}
 				}
 
 				new_area_process(HOME_ROW, HOME_COL);

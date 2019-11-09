@@ -248,7 +248,7 @@ void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool
  * least one block is not empty.
  *****************************************************************************/
 
-void colors_init_random(t_block **blocks, const int rows, const int cols) {
+void colors_init_random2(t_block **blocks, const int rows, const int cols) {
 	int count = 0;
 
 	for (int row = 0; row < rows; row++) {
@@ -276,5 +276,39 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
 		log_debug_str("Filling failed, try again!");
 
 		colors_init_random(blocks, rows, cols);
+	}
+}
+
+void colors_init_random(t_block **blocks, const int rows, const int cols) {
+
+	//
+	// set center
+	//
+	const int row_center = (rows / 2);
+	const int col_center = (cols / 2);
+
+	log_debug("center: %d/%d", row_center, col_center);
+
+	blocks[row_center][row_center] = colors_get_color();
+
+	for (int row = 0; row < rows; row++) {
+		for (int col = 0; col < cols; col++) {
+
+			if (row == row_center && col == col_center) {
+				continue;
+			}
+
+			//
+			// First check if the color is set
+			//
+			if (rand() % 100 < 70) {
+				blocks[row][col] = color_none;
+
+			} else {
+				blocks[row][col] = colors_get_color();
+			}
+
+			log_debug("block: %d/%d color: %d", row, col, blocks[row][col]);
+		}
 	}
 }

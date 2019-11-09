@@ -54,4 +54,6 @@ void new_area_set_pos(const int row, const int col);
 
 bool new_area_is_dropped();
 
+bool new_area_can_drop();
+
 #endif /* INC_NEW_AREA_H_ */

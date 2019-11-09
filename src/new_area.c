@@ -114,6 +114,78 @@ static void do_delete_block(const int blk_pixel_row, const int blk_pixel_col, co
 }
 
 /******************************************************************************
+ * The function computes the offset, in case the mouse event is outside the
+ * home area. The offset is the relative upper left corner of the first none
+ * empty block.
+ *****************************************************************************/
+
+static void get_offset() {
+
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			//
+			// We are looking for the first none empty block.
+			//
+			if (blocks[row][col] == color_none) {
+				continue;
+			}
+
+			//
+			// Compute the relative upper left corner and we are done.
+			//
+			offset.row = row * size.row;
+			offset.col = col * size.col;
+
+			return;
+		}
+	}
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+static bool get_index(const int row, const int col, s_point *idx) {
+	s_point pixel;
+
+	pixel.row = pos.row + row * size.row;
+	pixel.col = pos.col + col * size.col;
+
+	if (!game_area_contains(pixel.row, pixel.col)) {
+		return false;
+	}
+
+	game_area_get_block(&pixel, idx);
+
+	return true;
+}
+
+/******************************************************************************
+ * The function initializes the new area.
+ *****************************************************************************/
+
+void new_area_init() {
+
+	s_point_set(&size, 2, 4);
+
+	s_point_set(&dim, 3, 3);
+
+	s_point_set(&offset, -1, -1);
+
+	blocks = blocks_create(dim.row, dim.col);
+}
+
+/******************************************************************************
+ * The function frees the allocated memory.
+ *****************************************************************************/
+
+void new_area_free() {
+
+	blocks_free(blocks, dim.row);
+}
+
+/******************************************************************************
  * The function processes all blocks. For each block, the upper left pixel
  * (terminal character) is computed.
  *****************************************************************************/
@@ -149,65 +221,8 @@ void new_area_process_blocks(const bool do_print) {
  *
  *****************************************************************************/
 
-void new_area_init() {
-
-	//s_point_set(&home, 10, 60);
-
-	//s_point_set(&pos, home.row, home.col);
-
-	s_point_set(&size, 2, 4);
-
-	s_point_set(&dim, 3, 3);
-
-	s_point_set(&offset, -1, -1);
-
-	blocks = blocks_create(dim.row, dim.col);
-}
-
-/******************************************************************************
- * The function frees the allocated memory.
- *****************************************************************************/
-
-void new_area_free() {
-
-	blocks_free(blocks, dim.row);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
 void new_area_fill() {
 	colors_init_random(blocks, dim.row, dim.col);
-}
-
-/******************************************************************************
- * The function computes the offset, in case the mouse event is outside the
- * home area. The offset is the relative upper left corner of the first none
- * empty block.
- *****************************************************************************/
-
-static void get_offset() {
-
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
-
-			//
-			// We are looking for the first none empty block.
-			//
-			if (blocks[row][col] == color_none) {
-				continue;
-			}
-
-			//
-			// Compute the relative upper left corner and we are done.
-			//
-			offset.row = row * size.row;
-			offset.col = col * size.col;
-
-			return;
-		}
-	}
 }
 
 /******************************************************************************
@@ -268,7 +283,7 @@ s_point new_area_get_size() {
 	result.row = dim.row * size.row;
 	result.col = dim.col * size.col;
 
-	log_debug("size row: %d col: %d", result.row, result.col);
+	log_debug("size: %d/%d", result.row, result.col);
 
 	return result;
 }
@@ -294,32 +309,14 @@ void new_area_set_pos(const int row, const int col) {
 	pos.row = home.row;
 	pos.col = home.col;
 
-	log_debug("row: %d col: %d", pos.row, pos.col);
+	log_debug("position: %d/%d", pos.row, pos.col);
 }
 
 /******************************************************************************
  *
  *****************************************************************************/
-
-static bool get_index(const int row, const int col, s_point *idx) {
-	s_point pixel;
-
-	pixel.row = pos.row + row * size.row;
-	pixel.col = pos.col + col * size.col;
-
-	if (!game_area_contains(pixel.row, pixel.col)) {
-		return false;
-	}
-
-	game_area_get_block(&pixel, idx);
-
-	return true;
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
+// TODO: result => move to home, drop, drop and collapse => print
+// TODO: use : get_idx_dim
 bool new_area_is_dropped() {
 	s_point idx;
 
@@ -328,13 +325,17 @@ bool new_area_is_dropped() {
 		return false;
 	}
 
+	//TODO: own function
 	//
-	// Ensure that are all none empty blocks are inside the game area and that
-	// the game area block is empty.
+	// Ensure that are all none empty new blocks are inside the game area and
+	// that the game area block is empty.
 	//
 	for (int row = 0; row < dim.row; row++) {
 		for (int col = 0; col < dim.col; col++) {
 
+			//
+			// We only want to update non empty block.
+			//
 			if (blocks[row][col] == color_none) {
 				continue;
 			}
@@ -358,6 +359,9 @@ bool new_area_is_dropped() {
 	for (int row = 0; row < dim.row; row++) {
 		for (int col = 0; col < dim.col; col++) {
 
+			//
+			// We only want to update non empty block.
+			//
 			if (blocks[row][col] == color_none) {
 				continue;
 			}
@@ -378,6 +382,9 @@ bool new_area_is_dropped() {
 	for (int row = 0; row < dim.row; row++) {
 		for (int col = 0; col < dim.col; col++) {
 
+			//
+			// We only want to update non empty block.
+			//
 			if (blocks[row][col] == color_none) {
 				continue;
 			}
@@ -407,3 +414,54 @@ bool new_area_is_dropped() {
 
 	return true;
 }
+
+static void get_idx_dim(s_point *ul, s_point *d) {
+
+	s_point lr;
+
+	lr.row = -1;
+	lr.col = -1;
+
+	ul->row = dim.row;
+	ul->col = dim.col;
+
+	for (int row = 0; row < dim.row; row++) {
+		for (int col = 0; col < dim.col; col++) {
+
+			if (blocks[row][col] == color_none) {
+				continue;
+			}
+
+			if (ul->row > row) {
+				ul->row = row;
+			}
+
+			if (ul->col > col) {
+				ul->col = col;
+			}
+
+			if (lr.row < row) {
+				lr.row = row;
+			}
+
+			if (lr.col < col) {
+				lr.col = col;
+			}
+		}
+	}
+
+	d->row = lr.row - ul->row + 1;
+	d->col = lr.col - ul->col + 1;
+
+	log_debug("ul: %d/%d lr: %d/%d dim: %d/%d", ul->row, ul->col, lr.row, lr.col, d->row, d->col);
+}
+
+bool new_area_can_drop() {
+	s_point idx;
+	s_point d;
+
+	get_idx_dim(&idx, &d);
+
+	return game_area_can_drop(blocks, &idx, &d);
+}
+

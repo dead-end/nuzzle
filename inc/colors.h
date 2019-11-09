@@ -85,5 +85,7 @@ void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool
 
 // TODO: colors_get_random() => remove include
 void colors_init_random(t_block **blocks, const int rows, const int cols);
+// TODO: name _empty
+#define colors_get_color() (rand() % 4) + 1
 
 #endif /* INC_COLORS_H_ */
