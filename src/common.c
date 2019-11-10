@@ -47,19 +47,19 @@ void* xmalloc(const size_t size) {
  * a block.
  *****************************************************************************/
 
-bool is_inside_area(const s_point *a_pos, const s_point *a_dim, const s_point *a_size, const int row, const int col) {
+bool is_inside_area(const s_point *pos, const s_point *dim, const s_point *size, const int row, const int col) {
 
 	//
 	// Upper left corner
 	//
-	if (row < a_pos->row || col < a_pos->col) {
+	if (row < pos->row || col < pos->col) {
 		return false;
 	}
 
 	//
 	// lower right corner
 	//
-	if (row >= a_pos->row + a_dim->row * a_size->row || col >= a_pos->col + a_dim->col * a_size->col) {
+	if (row >= pos->row + dim->row * size->row || col >= pos->col + dim->col * size->col) {
 		return false;
 	}
 

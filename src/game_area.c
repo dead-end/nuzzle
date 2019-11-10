@@ -27,6 +27,8 @@
 
 #include "colors.h"
 #include "common.h"
+#include "blocks.h"
+//#include "info_area.h"
 
 #define GAME_SIZE 11
 
@@ -221,7 +223,7 @@ void game_area_init() {
 
 	s_point_set(&size, 2, 4);
 
-	blocks_init(blocks, dim.row, dim.col, color_none);
+	blocks_set(blocks, &dim, color_none);
 
 	log_debug("pos: %d/%d", pos.row, pos.col);
 }
@@ -244,14 +246,7 @@ void game_area_free() {
  *****************************************************************************/
 
 s_point game_area_get_size() {
-	s_point result;
-
-	result.row = dim.row * size.row;
-	result.col = dim.col * size.col;
-
-	log_debug("size row: %d col: %d", result.row, result.col);
-
-	return result;
+	return blocks_get_size(&dim, &size);
 }
 
 /******************************************************************************
@@ -269,8 +264,8 @@ void game_area_set_pos(const int row, const int col) {
  * does not mean that the pixel is inside the game area.
  *****************************************************************************/
 
-bool game_area_is_aligned(const s_point *pixel) {
-	return (pixel->row - pos.row) % size.row == 0 && (pixel->col - pos.col) % size.col == 0;
+bool game_area_is_aligned(const int row, const int col) {
+	return (row - pos.row) % size.row == 0 && (col - pos.col) % size.col == 0;
 }
 
 /******************************************************************************
@@ -279,7 +274,7 @@ bool game_area_is_aligned(const s_point *pixel) {
  * already marked.
  *****************************************************************************/
 
-void game_area_mark_neighbors(const int row, const int col, t_block color, int *num) {
+static void game_area_mark_neighbors(const int row, const int col, t_block color, int *num) {
 
 	//
 	// Ensure that we are on the game area.
@@ -322,37 +317,11 @@ void game_area_mark_neighbors(const int row, const int col, t_block color, int *
 }
 
 /******************************************************************************
- * The function removes all marked blocks from the game area. As a side effect
- * the marked area is reset.
- *****************************************************************************/
-
-void game_area_remove_marked() {
-
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
-
-			if (marks[row][col] > 0) {
-				blocks[row][col] = color_none;
-				marks[row][col] = 0;
-			}
-		}
-	}
-}
-
-/******************************************************************************
  * The function checks whether the current block is empty or not.
  *****************************************************************************/
 
 bool game_area_is_empty(const int row, const int col) {
 	return blocks[row][col] == color_none;
-}
-
-/******************************************************************************
- * The function resets the marked array.
- *****************************************************************************/
-
-void game_area_reset_marked() {
-	blocks_init(marks, dim.row, dim.col, 0);
 }
 
 /******************************************************************************
@@ -363,33 +332,56 @@ void game_area_set_color(const int row, const int col, t_block color) {
 	blocks[row][col] = color;
 }
 
-static bool check_block(const int row_start, const int col_start, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+bool game_area_can_drop_anywhere(t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+	return blocks_can_drop_anywhere(blocks, &dim, drop_blocks, drop_idx, drop_dim);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+// TODO: parameter order => ga_idx first or last
+bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
+	return blocks_drop(blocks, idx, drop_blocks, drop_idx, drop_dim, do_drop);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+//TODO: name
+// TODO: parameter order => ga_idx first or last
+int game_area_remove_blocks(t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
+	int total = 0;
+	int num;
+
+	t_block color;
 
 	for (int row = 0; row < drop_dim->row; row++) {
 		for (int col = 0; col < drop_dim->col; col++) {
-			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] != color_none && blocks[row_start + row][col_start + col] != color_none) {
-				return false;
+
+			color = drop_blocks[drop_idx->row + row][drop_idx->col + col];
+
+			if (color == color_none) {
+				log_debug("drop (used) empty: %d/%d", row, col);
+				continue;
+			}
+
+			num = 0;
+			game_area_mark_neighbors(ga_idx->row + row, ga_idx->col + col, color, &num);
+			log_debug("num: %d", num);
+
+			if (num < 4) {
+				blocks_set(marks, &dim, 0);
+
+			} else {
+				blocks_remove_marked(blocks, marks, &dim);
+				total += num;
 			}
 		}
 	}
 
-	log_debug("can drop at: %d/%d", row_start, col_start);
-
-	return true;
-}
-//TODO: wrong
-bool game_area_can_drop(t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
-
-	const int row_end = dim.row - drop_dim->row;
-	const int col_end = dim.col - drop_dim->col;
-
-	for (int row_start = 0; row_start < row_end; row_start++) {
-		for (int col_start = 0; col_start < col_end; col_start++) {
-			if (check_block(row_start, col_start, drop_blocks, drop_idx, drop_dim)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
+	return total;
 }

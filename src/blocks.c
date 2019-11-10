@@ -28,19 +28,6 @@
 #include "colors.h"
 
 /******************************************************************************
- * The function initializes a 2-dimensional array of blocks with a given value.
- *****************************************************************************/
-
-void blocks_init(t_block **blocks, const int rows, const int cols, const t_block value) {
-
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
-			blocks[row][col] = value;
-		}
-	}
-}
-
-/******************************************************************************
  * The function creates a 2-dimensional array of blocks.
  *****************************************************************************/
 
@@ -66,6 +53,38 @@ void blocks_free(t_block **blocks, const int rows) {
 	}
 
 	free(blocks);
+}
+
+/******************************************************************************
+ * The function initializes / sets a 2-dimensional array of blocks with a given
+ * value.
+ *****************************************************************************/
+
+void blocks_set(t_block **blocks, const s_point *dim, const t_block value) {
+
+	for (int row = 0; row < dim->row; row++) {
+		for (int col = 0; col < dim->col; col++) {
+			blocks[row][col] = value;
+		}
+	}
+}
+
+/******************************************************************************
+ * The function removes all marked blocks from the game area. As a side effect
+ * the marked area is reset.
+ *****************************************************************************/
+
+void blocks_remove_marked(t_block **blocks, t_block **marks, const s_point *dim) {
+
+	for (int row = 0; row < dim->row; row++) {
+		for (int col = 0; col < dim->col; col++) {
+
+			if (marks[row][col] > 0) {
+				blocks[row][col] = color_none;
+				marks[row][col] = 0;
+			}
+		}
+	}
 }
 
 /******************************************************************************
@@ -155,9 +174,9 @@ bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, co
 
 bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
 
-//
-// Compute the end index to ensure that the used area fits in the other.
-//
+	//
+	// Compute the end index to ensure that the used area fits in the other.
+	//
 	const int row_end = dim->row - drop_dim->row;
 	const int col_end = dim->col - drop_dim->col;
 
@@ -179,19 +198,16 @@ bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **dr
 }
 
 /******************************************************************************
- *
+ * The function returns a struct with the total size of the area.
  *****************************************************************************/
-// TODO: not used
-bool area_get_block(const s_point *pos, const s_point *dim, const s_point *size, const s_point *pixel, s_point *block) {
 
-	if (!is_inside_area(pos, dim, size, pixel->row, pixel->col)) {
-		return false;
-	}
+s_point blocks_get_size(const s_point *dim, const s_point *size) {
+	s_point result;
 
-	block->row = (pixel->row - pos->row) / size->row;
-	block->col = (pixel->col - pos->col) / size->col;
+	result.row = dim->row * size->row;
+	result.col = dim->col * size->col;
 
-	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block->row, block->col);
+	log_debug("size: %d/%d", result.row, result.col);
 
-	return true;
+	return result;
 }

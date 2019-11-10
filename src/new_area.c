@@ -143,25 +143,6 @@ static void get_offset() {
 }
 
 /******************************************************************************
- *
- *****************************************************************************/
-
-static bool get_index(const int row, const int col, s_point *idx) {
-	s_point pixel;
-
-	pixel.row = pos.row + row * size.row;
-	pixel.col = pos.col + col * size.col;
-
-	if (!game_area_contains(pixel.row, pixel.col)) {
-		return false;
-	}
-
-	game_area_get_block(&pixel, idx);
-
-	return true;
-}
-
-/******************************************************************************
  * The function initializes the new area.
  *****************************************************************************/
 
@@ -278,14 +259,7 @@ void new_area_process(const int event_row, const int event_col) {
  *****************************************************************************/
 
 s_point new_area_get_size() {
-	s_point result;
-
-	result.row = dim.row * size.row;
-	result.col = dim.col * size.col;
-
-	log_debug("size: %d/%d", result.row, result.col);
-
-	return result;
+	return blocks_get_size(&dim, &size);
 }
 
 /******************************************************************************
@@ -315,98 +289,102 @@ void new_area_set_pos(const int row, const int col) {
 /******************************************************************************
  *
  *****************************************************************************/
-// TODO: result => move to home, drop, drop and collapse => print
-// TODO: use : get_idx_dim
+
+static bool used_area_is_inside(const s_point *used_idx, const s_point *used_dim) {
+
+	const int ul_row = pos.row + used_idx->row * size.row;
+	const int ul_col = pos.col + used_idx->col * size.col;
+
+	if (!game_area_contains(ul_row, ul_col)) {
+		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
+		return false;
+	}
+
+	const int lr_row = ul_row + (used_dim->row - 1) * size.row;
+	const int lr_col = ul_col + (used_dim->col - 1) * size.col;
+
+	if (!game_area_contains(lr_row, lr_col)) {
+		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
+		return false;
+	}
+
+	log_debug_str("used area - is inside");
+
+	return true;
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
 bool new_area_is_dropped() {
 	s_point idx;
 
-	if (!game_area_is_aligned(&pos)) {
+	//
+	// Ensure that the blocks are aligned.
+	//
+	if (!game_area_is_aligned(pos.row, pos.col)) {
 		log_debug_str("New blocks are not aligned!");
 		return false;
 	}
 
-	//TODO: own function
+//	if (!game_area_is_aligned(pos.row, pos.col)) {
+//
+//		if (game_area_is_aligned(pos.row, pos.col + 1)) {
+//			pos.col++;
+//
+//		} else if (game_area_is_aligned(pos.row, pos.col - 1)) {
+//			pos.col--;
+//
+//		} else {
+//			log_debug_str("New blocks are not aligned!");
+//			return false;
+//		}
+//	}
+
 	//
-	// Ensure that are all none empty new blocks are inside the game area and
-	// that the game area block is empty.
+	// Compute the used area of the new blocks.
 	//
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
+	s_point used_idx, used_dim;
+	blocks_get_used_area(blocks, &dim, &used_idx, &used_dim);
 
-			//
-			// We only want to update non empty block.
-			//
-			if (blocks[row][col] == color_none) {
-				continue;
-			}
-
-			//
-			// Found a block that is not empty and outside.
-			//
-			if (!get_index(row, col, &idx)) {
-				return false;
-			}
-
-			if (!game_area_is_empty(idx.row, idx.col)) {
-				return false;
-			}
-		}
+	//
+	// Ensure that the used area is inside the game area.
+	//
+	if (!used_area_is_inside(&used_idx, &used_dim)) {
+		return false;
 	}
 
 	//
-	// Drop
+	// Compute the upper left corner of the used area.
 	//
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
+	s_point pixel;
+	pixel.row = block_upper_left(pos.row, size.row, used_idx.row);
+	pixel.col = block_upper_left(pos.col, size.col, used_idx.col);
 
-			//
-			// We only want to update non empty block.
-			//
-			if (blocks[row][col] == color_none) {
-				continue;
-			}
+	//
+	// Compute the corresponding index in the game area.
+	//
+	game_area_get_block(&pixel, &idx);
 
-			if (!get_index(row, col, &idx)) {
-				continue;
-			}
-
-			game_area_set_color(idx.row, idx.col, blocks[row][col]);
-		}
+	//
+	// Check if the used area can be dropped at the game area position.
+	//
+	if (!game_area_drop(blocks, &idx, &used_idx, &used_dim, false)) {
+		return false;
 	}
 
-	int num;
-	bool collapsed = false;
 	//
+	// Drop the used area.
 	//
+	game_area_drop(blocks, &idx, &used_idx, &used_dim, true);
+
 	//
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
-
-			//
-			// We only want to update non empty block.
-			//
-			if (blocks[row][col] == color_none) {
-				continue;
-			}
-
-			if (!get_index(row, col, &idx)) {
-				continue;
-			}
-
-			num = 0;
-			game_area_mark_neighbors(idx.row, idx.col, blocks[row][col], &num);
-			if (num < 4) {
-				game_area_reset_marked();
-			} else {
-				info_area_add_to_score(num);
-				game_area_remove_marked();
-				collapsed = true;
-			}
-		}
-	}
-
-	// TODO: return ???
-	if (collapsed) {
+	// Remove adjacent blocks if possible.
+	//
+	const int num_removed = game_area_remove_blocks(blocks, &idx, &used_idx, &used_dim);
+	if (num_removed >= 4) {
+		info_area_add_to_score(num_removed);
 		game_area_print();
 	}
 
@@ -415,53 +393,15 @@ bool new_area_is_dropped() {
 	return true;
 }
 
-static void get_idx_dim(s_point *ul, s_point *d) {
-
-	s_point lr;
-
-	lr.row = -1;
-	lr.col = -1;
-
-	ul->row = dim.row;
-	ul->col = dim.col;
-
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
-
-			if (blocks[row][col] == color_none) {
-				continue;
-			}
-
-			if (ul->row > row) {
-				ul->row = row;
-			}
-
-			if (ul->col > col) {
-				ul->col = col;
-			}
-
-			if (lr.row < row) {
-				lr.row = row;
-			}
-
-			if (lr.col < col) {
-				lr.col = col;
-			}
-		}
-	}
-
-	d->row = lr.row - ul->row + 1;
-	d->col = lr.col - ul->col + 1;
-
-	log_debug("ul: %d/%d lr: %d/%d dim: %d/%d", ul->row, ul->col, lr.row, lr.col, d->row, d->col);
-}
+/******************************************************************************
+ *
+ *****************************************************************************/
 
 bool new_area_can_drop() {
-	s_point idx;
-	s_point d;
+	s_point used_idx, used_dim;
 
-	get_idx_dim(&idx, &d);
+	blocks_get_used_area(blocks, &dim, &used_idx, &used_dim);
 
-	return game_area_can_drop(blocks, &idx, &d);
+	return game_area_can_drop_anywhere(blocks, &used_idx, &used_dim);
 }
 
