@@ -25,6 +25,8 @@
 #ifndef INC_BLOCKS_H_
 #define INC_BLOCKS_H_
 
+#include "common.h"
+
 //TODO: what is the correct type and name??? color??? t_color??
 //typedef unsigned char t_block;
 typedef char t_block;
@@ -36,5 +38,9 @@ t_block** blocks_create(const int rows, const int cols);
 void blocks_free(t_block **blocks, const int rows);
 
 #define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
+
+void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_idx, s_point *used_dim);
+
+bool blocks_can_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
 
 #endif /* INC_BLOCKS_H_ */
