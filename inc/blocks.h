@@ -43,4 +43,6 @@ void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_id
 
 bool blocks_can_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
 
+bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
+
 #endif /* INC_BLOCKS_H_ */
