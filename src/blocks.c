@@ -120,17 +120,25 @@ void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_id
 }
 
 /******************************************************************************
- * The function check whether the used area can be dropped on the other area.
+ * The function can be used to check or to perform a drop at a given position.
  * It is assumed that the used area fits in the block area.
  *****************************************************************************/
 
-bool blocks_can_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
 
 	for (int row = 0; row < drop_dim->row; row++) {
 		for (int col = 0; col < drop_dim->col; col++) {
 
-			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] != color_none && blocks[idx->row + row][idx->col + col] != color_none) {
+			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] == color_none) {
+				continue;
+			}
+
+			if (blocks[idx->row + row][idx->col + col] != color_none) {
 				return false;
+			}
+
+			if (do_drop) {
+				blocks[idx->row + row][idx->col + col] = drop_blocks[drop_idx->row + row][drop_idx->col + col];
 			}
 		}
 	}
@@ -147,9 +155,9 @@ bool blocks_can_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks
 
 bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
 
-	//
-	// Compute the end index to ensure that the used area fits in the other.
-	//
+//
+// Compute the end index to ensure that the used area fits in the other.
+//
 	const int row_end = dim->row - drop_dim->row;
 	const int col_end = dim->col - drop_dim->col;
 
@@ -161,11 +169,29 @@ bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **dr
 			//
 			// Check if the used area can be dropped at this place.
 			//
-			if (blocks_can_drop(blocks, &start, drop_blocks, drop_idx, drop_dim)) {
+			if (blocks_drop(blocks, &start, drop_blocks, drop_idx, drop_dim, false)) {
 				return true;
 			}
 		}
 	}
 
 	return false;
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+// TODO: not used
+bool area_get_block(const s_point *pos, const s_point *dim, const s_point *size, const s_point *pixel, s_point *block) {
+
+	if (!is_inside_area(pos, dim, size, pixel->row, pixel->col)) {
+		return false;
+	}
+
+	block->row = (pixel->row - pos->row) / size->row;
+	block->col = (pixel->col - pos->col) / size->col;
+
+	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block->row, block->col);
+
+	return true;
 }
