@@ -234,7 +234,9 @@ int main() {
 
 			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
 
-				new_area_process(event.y, event.x);
+				if (!new_area_same_pos(event.y, event.x)) {
+					new_area_process(event.y, event.x);
+				}
 
 				pressed = true;
 			}

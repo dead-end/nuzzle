@@ -207,21 +207,21 @@ void new_area_fill() {
 }
 
 /******************************************************************************
+ * The function check whether the position changed or not.
+ *****************************************************************************/
+
+bool new_area_same_pos(const int event_row, const int event_col) {
+
+	const bool result = event_row == pos.row && event_col == pos.col;
+	log_debug("Position %d/%d  is the same: %d", event_row, event_col, result);
+	return result;
+}
+
+/******************************************************************************
  * The function processes a new mouse event.
  *****************************************************************************/
 
 void new_area_process(const int event_row, const int event_col) {
-
-	//
-	// If the position of the mouse event is the same as before, we do not have
-	// to do anything.
-	//
-	if (event_row == pos.row && event_col == pos.col) {
-		log_debug("Position is the same - row: %d col: %d", event_row, event_col);
-		return;
-	}
-
-	log_debug("Processing event row: %d col: %d", event_row, event_col);
 
 	new_area_process_blocks(DO_DELETE);
 

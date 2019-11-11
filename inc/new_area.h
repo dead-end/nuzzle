@@ -52,6 +52,8 @@ s_point new_area_get_size();
 
 void new_area_set_pos(const int row, const int col);
 
+bool new_area_same_pos(const int event_row, const int event_col);
+
 bool new_area_is_dropped();
 
 bool new_area_can_drop();
