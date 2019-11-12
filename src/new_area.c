@@ -68,14 +68,26 @@ static s_point offset;
 #define OFFSET_NOT_SET -1
 
 /******************************************************************************
- *
+ * The function processes a new area block, which means printing or deleting.
+ * Deleting means that we print a whitespace, which results in showing the
+ * background color.
  *****************************************************************************/
 
-static void do_print_block(const int blk_pixel_row, const int blk_pixel_col, const t_block color) {
+static void do_process_block(const s_point *na_upper_left, const t_block na_color, const bool do_print) {
 	s_point pixel;
+	t_block color;
+	wchar_t chr;
 
-	for (pixel.row = blk_pixel_row; pixel.row < blk_pixel_row + size.row; pixel.row++) {
-		for (pixel.col = blk_pixel_col; pixel.col < blk_pixel_col + size.col; pixel.col++) {
+	if (do_print) {
+		color = na_color;
+		chr = BLOCK_FULL;
+	} else {
+		color = color_none;
+		chr = BLOCK_EMPTY;
+	}
+
+	for (pixel.row = na_upper_left->row; pixel.row < na_upper_left->row + size.row; pixel.row++) {
+		for (pixel.col = na_upper_left->col; pixel.col < na_upper_left->col + size.col; pixel.col++) {
 
 			if (game_area_contains(pixel.row, pixel.col)) {
 				game_area_print_pixel(&pixel, color);
@@ -84,30 +96,7 @@ static void do_print_block(const int blk_pixel_row, const int blk_pixel_col, con
 				info_area_print_pixel(&pixel, color);
 
 			} else {
-				bg_area_print_pixel(&pixel, color, BLOCK_FULL);
-			}
-		}
-	}
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-static void do_delete_block(const int blk_pixel_row, const int blk_pixel_col, const t_block color) {
-	s_point pixel;
-
-	for (pixel.row = blk_pixel_row; pixel.row < blk_pixel_row + size.row; pixel.row++) {
-		for (pixel.col = blk_pixel_col; pixel.col < blk_pixel_col + size.col; pixel.col++) {
-
-			if (game_area_contains(pixel.row, pixel.col)) {
-				game_area_print_pixel(&pixel, color_none);
-
-			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(&pixel, color_none);
-
-			} else {
-				bg_area_print_pixel(&pixel, color, BLOCK_EMPTY);
+				bg_area_print_pixel(&pixel, na_color, chr);
 			}
 		}
 	}
@@ -172,8 +161,8 @@ void new_area_free() {
  *****************************************************************************/
 
 void new_area_process_blocks(const bool do_print) {
-	int pixel_row, pixel_col;
 
+	s_point na_upper_left;
 	t_block color;
 
 	for (int row = 0; row < dim.row; row++) {
@@ -183,16 +172,16 @@ void new_area_process_blocks(const bool do_print) {
 				continue;
 			}
 
-			pixel_row = block_upper_left(pos.row, size.row, row);
-			pixel_col = block_upper_left(pos.col, size.col, col);
+			na_upper_left.row = block_upper_left(pos.row, size.row, row);
+			na_upper_left.col = block_upper_left(pos.col, size.col, col);
 
 			color = blocks[row][col];
 
 			if (do_print) {
-				do_print_block(pixel_row, pixel_col, color);
+				do_process_block(&na_upper_left, color, DO_PRINT);
 
 			} else {
-				do_delete_block(pixel_row, pixel_col, color);
+				do_process_block(&na_upper_left, color, DO_DELETE);
 			}
 		}
 	}
@@ -222,8 +211,6 @@ bool new_area_same_pos(const int event_row, const int event_col) {
  *****************************************************************************/
 
 void new_area_process(const int event_row, const int event_col) {
-
-	new_area_process_blocks(DO_DELETE);
 
 	//
 	// If the row or col is negative, we move to the home position.

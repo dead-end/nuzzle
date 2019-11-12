@@ -213,6 +213,11 @@ int main() {
 
 			if (event.bstate & BUTTON1_RELEASED) {
 
+				//
+				// Dropping means that the game area is updated. If the new
+				// area is deleted, which means that the foreground is deleted,
+				// the background will be visible.
+				//
 				if (new_area_is_dropped()) {
 
 					//
@@ -226,6 +231,8 @@ int main() {
 					if (!new_area_can_drop()) {
 						log_debug_str("ENDDDDDDDDDDDDD");
 					}
+				} else {
+					new_area_process_blocks(DO_DELETE);
 				}
 
 				new_area_process(HOME_ROW, HOME_COL);
@@ -235,6 +242,9 @@ int main() {
 			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
 
 				if (!new_area_same_pos(event.y, event.x)) {
+
+					new_area_process_blocks(DO_DELETE);
+
 					new_area_process(event.y, event.x);
 				}
 
