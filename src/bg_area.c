@@ -37,6 +37,4 @@ void bg_area_print_pixel(const s_point *pixel, const enum e_colors color, const 
 	colors_bg_attr(color);
 
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
-
-	log_debug("row: %d col: %d color: %d", pixel->row, pixel->col, color);
 }
