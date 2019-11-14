@@ -30,11 +30,19 @@
  * Define the output data.
  *****************************************************************************/
 
-#define ROWS 3
+#define ROWS 4
 
 #define COLS 12
 
 static char data[ROWS][COLS + 1];
+
+#define IDX_HEAD 0
+
+#define IDX_HIGH 1
+
+#define IDX_SCORE 2
+
+#define IDX_STATUS 3
 
 /******************************************************************************
  * The variables contain the score informations.
@@ -57,16 +65,20 @@ static s_point pos;
 void info_area_init(const int hs) {
 	high_score = hs;
 
-	if (snprintf(data[0], COLS + 1, "nuzzle 0.1.0") >= COLS + 1) {
-		log_exit("Truncated: %s", data[0]);
+	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle 0.1.0") >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_HEAD]);
 	}
 
-	if (snprintf(data[1], COLS + 1, "high: %6d", high_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[1]);
+	if (snprintf(data[IDX_HIGH], COLS + 1, "high: %6d", high_score) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_HIGH]);
 	}
 
-	if (snprintf(data[2], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[2]);
+	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_SCORE]);
+	}
+
+	if (snprintf(data[IDX_STATUS], COLS + 1, " ") >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_STATUS]);
 	}
 }
 
@@ -79,8 +91,8 @@ void info_area_add_to_score(const int add_2_score) {
 
 	cur_score += add_2_score;
 
-	if (snprintf(data[2], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[0]);
+	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_SCORE]);
 	}
 
 	info_area_print();
@@ -174,4 +186,20 @@ void info_area_print_pixel(const s_point *pixel, enum e_colors color) {
 	colors_info_area_attr(color);
 
 	mvprintw(pixel->row, pixel->col, "%c", data[row][col]);
+}
+
+/******************************************************************************
+ * The function prints the status message with padding characters. This is a
+ * first version, to show the end of the game.
+ *****************************************************************************/
+
+void info_area_set_msg(char *msg) {
+
+	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, msg) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_STATUS]);
+	}
+
+	attrset(COLOR_PAIR(CP_DEFAULT));
+
+	mvprintw(pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
 }

@@ -42,4 +42,6 @@ bool info_area_contains(const s_point *pixel);
 
 void info_area_print_pixel(const s_point *pixel, enum e_colors color);
 
+void info_area_set_msg(char *m);
+
 #endif /* INC_INFO_AREA_H_ */
