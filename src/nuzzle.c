@@ -224,15 +224,18 @@ int main() {
 					// Delete the current none-empty blocks. After calling
 					// new_area_fill(), the non-empty blocks may be different.
 					//
-					new_area_process_blocks(DO_DELETE);
+					//new_area_process_blocks(DO_DELETE);
+					new_area_delete();
 
 					new_area_fill();
 
 					if (!new_area_can_drop()) {
 						log_debug_str("ENDDDDDDDDDDDDD");
+						info_area_set_msg("End");
 					}
 				} else {
-					new_area_process_blocks(DO_DELETE);
+					//new_area_process_blocks(DO_DELETE);
+					new_area_delete();
 				}
 
 				new_area_process(HOME_ROW, HOME_COL);

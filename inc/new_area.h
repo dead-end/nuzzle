@@ -36,10 +36,6 @@ void new_area_free();
 
 void new_area_fill();
 
-//void new_area_print();
-//
-//void new_area_delete();
-
 #define DO_PRINT true
 
 #define DO_DELETE false
@@ -57,5 +53,7 @@ bool new_area_same_pos(const int event_row, const int event_col);
 bool new_area_is_dropped();
 
 bool new_area_can_drop();
+
+void new_area_delete();
 
 #endif /* INC_NEW_AREA_H_ */

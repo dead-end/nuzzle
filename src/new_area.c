@@ -67,6 +67,8 @@ static s_point offset;
 
 #define OFFSET_NOT_SET -1
 
+#define ADJUST 1
+
 /******************************************************************************
  * The function processes a new area block, which means printing or deleting.
  * Deleting means that we print a whitespace, which results in showing the
@@ -96,10 +98,48 @@ static void do_process_block(const s_point *na_upper_left, const t_block na_colo
 				info_area_print_pixel(&pixel, color);
 
 			} else {
-				bg_area_print_pixel(&pixel, na_color, chr);
+				bg_area_print_pixel(&pixel, color, chr);
 			}
 		}
 	}
+}
+
+/******************************************************************************
+ * The function removes the foreground character in a given area and replaces
+ * it with a space.
+ *****************************************************************************/
+
+static void delete_area(const s_point *area_pos, const s_point *area_size) {
+	s_point pixel;
+
+	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
+		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
+
+			if (game_area_contains(pixel.row, pixel.col)) {
+				game_area_print_pixel(&pixel, color_none);
+
+			} else if (info_area_contains(&pixel)) {
+				info_area_print_pixel(&pixel, color_none);
+
+			} else {
+				bg_area_print_pixel(&pixel, color_none, BLOCK_EMPTY);
+			}
+		}
+	}
+}
+
+/******************************************************************************
+ * The function removes the foreground character in an area around the new
+ * area. If the block is not aligned at the time of dropping, the position is
+ * adjusted. This adjustment is added on both sides of the area. This shifts
+ * the position to the left and increases the size with twice the ADJUST size.
+ *****************************************************************************/
+
+void new_area_delete() {
+	s_point area_pos = { .row = pos.row, .col = pos.col - ADJUST };
+	s_point area_size = { .row = size.row * dim.row, .col = size.col * dim.col + 2 * ADJUST };
+
+	delete_area(&area_pos, &area_size);
 }
 
 /******************************************************************************
@@ -310,24 +350,24 @@ bool new_area_is_dropped() {
 	//
 	// Ensure that the blocks are aligned.
 	//
-	if (!game_area_is_aligned(pos.row, pos.col)) {
-		log_debug_str("New blocks are not aligned!");
-		return false;
-	}
-
 //	if (!game_area_is_aligned(pos.row, pos.col)) {
-//
-//		if (game_area_is_aligned(pos.row, pos.col + 1)) {
-//			pos.col++;
-//
-//		} else if (game_area_is_aligned(pos.row, pos.col - 1)) {
-//			pos.col--;
-//
-//		} else {
-//			log_debug_str("New blocks are not aligned!");
-//			return false;
-//		}
+//		log_debug_str("New blocks are not aligned!");
+//		return false;
 //	}
+
+	if (!game_area_is_aligned(pos.row, pos.col)) {
+
+		if (game_area_is_aligned(pos.row, pos.col + ADJUST)) {
+			pos.col += ADJUST;
+
+		} else if (game_area_is_aligned(pos.row, pos.col - ADJUST)) {
+			pos.col -= ADJUST;
+
+		} else {
+			log_debug_str("New blocks are not aligned!");
+			return false;
+		}
+	}
 
 	//
 	// Compute the used area of the new blocks.
