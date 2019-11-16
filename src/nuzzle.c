@@ -27,7 +27,6 @@
 #include <time.h>
 
 #include "info_area.h"
-#include "game_area.h"
 #include "bg_area.h"
 #include "game.h"
 
