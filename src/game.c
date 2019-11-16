@@ -33,6 +33,12 @@
 
 #include "s_area.h"
 
+#define HOME_ROW -1
+#define HOME_COL -1
+
+#define DO_PRINT true
+#define DO_DELETE false
+
 /******************************************************************************
  *
  *****************************************************************************/
@@ -59,37 +65,12 @@ static s_area game_area;
 #define new_area_fill(a) colors_init_random((a)->blocks, (a)->dim.row, (a)->dim.col);
 
 /******************************************************************************
- *
- *****************************************************************************/
-
-s_point get_game_size() {
-	return blocks_get_size(&game_area.dim, &game_area.size);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void print_game_area() {
-
-	game_area_print(&game_area);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void game_area_set_pos(const int row, const int col) {
-	s_point_set(&game_area.pos, row, col);
-}
-
-/******************************************************************************
  * The function prints an area with a foreground character and color. If the
  * character is an empty block and the color is none, the foreground of the
  * area is deleted.
  *****************************************************************************/
 
-static void area_print_foreground(const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
+static void game_print_foreground(const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
 	s_point pixel;
 
 	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
@@ -119,7 +100,7 @@ static void new_area_delete(const s_area *new_area) {
 	s_point area_pos = { .row = new_area->pos.row, .col = new_area->pos.col - ADJUST };
 	s_point area_size = { .row = new_area->size.row * new_area->dim.row, .col = new_area->size.col * new_area->dim.col + 2 * ADJUST };
 
-	area_print_foreground(&area_pos, &area_size, color_none, BLOCK_EMPTY);
+	game_print_foreground(&area_pos, &area_size, color_none, BLOCK_EMPTY);
 }
 
 /******************************************************************************
@@ -152,41 +133,11 @@ static void get_offset() {
 }
 
 /******************************************************************************
- * The function initializes the new area.
- *****************************************************************************/
-
-void new_area_init() {
-
-	game_area_init(&game_area);
-
-	s_point_set(&new_area.size, 2, 4);
-
-	s_point_set(&new_area.dim, 3, 3);
-
-	s_point_set(&offset, -1, -1);
-
-	new_area.blocks = blocks_create(new_area.dim.row, new_area.dim.col);
-
-	new_area_fill(&new_area);
-}
-
-/******************************************************************************
- * The function frees the allocated memory.
- *****************************************************************************/
-
-void new_area_free() {
-
-	game_area_free(&game_area);
-
-	blocks_free(new_area.blocks, new_area.dim.row);
-}
-
-/******************************************************************************
  * The function processes all blocks. For each block, the upper left pixel
  * (terminal character) is computed.
  *****************************************************************************/
 
-void new_area_process_blocks(const bool do_print) {
+static void new_area_process_blocks(const bool do_print) {
 	s_point na_upper_left;
 
 	for (int row = 0; row < new_area.dim.row; row++) {
@@ -200,10 +151,10 @@ void new_area_process_blocks(const bool do_print) {
 			na_upper_left.col = block_upper_left(new_area.pos.col, new_area.size.col, col);
 
 			if (do_print) {
-				area_print_foreground(&na_upper_left, &new_area.size, new_area.blocks[row][col], BLOCK_FULL);
+				game_print_foreground(&na_upper_left, &new_area.size, new_area.blocks[row][col], BLOCK_FULL);
 
 			} else {
-				area_print_foreground(&na_upper_left, &new_area.size, color_none, BLOCK_EMPTY);
+				game_print_foreground(&na_upper_left, &new_area.size, color_none, BLOCK_EMPTY);
 			}
 		}
 	}
@@ -232,9 +183,9 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
 
 		if (offset.row == OFFSET_NOT_SET && offset.col == OFFSET_NOT_SET) {
 			if (s_area_is_inside(new_area, event_row, event_col)) {
-				//if (is_inside_area(&new_area.pos, &new_area.dim, &new_area.size, event_row, event_col)) {
 				offset.row = event_row - home.row;
 				offset.col = event_col - home.col;
+
 			} else {
 				get_offset();
 			}
@@ -247,38 +198,6 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
 	}
 
 	new_area_process_blocks(DO_PRINT);
-}
-
-/******************************************************************************
- * The function returns a struct with the total size of the new area.
- *****************************************************************************/
-
-s_point new_area_get_size() {
-	return blocks_get_size(&new_area.dim, &new_area.size);
-}
-
-/******************************************************************************
- * The function sets the position of the new area. This is done on the
- * initialization and on resizing the terminal.
- *****************************************************************************/
-
-void new_area_set_pos(const int row, const int col) {
-
-	//
-	// The home position is the initial position and changes only on resizing
-	// the terminal
-	//
-	home.row = row;
-	home.col = col;
-
-	//
-	// The initial position is the home position. It can change by the mouse
-	// motion.
-	//
-	new_area.pos.row = home.row;
-	new_area.pos.col = home.col;
-
-	log_debug("position: %d/%d", new_area.pos.row, new_area.pos.col);
 }
 
 /******************************************************************************
@@ -413,6 +332,100 @@ static bool new_area_can_drop() {
 // INTERFACE
 
 /******************************************************************************
+ * The function initializes the new area.
+ *****************************************************************************/
+
+void game_init() {
+
+	game_area_init(&game_area);
+
+	s_point_set(&new_area.size, 2, 4);
+
+	s_point_set(&new_area.dim, 3, 3);
+
+	s_point_set(&offset, -1, -1);
+
+	new_area.blocks = blocks_create(new_area.dim.row, new_area.dim.col);
+
+	new_area_fill(&new_area);
+}
+
+/******************************************************************************
+ * The function frees the allocated memory.
+ *****************************************************************************/
+
+void game_free() {
+
+	game_area_free(&game_area);
+
+	blocks_free(new_area.blocks, new_area.dim.row);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+s_point game_get_game_area_size() {
+	return blocks_get_size(&game_area.dim, &game_area.size);
+}
+
+/******************************************************************************
+ * The function returns a struct with the total size of the new area.
+ *****************************************************************************/
+
+s_point game_get_new_area_size() {
+	return blocks_get_size(&new_area.dim, &new_area.size);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_set_game_area_pos(const int row, const int col) {
+	s_point_set(&game_area.pos, row, col);
+}
+
+/******************************************************************************
+ * The function sets the position of the new area. This is done on the
+ * initialization and on resizing the terminal.
+ *****************************************************************************/
+
+void game_set_new_area_pos(const int row, const int col) {
+
+	//
+	// The home position is the initial position and changes only on resizing
+	// the terminal
+	//
+	home.row = row;
+	home.col = col;
+
+	//
+	// The initial position is the home position. It can change by the mouse
+	// motion.
+	//
+	new_area.pos.row = home.row;
+	new_area.pos.col = home.col;
+
+	log_debug("position: %d/%d", new_area.pos.row, new_area.pos.col);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_print_game_area() {
+	game_area_print(&game_area);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_print_new_area() {
+	new_area_process_blocks(DO_PRINT);
+}
+
+/******************************************************************************
  *
  *****************************************************************************/
 
@@ -444,12 +457,7 @@ void game_process_event_release(const int row, const int col) {
 		// Delete the current none-empty blocks. After calling
 		// new_area_fill(), the non-empty blocks may be different.
 		//
-		//new_area_process_blocks(DO_DELETE);
 		new_area_delete(&new_area);
-
-		//new_area_fill();
-
-		//colors_init_random(new_area.blocks, new_area.dim.row, new_area.dim.col);
 
 		new_area_fill(&new_area);
 
@@ -458,7 +466,6 @@ void game_process_event_release(const int row, const int col) {
 			info_area_set_msg("End");
 		}
 	} else {
-		//new_area_process_blocks(DO_DELETE);
 		new_area_delete(&new_area);
 	}
 

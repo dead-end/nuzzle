@@ -43,7 +43,7 @@ static void exit_callback() {
 	//
 	//game_area_free();
 
-	new_area_free();
+	game_free();
 
 	//
 	// Disable mouse movement events, as l = low
@@ -67,9 +67,9 @@ void do_center() {
 	//
 	// Get the sizes of the different areas.
 	//
-	const s_point game_size = get_game_size();
+	const s_point game_size = game_get_game_area_size();
 
-	const s_point new_size = new_area_get_size();
+	const s_point new_size = game_get_new_area_size();
 
 	const s_point info_size = info_area_get_size();
 
@@ -87,11 +87,11 @@ void do_center() {
 
 	log_debug("upper left row: %d col: %d", ul_row, ul_col);
 
-	game_area_set_pos(ul_row, ul_col);
+	game_set_game_area_pos(ul_row, ul_col);
+
+	game_set_new_area_pos(ul_row + info_size.row + DELIM, ul_col + game_size.col + DELIM);
 
 	info_area_set_pos(ul_row, ul_col + game_size.col + DELIM);
-
-	new_area_set_pos(ul_row + info_size.row + DELIM, ul_col + game_size.col + DELIM);
 
 	//
 	// Delete the old content.
@@ -101,11 +101,11 @@ void do_center() {
 	//
 	// Print the areas at the updated position
 	//
-	print_game_area();
+	game_print_game_area();
+
+	game_print_new_area();
 
 	info_area_print();
-
-	new_area_process_blocks(DO_PRINT);
 
 	//
 	// Call refresh to show the result
@@ -162,7 +162,7 @@ int main() {
 
 	colors_init();
 
-	new_area_init();
+	game_init();
 
 	info_area_init(0);
 

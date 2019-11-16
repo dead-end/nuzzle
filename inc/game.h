@@ -27,32 +27,21 @@
 
 #include "common.h"
 
-#define HOME_ROW -1
-#define HOME_COL -1
+void game_init();
 
-void new_area_init();
+void game_free();
 
-void new_area_free();
+s_point game_get_game_area_size();
 
-void new_area_fill();
+s_point game_get_new_area_size();
 
-#define DO_PRINT true
+void game_set_game_area_pos(const int row, const int col);
 
-#define DO_DELETE false
+void game_set_new_area_pos(const int row, const int col);
 
-void new_area_process_blocks(const bool do_print);
+void game_print_game_area();
 
-s_point new_area_get_size();
-
-void new_area_set_pos(const int row, const int col);
-
-void game_area_set_pos(const int row, const int col);
-
-s_point get_game_size();
-
-void print_game_area();
-
-// -----------------------------------
+void game_print_new_area();
 
 void game_process_event_pressed(const int row, const int col);
 
