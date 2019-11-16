@@ -29,7 +29,7 @@
 #include "info_area.h"
 #include "game_area.h"
 #include "bg_area.h"
-#include "new_area.h"
+#include "game.h"
 
 /******************************************************************************
  * The exit callback function resets the terminal and frees the memory. This is

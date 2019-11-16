@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 
-#include "new_area.h"
+#include "game.h"
+
 #include "game_area.h"
 #include "info_area.h"
 #include "bg_area.h"

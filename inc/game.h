@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef INC_NEW_AREA_H_
-#define INC_NEW_AREA_H_
+#ifndef INC_GAME_H_
+#define INC_GAME_H_
 
 #include "common.h"
 
@@ -58,4 +58,4 @@ void game_process_event_pressed(const int row, const int col);
 
 void game_process_event_release(const int row, const int col);
 
-#endif /* INC_NEW_AREA_H_ */
+#endif /* INC_GAME_H_ */
