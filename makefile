@@ -54,10 +54,11 @@ LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm
 SRC_LIBS = \
 	$(SRC_DIR)/common.c \
 	$(SRC_DIR)/colors.c \
-	$(SRC_DIR)/s_area.c \
 	$(SRC_DIR)/info_area.c \
 	$(SRC_DIR)/bg_area.c \
-	$(SRC_DIR)/game_area.c \
+	$(SRC_DIR)/game.c \
+	$(SRC_DIR)/blocks.c \
+	$(SRC_DIR)/s_area.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
