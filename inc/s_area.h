@@ -104,4 +104,10 @@ void s_area_get_used_area(s_area *area, s_used_area *used_area);
 
 bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area);
 
+bool s_area_used_area_is_inside(const s_area *area, const s_used_area *used_area);
+
+bool s_area_drop(s_area *area, const s_point *idx, s_used_area *used_area, const bool do_drop);
+
+int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *used_area, t_block **marks);
+
 #endif /* INC_S_AREA_H_ */

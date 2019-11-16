@@ -304,7 +304,11 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
 			//
 			// Check if the used area can be dropped at this place.
 			//
-			if (blocks_drop(area->blocks, &start, used_area->area->blocks, &used_area->idx, &used_area->dim, false)) {
+			// TODO: move
+//			if (blocks_drop(area->blocks, &start, used_area->area->blocks, &used_area->idx, &used_area->dim, false)) {
+//				return true;
+//			}
+			if (s_area_drop(area, &start, used_area, false)) {
 				return true;
 			}
 		}
@@ -312,3 +316,98 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
 
 	return false;
 }
+/******************************************************************************
+ * The function check whether the used area can be dropped anywhere on the
+ * other area.
+ *****************************************************************************/
+//TODO: comments
+bool s_area_used_area_is_inside(const s_area *area, const s_used_area *used_area) {
+
+	const int ul_row = area->pos.row + used_area->idx.row * area->size.row;
+	const int ul_col = area->pos.col + used_area->idx.col * area->size.col;
+
+	if (!s_area_is_inside(area, ul_row, ul_col)) {
+		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
+		return false;
+	}
+
+	const int lr_row = ul_row + (used_area->dim.row - 1) * area->size.row;
+	const int lr_col = ul_col + (used_area->dim.col - 1) * area->size.col;
+
+	if (!s_area_is_inside(area, lr_row, lr_col)) {
+		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
+		return false;
+	}
+
+	log_debug_str("used area - is inside");
+
+	return true;
+}
+
+/******************************************************************************
+ * The function can be used to check or to perform a drop at a given position.
+ * It is assumed that the used area fits in the block area.
+ *****************************************************************************/
+//TODO: comments
+bool s_area_drop(s_area *area, const s_point *idx, s_used_area *used_area, const bool do_drop) {
+
+	for (int row = 0; row < used_area->dim.row; row++) {
+		for (int col = 0; col < used_area->dim.col; col++) {
+
+			if (used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col] == color_none) {
+				continue;
+			}
+
+			if (area->blocks[idx->row + row][idx->col + col] != color_none) {
+				return false;
+			}
+
+			if (do_drop) {
+				area->blocks[idx->row + row][idx->col + col] = used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col];
+			}
+		}
+	}
+
+	log_debug("can drop at: %d/%d", idx->row, idx->col);
+
+	return true;
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+//TODO: name
+// TODO: parameter order => ga_idx first or last
+int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *used_area, t_block **marks) {
+	int total = 0;
+	int num;
+
+	t_block color;
+
+	for (int row = 0; row < used_area->dim.row; row++) {
+		for (int col = 0; col < used_area->dim.col; col++) {
+
+			color = used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col];
+
+			if (color == color_none) {
+				log_debug("drop (used) empty: %d/%d", row, col);
+				continue;
+			}
+
+			num = 0;
+			s_area_mark_neighbors(game_area, marks, ga_idx->row + row, ga_idx->col + col, color, &num);
+			log_debug("num: %d", num);
+
+			if (num < 4) {
+				blocks_set(marks, &game_area->dim, 0);
+
+			} else {
+				s_area_remove_marked(game_area, marks);
+				total += num;
+			}
+		}
+	}
+
+	return total;
+}
+

@@ -156,31 +156,30 @@ bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, co
  * other area.
  *****************************************************************************/
 
-bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
-
-	//
-	// Compute the end index to ensure that the used area fits in the other.
-	//
-	const int row_end = dim->row - drop_dim->row;
-	const int col_end = dim->col - drop_dim->col;
-
-	s_point start;
-
-	for (start.row = 0; start.row < row_end; start.row++) {
-		for (start.col = 0; start.col < col_end; start.col++) {
-
-			//
-			// Check if the used area can be dropped at this place.
-			//
-			if (blocks_drop(blocks, &start, drop_blocks, drop_idx, drop_dim, false)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
+//bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+//
+//	//
+//	// Compute the end index to ensure that the used area fits in the other.
+//	//
+//	const int row_end = dim->row - drop_dim->row;
+//	const int col_end = dim->col - drop_dim->col;
+//
+//	s_point start;
+//
+//	for (start.row = 0; start.row < row_end; start.row++) {
+//		for (start.col = 0; start.col < col_end; start.col++) {
+//
+//			//
+//			// Check if the used area can be dropped at this place.
+//			//
+//			if (blocks_drop(blocks, &start, drop_blocks, drop_idx, drop_dim, false)) {
+//				return true;
+//			}
+//		}
+//	}
+//
+//	return false;
+//}
 /******************************************************************************
  * The function returns a struct with the total size of the area.
  *****************************************************************************/

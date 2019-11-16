@@ -171,43 +171,43 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
 }
 
-/******************************************************************************
- *
- *****************************************************************************/
-//TODO: name
-// TODO: parameter order => ga_idx first or last
-int game_area_remove_blocks(s_area *game_area, t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
-	int total = 0;
-	int num;
-
-	t_block color;
-
-	for (int row = 0; row < drop_dim->row; row++) {
-		for (int col = 0; col < drop_dim->col; col++) {
-
-			color = drop_blocks[drop_idx->row + row][drop_idx->col + col];
-
-			if (color == color_none) {
-				log_debug("drop (used) empty: %d/%d", row, col);
-				continue;
-			}
-
-			num = 0;
-			s_area_mark_neighbors(game_area, marks, ga_idx->row + row, ga_idx->col + col, color, &num);
-			log_debug("num: %d", num);
-
-			if (num < 4) {
-				blocks_set(marks, &game_area->dim, 0);
-
-			} else {
-				s_area_remove_marked(game_area, marks);
-				total += num;
-			}
-		}
-	}
-
-	return total;
-}
+///******************************************************************************
+// *
+// *****************************************************************************/
+////TODO: name
+//// TODO: parameter order => ga_idx first or last
+//int game_area_remove_blocks(s_area *game_area, const s_point *ga_idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+//	int total = 0;
+//	int num;
+//
+//	t_block color;
+//
+//	for (int row = 0; row < drop_dim->row; row++) {
+//		for (int col = 0; col < drop_dim->col; col++) {
+//
+//			color = drop_blocks[drop_idx->row + row][drop_idx->col + col];
+//
+//			if (color == color_none) {
+//				log_debug("drop (used) empty: %d/%d", row, col);
+//				continue;
+//			}
+//
+//			num = 0;
+//			s_area_mark_neighbors(game_area, marks, ga_idx->row + row, ga_idx->col + col, color, &num);
+//			log_debug("num: %d", num);
+//
+//			if (num < 4) {
+//				blocks_set(marks, &game_area->dim, 0);
+//
+//			} else {
+//				s_area_remove_marked(game_area, marks);
+//				total += num;
+//			}
+//		}
+//	}
+//
+//	return total;
+//}
 // ----------------------------------------------------------------------------
 
 /******************************************************************************
@@ -317,29 +317,28 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
  *
  *****************************************************************************/
 
-static bool used_area_is_inside(const s_area *area, const s_point *used_idx, const s_point *used_dim) {
-
-	const int ul_row = area->pos.row + used_idx->row * area->size.row;
-	const int ul_col = area->pos.col + used_idx->col * area->size.col;
-
-	if (!s_area_is_inside(&game_area, ul_row, ul_col)) {
-		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
-		return false;
-	}
-
-	const int lr_row = ul_row + (used_dim->row - 1) * area->size.row;
-	const int lr_col = ul_col + (used_dim->col - 1) * area->size.col;
-
-	if (!s_area_is_inside(&game_area, lr_row, lr_col)) {
-		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
-		return false;
-	}
-
-	log_debug_str("used area - is inside");
-
-	return true;
-}
-
+//static bool used_area_is_inside(const s_area *area, const s_point *used_idx, const s_point *used_dim) {
+//
+//	const int ul_row = area->pos.row + used_idx->row * area->size.row;
+//	const int ul_col = area->pos.col + used_idx->col * area->size.col;
+//
+//	if (!s_area_is_inside(&game_area, ul_row, ul_col)) {
+//		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
+//		return false;
+//	}
+//
+//	const int lr_row = ul_row + (used_dim->row - 1) * area->size.row;
+//	const int lr_col = ul_col + (used_dim->col - 1) * area->size.col;
+//
+//	if (!s_area_is_inside(&game_area, lr_row, lr_col)) {
+//		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
+//		return false;
+//	}
+//
+//	log_debug_str("used area - is inside");
+//
+//	return true;
+//}
 /******************************************************************************
  *
  *****************************************************************************/
@@ -367,13 +366,20 @@ static bool new_area_is_dropped() {
 	//
 	// Compute the used area of the new blocks.
 	//
-	s_point used_idx, used_dim;
-	blocks_get_used_area(new_area.blocks, &new_area.dim, &used_idx, &used_dim);
+//	s_point used_idx, used_dim;
+//	blocks_get_used_area(new_area.blocks, &new_area.dim, &used_idx, &used_dim);
+
+	s_used_area used_area;
+	s_area_get_used_area(&new_area, &used_area);
 
 	//
 	// Ensure that the used area is inside the game area.
 	//
-	if (!used_area_is_inside(&new_area, &used_idx, &used_dim)) {
+//	if (!used_area_is_inside(&new_area, &used_area.idx, &used_area.dim)) {
+//		return false;
+//	}
+
+	if (!s_area_used_area_is_inside(&new_area, &used_area)) {
 		return false;
 	}
 
@@ -381,8 +387,8 @@ static bool new_area_is_dropped() {
 	// Compute the upper left corner of the used area.
 	//
 	s_point pixel;
-	pixel.row = block_upper_left(new_area.pos.row, new_area.size.row, used_idx.row);
-	pixel.col = block_upper_left(new_area.pos.col, new_area.size.col, used_idx.col);
+	pixel.row = block_upper_left(new_area.pos.row, new_area.size.row, used_area.idx.row);
+	pixel.col = block_upper_left(new_area.pos.col, new_area.size.col, used_area.idx.col);
 
 	//
 	// Compute the corresponding index in the game area.
@@ -394,19 +400,25 @@ static bool new_area_is_dropped() {
 	//
 
 	// TODO: parameter order => ga_idx first or last
-	if (!blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, false)) {
+//	if (!blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_area.idx, &used_area.dim, false)) {
+//		return false;
+//	}
+	if (!s_area_drop(&game_area, &idx, &used_area, false)) {
 		return false;
 	}
 
 	//
 	// Drop the used area.
 	//
-	blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, true);
+	//blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_area.idx, &used_area.dim, true);
+	s_area_drop(&game_area, &idx, &used_area, true);
 
 	//
 	// Remove adjacent blocks if possible.
 	//
-	const int num_removed = game_area_remove_blocks(&game_area, new_area.blocks, &idx, &used_idx, &used_dim);
+	//const int num_removed = game_area_remove_blocks(&game_area, &idx, new_area.blocks, &used_area.idx, &used_area.dim);
+	const int num_removed = s_area_remove_blocks(&game_area, &idx, &used_area, marks);
+	//int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *used_area, const s_point *drop_dim, t_block **marks)
 	if (num_removed >= 4) {
 		info_area_add_to_score(num_removed);
 		game_area_print(&game_area);
