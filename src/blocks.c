@@ -33,6 +33,8 @@
 
 t_block** blocks_create(const int rows, const int cols) {
 
+	log_debug("Creating block with: %d/%d", rows, cols);
+
 	t_block **blocks = xmalloc(sizeof(t_block*) * rows);
 
 	for (int row = 0; row < rows; row++) {

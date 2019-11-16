@@ -77,7 +77,7 @@ void info_area_init(const int hs) {
 		log_exit("Truncated: %s", data[IDX_SCORE]);
 	}
 
-	if (snprintf(data[IDX_STATUS], COLS + 1, " ") >= COLS + 1) {
+	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, " ") >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
 	}
 }
@@ -171,20 +171,22 @@ bool info_area_contains(const s_point *pixel) {
 
 void info_area_print_pixel(const s_point *pixel, enum e_colors color) {
 
-	log_debug("row: %d col: %d", pos.row, pos.col);
-
+	//TODO: called with above
 	//
 	// Ensure that the pixel is
 	//
-	if (!info_area_contains(pixel)) {
-		log_exit("Wrong row: %d col: %d", pixel->row, pixel->col);
-	}
+//	if (!info_area_contains(pixel)) {
+//		log_exit("Wrong row: %d col: %d", pixel->row, pixel->col);
+//	}
 
 	const int row = pixel->row - pos.row;
 	const int col = pixel->col - pos.col;
 
 	colors_info_area_attr(color);
 
+	log_debug("pixel: %d/%d '%c'", pixel->row, pixel->col, data[row][col]);
+
+	// TODO: ensure that data[row][col] contains data other than \0
 	mvprintw(pixel->row, pixel->col, "%c", data[row][col]);
 }
 

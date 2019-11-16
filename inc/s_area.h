@@ -25,8 +25,8 @@
 #ifndef INC_S_AREA_H_
 #define INC_S_AREA_H_
 
-#include "common.h"
 #include "blocks.h"
+#include "common.h"
 
 /******************************************************************************
  * The definition of the area struct.

@@ -41,7 +41,7 @@ static void exit_callback() {
 	//
 	// Free the allocated memory.
 	//
-	game_area_free();
+	//game_area_free();
 
 	new_area_free();
 
@@ -67,7 +67,7 @@ void do_center() {
 	//
 	// Get the sizes of the different areas.
 	//
-	const s_point game_size = game_area_get_size();
+	const s_point game_size = get_game_size();
 
 	const s_point new_size = new_area_get_size();
 
@@ -78,7 +78,6 @@ void do_center() {
 	//
 	int total_rows = game_size.row;
 	int total_cols = game_size.col + DELIM + max(info_size.col, new_size.col);
-	//int total_cols = game_size.col + DELIM + info_size.col;
 
 	//
 	// Get the center positions
@@ -102,7 +101,7 @@ void do_center() {
 	//
 	// Print the areas at the updated position
 	//
-	game_area_print();
+	print_game_area();
 
 	info_area_print();
 
@@ -163,11 +162,7 @@ int main() {
 
 	colors_init();
 
-	game_area_init();
-
 	new_area_init();
-
-	new_area_fill();
 
 	info_area_init(0);
 
@@ -213,43 +208,13 @@ int main() {
 
 			if (event.bstate & BUTTON1_RELEASED) {
 
-				//
-				// Dropping means that the game area is updated. If the new
-				// area is deleted, which means that the foreground is deleted,
-				// the background will be visible.
-				//
-				if (new_area_is_dropped()) {
-
-					//
-					// Delete the current none-empty blocks. After calling
-					// new_area_fill(), the non-empty blocks may be different.
-					//
-					//new_area_process_blocks(DO_DELETE);
-					new_area_delete();
-
-					new_area_fill();
-
-					if (!new_area_can_drop()) {
-						log_debug_str("ENDDDDDDDDDDDDD");
-						info_area_set_msg("End");
-					}
-				} else {
-					//new_area_process_blocks(DO_DELETE);
-					new_area_delete();
-				}
-
-				new_area_process(HOME_ROW, HOME_COL);
+				game_process_event_release(event.y, event.x);
 
 				pressed = false;
 
 			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
 
-				if (!new_area_same_pos(event.y, event.x)) {
-
-					new_area_process_blocks(DO_DELETE);
-
-					new_area_process(event.y, event.x);
-				}
+				game_process_event_pressed(event.y, event.x);
 
 				pressed = true;
 			}
