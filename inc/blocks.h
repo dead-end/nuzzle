@@ -37,14 +37,13 @@ void blocks_free(t_block **blocks, const int rows);
 
 void blocks_set(t_block **blocks, const s_point *dim, const t_block value);
 
-void blocks_remove_marked(t_block **blocks, t_block **marks, const s_point *dim);
-
 #define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
 
 void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_idx, s_point *used_dim);
 
 bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop);
 
+// TODO: unused
 bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
 
 s_point blocks_get_size(const s_point *dim, const s_point *size);

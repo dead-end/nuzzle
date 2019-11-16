@@ -257,7 +257,7 @@ void colors_init_random2(t_block **blocks, const int rows, const int cols) {
 			//
 			// First check if the color is set
 			//
-			if (rand() % 100 < 60) {
+			if (rand() % 100 < 70) {
 				blocks[row][col] = color_none;
 
 			} else {

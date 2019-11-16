@@ -26,6 +26,7 @@
 
 #include "s_area.h"
 #include "colors.h"
+#include "common.h"
 
 /******************************************************************************
  * The function check whether a given pixel (terminal character) is inside an
@@ -139,4 +140,175 @@ void s_area_get_offset(const s_area *area, s_point *offset) {
 			return;
 		}
 	}
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+//TODO: comments
+void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col) {
+
+	s_point_set(&area->dim, dim_row, dim_col);
+
+	s_point_set(&area->size, size_row, size_col);
+
+	area->blocks = blocks_create(area->dim.row, area->dim.col);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+//TODO: comments
+void s_area_free(s_area *area) {
+
+	blocks_free(area->blocks, area->dim.row);
+}
+
+/******************************************************************************
+ * The function recursively marks all neighbors, the have the same required
+ * color. The recursion stops if all neighbors have different colors or are
+ * already marked.
+ *****************************************************************************/
+//TODO: comments
+void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, const int col, t_block color, int *num) {
+
+	//
+	// Ensure that we are on the game area.
+	//
+	if (row < 0 || row >= area->dim.row || col < 0 || col >= area->dim.row) {
+		log_debug("Outside: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Current block has the wrong color.
+	//
+	if (area->blocks[row][col] != color) {
+		log_debug("Wrong color: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Current block is already marked.
+	//
+	if (marks[row][col] != 0) {
+		log_debug("Already marked: %d/%d num: %d color: %d", row, col, *num, color);
+		return;
+	}
+
+	//
+	// Increase the number and mark the block.
+	//
+	marks[row][col] = ++(*num);
+
+	log_debug("Mark: %d/%d num: %d color: %d", row, col, *num, color);
+
+	//
+	// Recursively process the neighbors.
+	//
+	s_area_mark_neighbors(area, marks, row + 1, col, color, num);
+	s_area_mark_neighbors(area, marks, row - 1, col, color, num);
+	s_area_mark_neighbors(area, marks, row, col + 1, color, num);
+	s_area_mark_neighbors(area, marks, row, col - 1, color, num);
+}
+
+/******************************************************************************
+ * The function removes all marked blocks from the game area. As a side effect
+ * the marked area is reset.
+ *****************************************************************************/
+//TODO: comments
+void s_area_remove_marked(s_area *area, t_block **marks) {
+
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
+
+			if (marks[row][col] > 0) {
+				area->blocks[row][col] = color_none;
+				marks[row][col] = 0;
+			}
+		}
+	}
+}
+
+/******************************************************************************
+ * The function computes the used area of a block. A block may contain empty
+ * rows or columns at the beginning or the end.
+ *****************************************************************************/
+//TODO: comments
+void s_area_get_used_area(s_area *area, s_used_area *used_area) {
+
+	//
+	// Initialize the upper left (used index) and the lower right corners of
+	// the used area with values that are to too small or too high.
+	//
+	s_point lower_right = { -1, -1 };
+
+	used_area->idx.row = area->dim.row;
+	used_area->idx.col = area->dim.col;
+
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
+
+			if (area->blocks[row][col] == color_none) {
+				continue;
+			}
+
+			if (used_area->idx.row > row) {
+				used_area->idx.row = row;
+			}
+
+			if (used_area->idx.col > col) {
+				used_area->idx.col = col;
+			}
+
+			if (lower_right.row < row) {
+				lower_right.row = row;
+			}
+
+			if (lower_right.col < col) {
+				lower_right.col = col;
+			}
+		}
+	}
+
+	//
+	// Compute the dimension from the upper left (used index) and the lower
+	// right corner of the used area.
+	//
+	used_area->dim.row = lower_right.row - used_area->idx.row + 1;
+	used_area->dim.col = lower_right.col - used_area->idx.col + 1;
+
+	used_area->area = area;
+
+	log_debug("ul: %d/%d lr: %d/%d dim: %d/%d", used_area->idx.row, used_area->idx.col, lower_right.row, lower_right.col, used_area->dim.row, used_area->dim.col);
+}
+
+/******************************************************************************
+ * The function check whether the used area can be dropped anywhere on the
+ * other area.
+ *****************************************************************************/
+//TODO: comments
+//bool s_area_can_drop_anywhere(s_area *area, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
+bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
+	//
+	// Compute the end index to ensure that the used area fits in the other.
+	//
+	const int row_end = area->dim.row - used_area->dim.row;
+	const int col_end = area->dim.col - used_area->dim.col;
+
+	s_point start;
+
+	for (start.row = 0; start.row < row_end; start.row++) {
+		for (start.col = 0; start.col < col_end; start.col++) {
+
+			//
+			// Check if the used area can be dropped at this place.
+			//
+			if (blocks_drop(area->blocks, &start, used_area->area->blocks, &used_area->idx, &used_area->dim, false)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }

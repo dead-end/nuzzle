@@ -130,12 +130,12 @@ static short game_get_color_pair(const s_area *game_area, const s_point *pixel, 
  * character).
  *****************************************************************************/
 
-static wchar_t get_char(const s_area *game_area, const s_point *block, const enum e_colors color) {
+static wchar_t get_char(const s_area *game_area, const s_point *idx, const enum e_colors fg_color) {
 	wchar_t chr;
 
-	if (color != color_none) {
+	if (fg_color != color_none) {
 
-		if (game_area->blocks[block->row][block->col] != color_none) {
+		if (game_area->blocks[idx->row][idx->col] != color_none) {
 			chr = BLOCK_BOTH;
 
 		} else {
@@ -146,7 +146,7 @@ static wchar_t get_char(const s_area *game_area, const s_point *block, const enu
 
 	}
 
-	log_debug("block: (%d, %d) color: %d char '%lc", block->row, block->col, color, chr);
+	log_debug("block: (%d, %d) color: %d char '%lc", idx->row, idx->col, fg_color, chr);
 
 	return chr;
 }
@@ -156,67 +156,19 @@ static wchar_t get_char(const s_area *game_area, const s_point *block, const enu
  *****************************************************************************/
 // TODO:
 static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors color) {
-	s_point block;
+	s_point idx;
 
 	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, color);
 
-	s_area_get_block(game_area, pixel, &block);
+	s_area_get_block(game_area, pixel, &idx);
 
-	const short color_pair = game_get_color_pair(game_area, &block, color);
+	const short color_pair = game_get_color_pair(game_area, &idx, color);
 
 	attrset(COLOR_PAIR(color_pair));
 
-	const wchar_t chr = get_char(game_area, &block, color);
+	const wchar_t chr = get_char(game_area, &idx, color);
 
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
-}
-
-/******************************************************************************
- * The function recursively marks all neighbors, the have the same required
- * color. The recursion stops if all neighbors have different colors or are
- * already marked.
- *****************************************************************************/
-
-static void game_area_mark_neighbors(const s_area *game_area, const int row, const int col, t_block color, int *num) {
-
-	//
-	// Ensure that we are on the game area.
-	//
-	if (row < 0 || row >= game_area->dim.row || col < 0 || col >= game_area->dim.row) {
-		log_debug("Outside: %d/%d num: %d color: %d", row, col, *num, color);
-		return;
-	}
-
-	//
-	// Current block has the wrong color.
-	//
-	if (game_area->blocks[row][col] != color) {
-		log_debug("Wrong color: %d/%d num: %d color: %d", row, col, *num, color);
-		return;
-	}
-
-	//
-	// Current block is already marked.
-	//
-	if (marks[row][col] != 0) {
-		log_debug("Already marked: %d/%d num: %d color: %d", row, col, *num, color);
-		return;
-	}
-
-	//
-	// Increase the number and mark the block.
-	//
-	marks[row][col] = ++(*num);
-
-	log_debug("Mark: %d/%d num: %d color: %d", row, col, *num, color);
-
-	//
-	// Recursively process the neighbors.
-	//
-	game_area_mark_neighbors(game_area, row + 1, col, color, num);
-	game_area_mark_neighbors(game_area, row - 1, col, color, num);
-	game_area_mark_neighbors(game_area, row, col + 1, color, num);
-	game_area_mark_neighbors(game_area, row, col - 1, color, num);
 }
 
 /******************************************************************************
@@ -224,7 +176,7 @@ static void game_area_mark_neighbors(const s_area *game_area, const int row, con
  *****************************************************************************/
 //TODO: name
 // TODO: parameter order => ga_idx first or last
-int game_area_remove_blocks(const s_area *game_area, t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
+int game_area_remove_blocks(s_area *game_area, t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
 	int total = 0;
 	int num;
 
@@ -241,14 +193,14 @@ int game_area_remove_blocks(const s_area *game_area, t_block **drop_blocks, cons
 			}
 
 			num = 0;
-			game_area_mark_neighbors(game_area, ga_idx->row + row, ga_idx->col + col, color, &num);
+			s_area_mark_neighbors(game_area, marks, ga_idx->row + row, ga_idx->col + col, color, &num);
 			log_debug("num: %d", num);
 
 			if (num < 4) {
 				blocks_set(marks, &game_area->dim, 0);
 
 			} else {
-				blocks_remove_marked(game_area->blocks, marks, &game_area->dim);
+				s_area_remove_marked(game_area, marks);
 				total += num;
 			}
 		}
@@ -470,11 +422,12 @@ static bool new_area_is_dropped() {
  *****************************************************************************/
 
 static bool new_area_can_drop() {
-	s_point used_idx, used_dim;
 
-	blocks_get_used_area(new_area.blocks, &new_area.dim, &used_idx, &used_dim);
+	s_used_area used_area;
 
-	return blocks_can_drop_anywhere(game_area.blocks, &game_area.dim, new_area.blocks, &used_idx, &used_dim);
+	s_area_get_used_area(&new_area, &used_area);
+
+	return s_area_can_drop_anywhere(&game_area, &used_area);
 }
 
 // ----------------------------------------
@@ -489,11 +442,7 @@ void game_init() {
 	//
 	// Game area
 	//
-	s_point_set(&game_area.dim, GAME_SIZE, GAME_SIZE);
-
-	s_point_set(&game_area.size, 2, 4);
-
-	game_area.blocks = blocks_create(game_area.dim.row, game_area.dim.col);
+	s_area_create(&game_area, GAME_SIZE, GAME_SIZE, 2, 4);
 
 	blocks_set(game_area.blocks, &game_area.dim, color_none);
 
@@ -504,15 +453,10 @@ void game_init() {
 	//
 	marks = blocks_create(game_area.dim.row, game_area.dim.col);
 
-	//TODO: s_area_create
 	//
 	// new area
 	//
-	s_point_set(&new_area.size, 2, 4);
-
-	s_point_set(&new_area.dim, 3, 3);
-
-	new_area.blocks = blocks_create(new_area.dim.row, new_area.dim.col);
+	s_area_create(&new_area, 3, 3, 2, 4);
 
 	new_area_fill(&new_area);
 
@@ -528,15 +472,13 @@ void game_init() {
 
 void game_free() {
 
-	//game_area_free(&game_area);
-
 	log_debug_str("Freeing blocks.");
 
-	blocks_free(game_area.blocks, game_area.dim.row);
+	s_area_free(&game_area);
 
 	blocks_free(marks, game_area.dim.row);
 
-	blocks_free(new_area.blocks, new_area.dim.row);
+	s_area_free(&new_area);
 }
 
 /******************************************************************************
@@ -574,15 +516,13 @@ void game_set_new_area_pos(const int row, const int col) {
 	// The home position is the initial position and changes only on resizing
 	// the terminal
 	//
-	home.row = row;
-	home.col = col;
+	s_point_set(&home, row, col);
 
 	//
 	// The initial position is the home position. It can change by the mouse
 	// motion.
 	//
-	new_area.pos.row = home.row;
-	new_area.pos.col = home.col;
+	s_point_set(&new_area.pos, row, col);
 
 	log_debug("position: %d/%d", new_area.pos.row, new_area.pos.col);
 }

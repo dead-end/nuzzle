@@ -72,24 +72,6 @@ void blocks_set(t_block **blocks, const s_point *dim, const t_block value) {
 }
 
 /******************************************************************************
- * The function removes all marked blocks from the game area. As a side effect
- * the marked area is reset.
- *****************************************************************************/
-
-void blocks_remove_marked(t_block **blocks, t_block **marks, const s_point *dim) {
-
-	for (int row = 0; row < dim->row; row++) {
-		for (int col = 0; col < dim->col; col++) {
-
-			if (marks[row][col] > 0) {
-				blocks[row][col] = color_none;
-				marks[row][col] = 0;
-			}
-		}
-	}
-}
-
-/******************************************************************************
  * The function computes the used area of a block. A block may contain empty
  * rows or columns at the beginning or the end.
  *****************************************************************************/
