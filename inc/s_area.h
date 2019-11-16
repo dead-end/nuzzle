@@ -70,4 +70,6 @@ bool s_area_same_pos(const s_area *area, const int row, const int col);
 
 void s_area_print_block(const s_area *area, const int row, const int col, const wchar_t ch);
 
+void s_area_get_offset(const s_area *area, s_point *offset);
+
 #endif /* INC_S_AREA_H_ */

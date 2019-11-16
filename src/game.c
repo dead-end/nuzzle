@@ -298,35 +298,6 @@ static void new_area_delete(const s_area *new_area) {
 }
 
 /******************************************************************************
- * The function computes the offset, in case the mouse event is outside the
- * home area. The offset is the relative upper left corner of the first none
- * empty block.
- *****************************************************************************/
-
-static void get_offset() {
-
-	for (int row = 0; row < new_area.dim.row; row++) {
-		for (int col = 0; col < new_area.dim.col; col++) {
-
-			//
-			// We are looking for the first none empty block.
-			//
-			if (new_area.blocks[row][col] == color_none) {
-				continue;
-			}
-
-			//
-			// Compute the relative upper left corner and we are done.
-			//
-			offset.row = row * new_area.size.row;
-			offset.col = col * new_area.size.col;
-
-			return;
-		}
-	}
-}
-
-/******************************************************************************
  * The function processes all blocks. For each block, the upper left pixel
  * (terminal character) is computed.
  *****************************************************************************/
@@ -377,7 +348,7 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
 				offset.col = event_col - home.col;
 
 			} else {
-				get_offset();
+				s_area_get_offset(new_area, &offset);
 			}
 		}
 
@@ -394,18 +365,18 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
  *
  *****************************************************************************/
 
-static bool used_area_is_inside(const s_point *used_idx, const s_point *used_dim) {
+static bool used_area_is_inside(const s_area *area, const s_point *used_idx, const s_point *used_dim) {
 
-	const int ul_row = new_area.pos.row + used_idx->row * new_area.size.row;
-	const int ul_col = new_area.pos.col + used_idx->col * new_area.size.col;
+	const int ul_row = area->pos.row + used_idx->row * area->size.row;
+	const int ul_col = area->pos.col + used_idx->col * area->size.col;
 
 	if (!s_area_is_inside(&game_area, ul_row, ul_col)) {
 		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
 		return false;
 	}
 
-	const int lr_row = ul_row + (used_dim->row - 1) * new_area.size.row;
-	const int lr_col = ul_col + (used_dim->col - 1) * new_area.size.col;
+	const int lr_row = ul_row + (used_dim->row - 1) * area->size.row;
+	const int lr_col = ul_col + (used_dim->col - 1) * area->size.col;
 
 	if (!s_area_is_inside(&game_area, lr_row, lr_col)) {
 		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
@@ -450,7 +421,7 @@ static bool new_area_is_dropped() {
 	//
 	// Ensure that the used area is inside the game area.
 	//
-	if (!used_area_is_inside(&used_idx, &used_dim)) {
+	if (!used_area_is_inside(&new_area, &used_idx, &used_dim)) {
 		return false;
 	}
 
@@ -464,32 +435,20 @@ static bool new_area_is_dropped() {
 	//
 	// Compute the corresponding index in the game area.
 	//
-	//game_area_get_block(&pixel, &idx);
 	s_area_get_block(&game_area, &pixel, &idx);
 
 	//
 	// Check if the used area can be dropped at the game area position.
 	//
 
-	/******************************************************************************
-	 *
-	 *****************************************************************************/
-//	// TODO: parameter order => ga_idx first or last
-//	bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
-//		return blocks_drop(game_area.blocks, idx, drop_blocks, drop_idx, drop_dim, do_drop);
-//	}
+	// TODO: parameter order => ga_idx first or last
 	if (!blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, false)) {
 		return false;
 	}
 
-//	if (!game_area_drop(new_area.blocks, &idx, &used_idx, &used_dim, false)) {
-//		return false;
-//	}
-
 	//
 	// Drop the used area.
 	//
-	//game_area_drop(new_area.blocks, &idx, &used_idx, &used_dim, true);
 	blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, true);
 
 	//
