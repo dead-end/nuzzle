@@ -28,96 +28,32 @@
 #include "colors.h"
 #include "common.h"
 #include "blocks.h"
-//#include "info_area.h"
+
+#include "s_area.h"
 
 #define GAME_SIZE 11
 
 /******************************************************************************
- * The file operates on the following variables and structs.
+ *
  *****************************************************************************/
-
-//
-// The 2-dimensional array with the block colors.
-//
-static t_block **blocks;
 
 //
 // The 2-dimensional array with temporary data.
 //
 static t_block **marks;
 
-//
-// The dimensions of the 2-dimensional array.
-//
-static s_point dim;
-
-//
-// The current position (upper left corner) of the blocks.
-//
-static s_point pos;
-
-//
-// The size of a single block.
-//
-static s_point size;
-
 /******************************************************************************
- * The function gets the block for an absolute pixel.
+ *
  *****************************************************************************/
 
-void game_area_get_block(const s_point *pixel, s_point *block) {
+void game_area_print(const s_area *game_area) {
 
-#ifdef DEBUG
-	if (size.row == 0 || size.col == 0) {
-		log_exit_str("Size not set!");
-	}
-#endif
+	for (int row = 0; row < game_area->dim.row; row++) {
+		for (int col = 0; col < game_area->dim.col; col++) {
 
-	block->row = (pixel->row - pos.row) / size.row;
-	block->col = (pixel->col - pos.col) / size.col;
+			colors_game_attr(color_none, game_area->blocks[row][col], (row % 2) == (col % 2));
 
-	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block->row, block->col);
-}
-
-/******************************************************************************
- * The function prints an individual block. It is called with the upper left
- * corner and the size of the block. It iterate through the block pixels and
- * prints the character.
- *****************************************************************************/
-
-static void print_block(const int ul_row, const int ul_col, const int size_row, const int size_col, const wchar_t ch) {
-
-	const int lr_row = ul_row + size_row;
-	const int lr_col = ul_col + size_col;
-
-	for (int row = ul_row; row < lr_row; row++) {
-		for (int col = ul_col; col < lr_col; col++) {
-			mvprintw(row, col, "%lc", ch);
-		}
-	}
-}
-
-/******************************************************************************
- * The function prints the blocks of the game area. This means empty chars with
- * the background color.
- *****************************************************************************/
-
-void game_area_print() {
-	int pixel_row, pixel_col;
-
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
-
-			//
-			// Get the absolute position of the upper left pixel of the current
-			// block.
-			//
-			pixel_row = block_upper_left(pos.row, size.row, row);
-			pixel_col = block_upper_left(pos.col, size.col, col);
-
-			colors_game_attr(color_none, blocks[row][col], (row % 2) == (col % 2));
-
-			print_block(pixel_row, pixel_col, size.row, size.col, BLOCK_EMPTY);
+			s_area_print_block(game_area, row, col, BLOCK_EMPTY);
 		}
 	}
 }
@@ -127,10 +63,10 @@ void game_area_print() {
  * area.
  *****************************************************************************/
 
-static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
+static short game_get_color_pair(const s_area *game_area, const s_point *pixel, const enum e_colors fg) {
 
 #ifdef DEBUG
-	if (pixel->row >= dim.row || pixel->col >= dim.col) {
+	if (pixel->row >= game_area->dim.row || pixel->col >= game_area->dim.col) {
 		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
 	}
 #endif
@@ -138,7 +74,7 @@ static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
 	//
 	// The game pixel defines the background color.
 	//
-	int bg = blocks[pixel->row][pixel->col];
+	int bg = game_area->blocks[pixel->row][pixel->col];
 
 	//
 	// If foreground and background have no color, we use the default
@@ -159,12 +95,12 @@ static short game_get_color_pair(const s_point *pixel, const enum e_colors fg) {
  * character).
  *****************************************************************************/
 
-static wchar_t get_char(const s_point *block, const enum e_colors color) {
+static wchar_t get_char(const s_area *game_area, const s_point *block, const enum e_colors color) {
 	wchar_t chr;
 
 	if (color != color_none) {
 
-		if (blocks[block->row][block->col] != color_none) {
+		if (game_area->blocks[block->row][block->col] != color_none) {
 			chr = BLOCK_BOTH;
 
 		} else {
@@ -184,88 +120,52 @@ static wchar_t get_char(const s_point *block, const enum e_colors color) {
  *
  *****************************************************************************/
 // TODO:
-void game_area_print_pixel(const s_point *pixel, const enum e_colors color) {
+void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors color) {
 	s_point block;
 
 	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, color);
 
-	game_area_get_block(pixel, &block);
+	s_area_get_block(game_area, pixel, &block);
 
-	const short color_pair = game_get_color_pair(&block, color);
+	const short color_pair = game_get_color_pair(game_area, &block, color);
 
 	attrset(COLOR_PAIR(color_pair));
 
-	const wchar_t chr = get_char(&block, color);
+	const wchar_t chr = get_char(game_area, &block, color);
 
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
-}
-
-/******************************************************************************
- * The functions checks whether a pixel (terminal character) is inside the game
- * area.
- *****************************************************************************/
-
-bool game_area_contains(const int row, const int col) {
-	return is_inside_area(&pos, &dim, &size, row, col);
 }
 
 /******************************************************************************
  *
  *****************************************************************************/
 // TODO:
-void game_area_init() {
+void game_area_init(s_area *game_area) {
 
-	s_point_set(&dim, GAME_SIZE, GAME_SIZE);
+	s_point_set(&game_area->dim, GAME_SIZE, GAME_SIZE);
 
-	blocks = blocks_create(dim.row, dim.col);
+	game_area->blocks = blocks_create(game_area->dim.row, game_area->dim.col);
 
-	marks = blocks_create(dim.row, dim.col);
+	marks = blocks_create(game_area->dim.row, game_area->dim.col);
 
-	s_point_set(&size, 2, 4);
+	s_point_set(&game_area->size, 2, 4);
 
-	blocks_set(blocks, &dim, color_none);
+	blocks_set(game_area->blocks, &game_area->dim, color_none);
 
-	log_debug("pos: %d/%d", pos.row, pos.col);
+	log_debug("pos: %d/%d", game_area->pos.row, game_area->pos.col);
 }
 
 /******************************************************************************
  * The function frees the allocated memory.
  *****************************************************************************/
 
-void game_area_free() {
+void game_area_free(s_area *game_area) {
 
 	log_debug_str("Freeing blocks.");
 
-	blocks_free(blocks, dim.row);
+	blocks_free(game_area->blocks, game_area->dim.row);
 
-	blocks_free(marks, dim.row);
-}
-
-/******************************************************************************
- * The function returns a struct with the total size of the game area.
- *****************************************************************************/
-
-s_point game_area_get_size() {
-	return blocks_get_size(&dim, &size);
-}
-
-/******************************************************************************
- * The function sets the position of the game area. This is done on the
- * initialization and on resizing the terminal.
- *****************************************************************************/
-
-void game_area_set_pos(const int row, const int col) {
-	pos.row = row;
-	pos.col = col;
-}
-
-/******************************************************************************
- * The function checks if the current pixel is aligned with the game area. this
- * does not mean that the pixel is inside the game area.
- *****************************************************************************/
-
-bool game_area_is_aligned(const int row, const int col) {
-	return (row - pos.row) % size.row == 0 && (col - pos.col) % size.col == 0;
+	blocks_free(marks, game_area->dim.row);
 }
 
 /******************************************************************************
@@ -274,12 +174,12 @@ bool game_area_is_aligned(const int row, const int col) {
  * already marked.
  *****************************************************************************/
 
-static void game_area_mark_neighbors(const int row, const int col, t_block color, int *num) {
+static void game_area_mark_neighbors(const s_area *game_area, const int row, const int col, t_block color, int *num) {
 
 	//
 	// Ensure that we are on the game area.
 	//
-	if (row < 0 || row >= dim.row || col < 0 || col >= dim.row) {
+	if (row < 0 || row >= game_area->dim.row || col < 0 || col >= game_area->dim.row) {
 		log_debug("Outside: %d/%d num: %d color: %d", row, col, *num, color);
 		return;
 	}
@@ -287,7 +187,7 @@ static void game_area_mark_neighbors(const int row, const int col, t_block color
 	//
 	// Current block has the wrong color.
 	//
-	if (blocks[row][col] != color) {
+	if (game_area->blocks[row][col] != color) {
 		log_debug("Wrong color: %d/%d num: %d color: %d", row, col, *num, color);
 		return;
 	}
@@ -310,42 +210,10 @@ static void game_area_mark_neighbors(const int row, const int col, t_block color
 	//
 	// Recursively process the neighbors.
 	//
-	game_area_mark_neighbors(row + 1, col, color, num);
-	game_area_mark_neighbors(row - 1, col, color, num);
-	game_area_mark_neighbors(row, col + 1, color, num);
-	game_area_mark_neighbors(row, col - 1, color, num);
-}
-
-/******************************************************************************
- * The function checks whether the current block is empty or not.
- *****************************************************************************/
-
-bool game_area_is_empty(const int row, const int col) {
-	return blocks[row][col] == color_none;
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void game_area_set_color(const int row, const int col, t_block color) {
-	blocks[row][col] = color;
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-bool game_area_can_drop_anywhere(t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
-	return blocks_can_drop_anywhere(blocks, &dim, drop_blocks, drop_idx, drop_dim);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-// TODO: parameter order => ga_idx first or last
-bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
-	return blocks_drop(blocks, idx, drop_blocks, drop_idx, drop_dim, do_drop);
+	game_area_mark_neighbors(game_area, row + 1, col, color, num);
+	game_area_mark_neighbors(game_area, row - 1, col, color, num);
+	game_area_mark_neighbors(game_area, row, col + 1, color, num);
+	game_area_mark_neighbors(game_area, row, col - 1, color, num);
 }
 
 /******************************************************************************
@@ -353,7 +221,7 @@ bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *dr
  *****************************************************************************/
 //TODO: name
 // TODO: parameter order => ga_idx first or last
-int game_area_remove_blocks(t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
+int game_area_remove_blocks(const s_area *game_area, t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim) {
 	int total = 0;
 	int num;
 
@@ -370,14 +238,14 @@ int game_area_remove_blocks(t_block **drop_blocks, const s_point *ga_idx, const 
 			}
 
 			num = 0;
-			game_area_mark_neighbors(ga_idx->row + row, ga_idx->col + col, color, &num);
+			game_area_mark_neighbors(game_area, ga_idx->row + row, ga_idx->col + col, color, &num);
 			log_debug("num: %d", num);
 
 			if (num < 4) {
-				blocks_set(marks, &dim, 0);
+				blocks_set(marks, &game_area->dim, 0);
 
 			} else {
-				blocks_remove_marked(blocks, marks, &dim);
+				blocks_remove_marked(game_area->blocks, marks, &game_area->dim);
 				total += num;
 			}
 		}

@@ -30,32 +30,16 @@
 #include "colors.h"
 #include "common.h"
 
-void game_area_init();
+#include "s_area.h"
 
-void game_area_free();
+void game_area_init(const s_area *game_area);
 
-bool game_area_contains(const int row, const int col);
+void game_area_free(s_area *game_area);
 
-void game_area_print_pixel(const s_point *pixel, const enum e_colors color);
+void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors color);
 
-s_point game_area_get_size();
+void game_area_print(const s_area *game_area);
 
-void game_area_set_pos(const int row, const int col);
-
-void game_area_print();
-
-bool game_area_is_aligned(const int row, const int col);
-
-void game_area_get_block(const s_point *pixel, s_point *block);
-
-bool game_area_is_empty(const int row, const int col);
-
-void game_area_set_color(const int row, const int col, const t_block color);
-
-bool game_area_can_drop_anywhere(t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
-
-bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop);
-
-int game_area_remove_blocks(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim);
+int game_area_remove_blocks(const s_area *game_area, t_block **drop_blocks, const s_point *ga_idx, const s_point *drop_idx, const s_point *drop_dim);
 
 #endif /* INC_GAME_AREA_H_ */
