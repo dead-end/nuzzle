@@ -25,10 +25,10 @@
 #ifndef INC_NEW_AREA_H_
 #define INC_NEW_AREA_H_
 
+#include "common.h"
+
 #define HOME_ROW -1
 #define HOME_COL -1
-
-#include "common.h"
 
 void new_area_init();
 
@@ -42,18 +42,20 @@ void new_area_fill();
 
 void new_area_process_blocks(const bool do_print);
 
-void new_area_process(const int row, const int col);
-
 s_point new_area_get_size();
 
 void new_area_set_pos(const int row, const int col);
 
-bool new_area_same_pos(const int event_row, const int event_col);
+void game_area_set_pos(const int row, const int col);
 
-bool new_area_is_dropped();
+s_point get_game_size();
 
-bool new_area_can_drop();
+void print_game_area();
 
-void new_area_delete();
+// -----------------------------------
+
+void game_process_event_pressed(const int row, const int col);
+
+void game_process_event_release(const int row, const int col);
 
 #endif /* INC_NEW_AREA_H_ */

@@ -30,29 +30,11 @@
 #include "blocks.h"
 #include "common.h"
 
+#include "s_area.h"
+
 /******************************************************************************
- * The file operates on the following variables and structs.
+ *
  *****************************************************************************/
-
-//
-// The 2-dimensional array with the block colors.
-//
-static t_block **blocks;
-
-//
-// The dimensions of the 2-dimensional array.
-//
-static s_point dim;
-
-//
-// The current position (upper left corner) of the blocks.
-//
-static s_point pos;
-
-//
-// The size of a single block.
-//
-static s_point size;
 
 //
 // The home position (upper left corner) of the new blocks.
@@ -69,30 +51,51 @@ static s_point offset;
 
 #define ADJUST 1
 
+static s_area new_area;
+
+static s_area game_area;
+
+#define new_area_fill(a) colors_init_random((a)->blocks, (a)->dim.row, (a)->dim.col);
+
 /******************************************************************************
- * The function processes a new area block, which means printing or deleting.
- * Deleting means that we print a whitespace, which results in showing the
- * background color.
+ *
  *****************************************************************************/
 
-static void do_process_block(const s_point *na_upper_left, const t_block na_color, const bool do_print) {
+s_point get_game_size() {
+	return blocks_get_size(&game_area.dim, &game_area.size);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void print_game_area() {
+
+	game_area_print(&game_area);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_area_set_pos(const int row, const int col) {
+	s_point_set(&game_area.pos, row, col);
+}
+
+/******************************************************************************
+ * The function prints an area with a foreground character and color. If the
+ * character is an empty block and the color is none, the foreground of the
+ * area is deleted.
+ *****************************************************************************/
+
+static void area_print_foreground(const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
 	s_point pixel;
-	t_block color;
-	wchar_t chr;
 
-	if (do_print) {
-		color = na_color;
-		chr = BLOCK_FULL;
-	} else {
-		color = color_none;
-		chr = BLOCK_EMPTY;
-	}
+	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
+		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
 
-	for (pixel.row = na_upper_left->row; pixel.row < na_upper_left->row + size.row; pixel.row++) {
-		for (pixel.col = na_upper_left->col; pixel.col < na_upper_left->col + size.col; pixel.col++) {
-
-			if (game_area_contains(pixel.row, pixel.col)) {
-				game_area_print_pixel(&pixel, color);
+			if (s_area_is_inside(&game_area, pixel.row, pixel.col)) {
+				game_area_print_pixel(&game_area, &pixel, color);
 
 			} else if (info_area_contains(&pixel)) {
 				info_area_print_pixel(&pixel, color);
@@ -105,41 +108,17 @@ static void do_process_block(const s_point *na_upper_left, const t_block na_colo
 }
 
 /******************************************************************************
- * The function removes the foreground character in a given area and replaces
- * it with a space.
- *****************************************************************************/
-
-static void delete_area(const s_point *area_pos, const s_point *area_size) {
-	s_point pixel;
-
-	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
-		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
-
-			if (game_area_contains(pixel.row, pixel.col)) {
-				game_area_print_pixel(&pixel, color_none);
-
-			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(&pixel, color_none);
-
-			} else {
-				bg_area_print_pixel(&pixel, color_none, BLOCK_EMPTY);
-			}
-		}
-	}
-}
-
-/******************************************************************************
  * The function removes the foreground character in an area around the new
  * area. If the block is not aligned at the time of dropping, the position is
  * adjusted. This adjustment is added on both sides of the area. This shifts
  * the position to the left and increases the size with twice the ADJUST size.
  *****************************************************************************/
 
-void new_area_delete() {
-	s_point area_pos = { .row = pos.row, .col = pos.col - ADJUST };
-	s_point area_size = { .row = size.row * dim.row, .col = size.col * dim.col + 2 * ADJUST };
+static void new_area_delete(const s_area *new_area) {
+	s_point area_pos = { .row = new_area->pos.row, .col = new_area->pos.col - ADJUST };
+	s_point area_size = { .row = new_area->size.row * new_area->dim.row, .col = new_area->size.col * new_area->dim.col + 2 * ADJUST };
 
-	delete_area(&area_pos, &area_size);
+	area_print_foreground(&area_pos, &area_size, color_none, BLOCK_EMPTY);
 }
 
 /******************************************************************************
@@ -150,21 +129,21 @@ void new_area_delete() {
 
 static void get_offset() {
 
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
+	for (int row = 0; row < new_area.dim.row; row++) {
+		for (int col = 0; col < new_area.dim.col; col++) {
 
 			//
 			// We are looking for the first none empty block.
 			//
-			if (blocks[row][col] == color_none) {
+			if (new_area.blocks[row][col] == color_none) {
 				continue;
 			}
 
 			//
 			// Compute the relative upper left corner and we are done.
 			//
-			offset.row = row * size.row;
-			offset.col = col * size.col;
+			offset.row = row * new_area.size.row;
+			offset.col = col * new_area.size.col;
 
 			return;
 		}
@@ -177,13 +156,17 @@ static void get_offset() {
 
 void new_area_init() {
 
-	s_point_set(&size, 2, 4);
+	game_area_init(&game_area);
 
-	s_point_set(&dim, 3, 3);
+	s_point_set(&new_area.size, 2, 4);
+
+	s_point_set(&new_area.dim, 3, 3);
 
 	s_point_set(&offset, -1, -1);
 
-	blocks = blocks_create(dim.row, dim.col);
+	new_area.blocks = blocks_create(new_area.dim.row, new_area.dim.col);
+
+	new_area_fill(&new_area);
 }
 
 /******************************************************************************
@@ -192,7 +175,9 @@ void new_area_init() {
 
 void new_area_free() {
 
-	blocks_free(blocks, dim.row);
+	game_area_free(&game_area);
+
+	blocks_free(new_area.blocks, new_area.dim.row);
 }
 
 /******************************************************************************
@@ -201,27 +186,23 @@ void new_area_free() {
  *****************************************************************************/
 
 void new_area_process_blocks(const bool do_print) {
-
 	s_point na_upper_left;
-	t_block color;
 
-	for (int row = 0; row < dim.row; row++) {
-		for (int col = 0; col < dim.col; col++) {
+	for (int row = 0; row < new_area.dim.row; row++) {
+		for (int col = 0; col < new_area.dim.col; col++) {
 
-			if (blocks[row][col] == color_none) {
+			if (new_area.blocks[row][col] == color_none) {
 				continue;
 			}
 
-			na_upper_left.row = block_upper_left(pos.row, size.row, row);
-			na_upper_left.col = block_upper_left(pos.col, size.col, col);
-
-			color = blocks[row][col];
+			na_upper_left.row = block_upper_left(new_area.pos.row, new_area.size.row, row);
+			na_upper_left.col = block_upper_left(new_area.pos.col, new_area.size.col, col);
 
 			if (do_print) {
-				do_process_block(&na_upper_left, color, DO_PRINT);
+				area_print_foreground(&na_upper_left, &new_area.size, new_area.blocks[row][col], BLOCK_FULL);
 
 			} else {
-				do_process_block(&na_upper_left, color, DO_DELETE);
+				area_print_foreground(&na_upper_left, &new_area.size, color_none, BLOCK_EMPTY);
 			}
 		}
 	}
@@ -231,40 +212,26 @@ void new_area_process_blocks(const bool do_print) {
  *
  *****************************************************************************/
 
-void new_area_fill() {
-	colors_init_random(blocks, dim.row, dim.col);
-}
-
-/******************************************************************************
- * The function check whether the position changed or not.
- *****************************************************************************/
-
-bool new_area_same_pos(const int event_row, const int event_col) {
-
-	const bool result = event_row == pos.row && event_col == pos.col;
-	log_debug("Position %d/%d  is the same: %d", event_row, event_col, result);
-	return result;
-}
-
 /******************************************************************************
  * The function processes a new mouse event.
  *****************************************************************************/
 
-void new_area_process(const int event_row, const int event_col) {
+static void new_area_process(s_area *new_area, const int event_row, const int event_col) {
 
 	//
 	// If the row or col is negative, we move to the home position.
 	//
 	if (event_row == HOME_ROW || event_col == HOME_COL) {
-		s_point_set(&pos, home.row, home.col);
+
+		s_point_set(&new_area->pos, home.row, home.col);
 
 		s_point_set(&offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
 
 	} else {
 
 		if (offset.row == OFFSET_NOT_SET && offset.col == OFFSET_NOT_SET) {
-
-			if (is_inside_area(&pos, &dim, &size, event_row, event_col)) {
+			if (s_area_is_inside(new_area, event_row, event_col)) {
+				//if (is_inside_area(&new_area.pos, &new_area.dim, &new_area.size, event_row, event_col)) {
 				offset.row = event_row - home.row;
 				offset.col = event_col - home.col;
 			} else {
@@ -272,10 +239,10 @@ void new_area_process(const int event_row, const int event_col) {
 			}
 		}
 
-		pos.row = event_row - offset.row;
-		pos.col = event_col - offset.col;
+		new_area->pos.row = event_row - offset.row;
+		new_area->pos.col = event_col - offset.col;
 
-		log_debug("pos: %d/%d offset:  %d/%d", pos.row, pos.col, offset.row, offset.col);
+		log_debug("pos: %d/%d offset:  %d/%d", new_area->pos.row, new_area->pos.col, offset.row, offset.col);
 	}
 
 	new_area_process_blocks(DO_PRINT);
@@ -286,7 +253,7 @@ void new_area_process(const int event_row, const int event_col) {
  *****************************************************************************/
 
 s_point new_area_get_size() {
-	return blocks_get_size(&dim, &size);
+	return blocks_get_size(&new_area.dim, &new_area.size);
 }
 
 /******************************************************************************
@@ -307,10 +274,10 @@ void new_area_set_pos(const int row, const int col) {
 	// The initial position is the home position. It can change by the mouse
 	// motion.
 	//
-	pos.row = home.row;
-	pos.col = home.col;
+	new_area.pos.row = home.row;
+	new_area.pos.col = home.col;
 
-	log_debug("position: %d/%d", pos.row, pos.col);
+	log_debug("position: %d/%d", new_area.pos.row, new_area.pos.col);
 }
 
 /******************************************************************************
@@ -319,18 +286,18 @@ void new_area_set_pos(const int row, const int col) {
 
 static bool used_area_is_inside(const s_point *used_idx, const s_point *used_dim) {
 
-	const int ul_row = pos.row + used_idx->row * size.row;
-	const int ul_col = pos.col + used_idx->col * size.col;
+	const int ul_row = new_area.pos.row + used_idx->row * new_area.size.row;
+	const int ul_col = new_area.pos.col + used_idx->col * new_area.size.col;
 
-	if (!game_area_contains(ul_row, ul_col)) {
+	if (!s_area_is_inside(&game_area, ul_row, ul_col)) {
 		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
 		return false;
 	}
 
-	const int lr_row = ul_row + (used_dim->row - 1) * size.row;
-	const int lr_col = ul_col + (used_dim->col - 1) * size.col;
+	const int lr_row = ul_row + (used_dim->row - 1) * new_area.size.row;
+	const int lr_col = ul_col + (used_dim->col - 1) * new_area.size.col;
 
-	if (!game_area_contains(lr_row, lr_col)) {
+	if (!s_area_is_inside(&game_area, lr_row, lr_col)) {
 		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
 		return false;
 	}
@@ -344,24 +311,19 @@ static bool used_area_is_inside(const s_point *used_idx, const s_point *used_dim
  *
  *****************************************************************************/
 
-bool new_area_is_dropped() {
+static bool new_area_is_dropped() {
 	s_point idx;
 
 	//
 	// Ensure that the blocks are aligned.
 	//
-//	if (!game_area_is_aligned(pos.row, pos.col)) {
-//		log_debug_str("New blocks are not aligned!");
-//		return false;
-//	}
+	if (!s_area_is_aligned(&game_area, new_area.pos.row, new_area.pos.col)) {
 
-	if (!game_area_is_aligned(pos.row, pos.col)) {
+		if (s_area_is_aligned(&game_area, new_area.pos.row, new_area.pos.col + ADJUST)) {
+			new_area.pos.col += ADJUST;
 
-		if (game_area_is_aligned(pos.row, pos.col + ADJUST)) {
-			pos.col += ADJUST;
-
-		} else if (game_area_is_aligned(pos.row, pos.col - ADJUST)) {
-			pos.col -= ADJUST;
+		} else if (s_area_is_aligned(&game_area, new_area.pos.row, new_area.pos.col - ADJUST)) {
+			new_area.pos.col -= ADJUST;
 
 		} else {
 			log_debug_str("New blocks are not aligned!");
@@ -373,7 +335,7 @@ bool new_area_is_dropped() {
 	// Compute the used area of the new blocks.
 	//
 	s_point used_idx, used_dim;
-	blocks_get_used_area(blocks, &dim, &used_idx, &used_dim);
+	blocks_get_used_area(new_area.blocks, &new_area.dim, &used_idx, &used_dim);
 
 	//
 	// Ensure that the used area is inside the game area.
@@ -386,33 +348,47 @@ bool new_area_is_dropped() {
 	// Compute the upper left corner of the used area.
 	//
 	s_point pixel;
-	pixel.row = block_upper_left(pos.row, size.row, used_idx.row);
-	pixel.col = block_upper_left(pos.col, size.col, used_idx.col);
+	pixel.row = block_upper_left(new_area.pos.row, new_area.size.row, used_idx.row);
+	pixel.col = block_upper_left(new_area.pos.col, new_area.size.col, used_idx.col);
 
 	//
 	// Compute the corresponding index in the game area.
 	//
-	game_area_get_block(&pixel, &idx);
+	//game_area_get_block(&pixel, &idx);
+	s_area_get_block(&game_area, &pixel, &idx);
 
 	//
 	// Check if the used area can be dropped at the game area position.
 	//
-	if (!game_area_drop(blocks, &idx, &used_idx, &used_dim, false)) {
+
+	/******************************************************************************
+	 *
+	 *****************************************************************************/
+//	// TODO: parameter order => ga_idx first or last
+//	bool game_area_drop(t_block **drop_blocks, const s_point *idx, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
+//		return blocks_drop(game_area.blocks, idx, drop_blocks, drop_idx, drop_dim, do_drop);
+//	}
+	if (!blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, false)) {
 		return false;
 	}
+
+//	if (!game_area_drop(new_area.blocks, &idx, &used_idx, &used_dim, false)) {
+//		return false;
+//	}
 
 	//
 	// Drop the used area.
 	//
-	game_area_drop(blocks, &idx, &used_idx, &used_dim, true);
+	//game_area_drop(new_area.blocks, &idx, &used_idx, &used_dim, true);
+	blocks_drop(game_area.blocks, &idx, new_area.blocks, &used_idx, &used_dim, true);
 
 	//
 	// Remove adjacent blocks if possible.
 	//
-	const int num_removed = game_area_remove_blocks(blocks, &idx, &used_idx, &used_dim);
+	const int num_removed = game_area_remove_blocks(&game_area, new_area.blocks, &idx, &used_idx, &used_dim);
 	if (num_removed >= 4) {
 		info_area_add_to_score(num_removed);
-		game_area_print();
+		game_area_print(&game_area);
 	}
 
 	log_debug_str("Is dropped!");
@@ -424,11 +400,66 @@ bool new_area_is_dropped() {
  *
  *****************************************************************************/
 
-bool new_area_can_drop() {
+static bool new_area_can_drop() {
 	s_point used_idx, used_dim;
 
-	blocks_get_used_area(blocks, &dim, &used_idx, &used_dim);
+	blocks_get_used_area(new_area.blocks, &new_area.dim, &used_idx, &used_dim);
 
-	return game_area_can_drop_anywhere(blocks, &used_idx, &used_dim);
+	return blocks_can_drop_anywhere(game_area.blocks, &game_area.dim, new_area.blocks, &used_idx, &used_dim);
 }
 
+// ----------------------------------------
+// INTERFACE
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_process_event_pressed(const int row, const int col) {
+
+	if (!s_area_same_pos(&new_area, row, col)) {
+
+		new_area_process_blocks(DO_DELETE);
+
+		new_area_process(&new_area, row, col);
+	}
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+void game_process_event_release(const int row, const int col) {
+	log_debug("pos: %d/%d", row, col);
+
+	//
+	// Dropping means that the game area is updated. If the new
+	// area is deleted, which means that the foreground is deleted,
+	// the background will be visible.
+	//
+	if (new_area_is_dropped()) {
+
+		//
+		// Delete the current none-empty blocks. After calling
+		// new_area_fill(), the non-empty blocks may be different.
+		//
+		//new_area_process_blocks(DO_DELETE);
+		new_area_delete(&new_area);
+
+		//new_area_fill();
+
+		//colors_init_random(new_area.blocks, new_area.dim.row, new_area.dim.col);
+
+		new_area_fill(&new_area);
+
+		if (!new_area_can_drop()) {
+			log_debug_str("ENDDDDDDDDDDDDD");
+			info_area_set_msg("End");
+		}
+	} else {
+		//new_area_process_blocks(DO_DELETE);
+		new_area_delete(&new_area);
+	}
+
+	new_area_process(&new_area, HOME_ROW, HOME_COL);
+}
