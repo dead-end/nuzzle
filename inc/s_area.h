@@ -97,7 +97,7 @@ void s_area_free(s_area *area);
 
 void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, const int col, t_block color, int *num);
 
-void s_area_remove_marked(s_area *area, t_block **marks);
+//void s_area_remove_marked(s_area *area, t_block **marks);
 
 // ---
 void s_area_get_used_area(s_area *area, s_used_area *used_area);

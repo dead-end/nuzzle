@@ -37,6 +37,8 @@
 
 bool s_area_is_inside(const s_area *area, const int row, const int col) {
 
+	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d", row, col, area->pos.row, area->pos.col, area->pos.row + area->dim.row * area->size.row, area->pos.col + area->dim.col * area->size.col);
+
 	//
 	// Upper left corner
 	//
@@ -217,7 +219,7 @@ void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, c
  * the marked area is reset.
  *****************************************************************************/
 //TODO: comments
-void s_area_remove_marked(s_area *area, t_block **marks) {
+static void s_area_remove_marked(s_area *area, t_block **marks) {
 
 	for (int row = 0; row < area->dim.row; row++) {
 		for (int col = 0; col < area->dim.col; col++) {
@@ -304,10 +306,6 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
 			//
 			// Check if the used area can be dropped at this place.
 			//
-			// TODO: move
-//			if (blocks_drop(area->blocks, &start, used_area->area->blocks, &used_area->idx, &used_area->dim, false)) {
-//				return true;
-//			}
 			if (s_area_drop(area, &start, used_area, false)) {
 				return true;
 			}
@@ -321,10 +319,11 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
  * other area.
  *****************************************************************************/
 //TODO: comments
+//TODO: error outside but returns inside.
 bool s_area_used_area_is_inside(const s_area *area, const s_used_area *used_area) {
 
-	const int ul_row = area->pos.row + used_area->idx.row * area->size.row;
-	const int ul_col = area->pos.col + used_area->idx.col * area->size.col;
+	const int ul_row = used_area->area->pos.row + used_area->idx.row * area->size.row;
+	const int ul_col = used_area->area->pos.col + used_area->idx.col * area->size.col;
 
 	if (!s_area_is_inside(area, ul_row, ul_col)) {
 		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
@@ -339,7 +338,7 @@ bool s_area_used_area_is_inside(const s_area *area, const s_used_area *used_area
 		return false;
 	}
 
-	log_debug_str("used area - is inside");
+	log_debug("used area - is inside ul: %d/%d area:", ul_row, ul_col);
 
 	return true;
 }
@@ -378,7 +377,7 @@ bool s_area_drop(s_area *area, const s_point *idx, s_used_area *used_area, const
  *****************************************************************************/
 //TODO: name
 // TODO: parameter order => ga_idx first or last
-int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *used_area, t_block **marks) {
+int s_area_remove_blocks(s_area *area, const s_point *idx, s_used_area *used_area, t_block **marks) {
 	int total = 0;
 	int num;
 
@@ -395,14 +394,14 @@ int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *
 			}
 
 			num = 0;
-			s_area_mark_neighbors(game_area, marks, ga_idx->row + row, ga_idx->col + col, color, &num);
+			s_area_mark_neighbors(area, marks, idx->row + row, idx->col + col, color, &num);
 			log_debug("num: %d", num);
 
 			if (num < 4) {
-				blocks_set(marks, &game_area->dim, 0);
+				blocks_set(marks, &area->dim, 0);
 
 			} else {
-				s_area_remove_marked(game_area, marks);
+				s_area_remove_marked(area, marks);
 				total += num;
 			}
 		}
@@ -410,4 +409,3 @@ int s_area_remove_blocks(s_area *game_area, const s_point *ga_idx, s_used_area *
 
 	return total;
 }
-
