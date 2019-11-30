@@ -27,9 +27,15 @@
 
 #include "common.h"
 
-//TODO: what is the correct type and name??? color??? t_color??
-//typedef unsigned char t_block;
+/******************************************************************************
+ * The type of a block, which is the color.
+ *****************************************************************************/
+
 typedef char t_block;
+
+/******************************************************************************
+ * Functions and macros
+ *****************************************************************************/
 
 t_block** blocks_create(const int rows, const int cols);
 
@@ -37,15 +43,8 @@ void blocks_free(t_block **blocks, const int rows);
 
 void blocks_set(t_block **blocks, const s_point *dim, const t_block value);
 
-#define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
-
-//void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_idx, s_point *used_dim);
-
-//bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop);
-
-// TODO: unused
-//bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim);
-
 s_point blocks_get_size(const s_point *dim, const s_point *size);
+
+#define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
 
 #endif /* INC_BLOCKS_H_ */

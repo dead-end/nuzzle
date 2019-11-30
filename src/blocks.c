@@ -90,7 +90,7 @@ void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_id
 	for (int row = 0; row < dim->row; row++) {
 		for (int col = 0; col < dim->col; col++) {
 
-			if (blocks[row][col] == color_none) {
+			if (blocks[row][col] == CLR_NONE) {
 				continue;
 			}
 
@@ -132,11 +132,11 @@ bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, co
 	for (int row = 0; row < drop_dim->row; row++) {
 		for (int col = 0; col < drop_dim->col; col++) {
 
-			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] == color_none) {
+			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] == CLR_NONE) {
 				continue;
 			}
 
-			if (blocks[idx->row + row][idx->col + col] != color_none) {
+			if (blocks[idx->row + row][idx->col + col] != CLR_NONE) {
 				return false;
 			}
 
@@ -151,35 +151,6 @@ bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, co
 	return true;
 }
 
-/******************************************************************************
- * The function check whether the used area can be dropped anywhere on the
- * other area.
- *****************************************************************************/
-
-//bool blocks_can_drop_anywhere(t_block **blocks, const s_point *dim, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim) {
-//
-//	//
-//	// Compute the end index to ensure that the used area fits in the other.
-//	//
-//	const int row_end = dim->row - drop_dim->row;
-//	const int col_end = dim->col - drop_dim->col;
-//
-//	s_point start;
-//
-//	for (start.row = 0; start.row < row_end; start.row++) {
-//		for (start.col = 0; start.col < col_end; start.col++) {
-//
-//			//
-//			// Check if the used area can be dropped at this place.
-//			//
-//			if (blocks_drop(blocks, &start, drop_blocks, drop_idx, drop_dim, false)) {
-//				return true;
-//			}
-//		}
-//	}
-//
-//	return false;
-//}
 /******************************************************************************
  * The function returns a struct with the total size of the area.
  *****************************************************************************/
