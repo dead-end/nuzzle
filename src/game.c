@@ -34,6 +34,8 @@
 
 #include "s_area.h"
 
+#include "colors.h"
+
 #define HOME_ROW -1
 #define HOME_COL -1
 
@@ -63,9 +65,6 @@ static s_area new_area;
 
 static s_area game_area;
 
-#define new_area_fill(a) colors_init_random((a)->blocks, (a)->dim.row, (a)->dim.col);
-
-// ----------------------------------------------------------------------------
 #define GAME_SIZE 11
 
 /******************************************************************************
@@ -86,48 +85,24 @@ static void game_area_print(const s_area *game_area) {
 	for (int row = 0; row < game_area->dim.row; row++) {
 		for (int col = 0; col < game_area->dim.col; col++) {
 
-			colors_game_attr(color_none, game_area->blocks[row][col], colors_is_even(row, col));
+			colors_game_attr(CLR_NONE, game_area->blocks[row][col], colors_is_even(row, col));
 
 			s_area_print_block(game_area, row, col, BLOCK_EMPTY);
 		}
 	}
 }
 
-///******************************************************************************
-// * The function gets the color pair of a pixel (terminal character) of the game
-// * area.
-// *****************************************************************************/
-//// TODO: deprecated
-//short game_get_color_pair(const s_area *game_area, const s_point *pixel, const enum e_colors fg) {
-//
-//#ifdef DEBUG
-//	if (pixel->row >= game_area->dim.row || pixel->col >= game_area->dim.col) {
-//		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
-//	}
-//#endif
-//
-//	//
-//	// The game pixel defines the background color.
-//	//
-//	int bg = game_area->blocks[pixel->row][pixel->col];
-//
-//	//
-//	// The concrete color is defined in the colors.c file.
-//	//
-//	return colors_get_pair(fg, bg, (pixel->row % 2) == (pixel->col % 2));
-//}
-
 /******************************************************************************
  * The function determines the character to display for a pixel (terminal
  * character).
  *****************************************************************************/
 
-static wchar_t get_char(const s_area *game_area, const s_point *idx, const enum e_colors fg_color) {
+static wchar_t get_char(const s_area *game_area, const s_point *idx, const t_block fg_color) {
 	wchar_t chr;
 
-	if (fg_color != color_none) {
+	if (fg_color != CLR_NONE) {
 
-		if (game_area->blocks[idx->row][idx->col] != color_none) {
+		if (game_area->blocks[idx->row][idx->col] != CLR_NONE) {
 			chr = BLOCK_BOTH;
 
 		} else {
@@ -147,7 +122,7 @@ static wchar_t get_char(const s_area *game_area, const s_point *idx, const enum 
  *
  *****************************************************************************/
 // TODO:
-static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors fg_color) {
+static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const t_block fg_color) {
 	s_point idx;
 
 	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, fg_color);
@@ -199,7 +174,7 @@ static void new_area_delete(const s_area *new_area) {
 	s_point area_pos = { .row = new_area->pos.row, .col = new_area->pos.col - ADJUST };
 	s_point area_size = { .row = new_area->size.row * new_area->dim.row, .col = new_area->size.col * new_area->dim.col + 2 * ADJUST };
 
-	game_print_foreground(&area_pos, &area_size, color_none, BLOCK_EMPTY);
+	game_print_foreground(&area_pos, &area_size, CLR_NONE, BLOCK_EMPTY);
 }
 
 /******************************************************************************
@@ -213,7 +188,7 @@ static void new_area_process_blocks(const bool do_print) {
 	for (int row = 0; row < new_area.dim.row; row++) {
 		for (int col = 0; col < new_area.dim.col; col++) {
 
-			if (new_area.blocks[row][col] == color_none) {
+			if (new_area.blocks[row][col] == CLR_NONE) {
 				continue;
 			}
 
@@ -224,7 +199,7 @@ static void new_area_process_blocks(const bool do_print) {
 				game_print_foreground(&na_upper_left, &new_area.size, new_area.blocks[row][col], BLOCK_FULL);
 
 			} else {
-				game_print_foreground(&na_upper_left, &new_area.size, color_none, BLOCK_EMPTY);
+				game_print_foreground(&na_upper_left, &new_area.size, CLR_NONE, BLOCK_EMPTY);
 			}
 		}
 	}
@@ -368,7 +343,7 @@ void game_init() {
 	//
 	s_area_create(&game_area, GAME_SIZE, GAME_SIZE, 2, 4);
 
-	blocks_set(game_area.blocks, &game_area.dim, color_none);
+	blocks_set(game_area.blocks, &game_area.dim, CLR_NONE);
 
 	log_debug("game_area pos: %d/%d", game_area.pos.row, game_area.pos.col);
 
@@ -382,7 +357,10 @@ void game_init() {
 	//
 	s_area_create(&new_area, 3, 3, 2, 4);
 
-	new_area_fill(&new_area);
+	//
+	// Fill the blocks with random colors.
+	//
+	colors_init_random(new_area.blocks, new_area.dim.row, new_area.dim.col);
 
 	//
 	// rest
@@ -501,7 +479,10 @@ void game_process_event_release(const int row, const int col) {
 		//
 		new_area_delete(&new_area);
 
-		new_area_fill(&new_area);
+		//
+		// Fill the blocks with new, random colors.
+		//
+		colors_init_random(new_area.blocks, new_area.dim.row, new_area.dim.col);
 
 		if (!new_area_can_drop_anywhere()) {
 			log_debug_str("ENDDDDDDDDDDDDD");

@@ -40,7 +40,7 @@ void info_area_print();
 
 bool info_area_contains(const s_point *pixel);
 
-void info_area_print_pixel(const s_point *pixel, enum e_colors color);
+void info_area_print_pixel(const s_point *pixel, t_block color);
 
 void info_area_set_msg(char *m);
 

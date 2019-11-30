@@ -133,7 +133,8 @@ void info_area_print() {
 	log_debug("row: %d col: %d", pos.row, pos.col);
 
 	// TODO: color to colors.h ???
-	attrset(COLOR_PAIR(CP_DEFAULT));
+	//attrset(COLOR_PAIR(CP_DEFAULT));
+	colors_info_area_attr(CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
 		mvprintw(pos.row + i, pos.col, data[i]);
@@ -169,7 +170,7 @@ bool info_area_contains(const s_point *pixel) {
  * pixel is inside the info area.
  *****************************************************************************/
 
-void info_area_print_pixel(const s_point *pixel, enum e_colors color) {
+void info_area_print_pixel(const s_point *pixel, t_block color) {
 
 	//TODO: called with above
 	//
@@ -201,7 +202,7 @@ void info_area_set_msg(char *msg) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
 	}
 
-	attrset(COLOR_PAIR(CP_DEFAULT));
+	colors_info_area_attr(CLR_NONE);
 
 	mvprintw(pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
 }
