@@ -86,44 +86,36 @@ static void game_area_print(const s_area *game_area) {
 	for (int row = 0; row < game_area->dim.row; row++) {
 		for (int col = 0; col < game_area->dim.col; col++) {
 
-			colors_game_attr(color_none, game_area->blocks[row][col], (row % 2) == (col % 2));
+			colors_game_attr(color_none, game_area->blocks[row][col], colors_is_even(row, col));
 
 			s_area_print_block(game_area, row, col, BLOCK_EMPTY);
 		}
 	}
 }
 
-/******************************************************************************
- * The function gets the color pair of a pixel (terminal character) of the game
- * area.
- *****************************************************************************/
-
-static short game_get_color_pair(const s_area *game_area, const s_point *pixel, const enum e_colors fg) {
-
-#ifdef DEBUG
-	if (pixel->row >= game_area->dim.row || pixel->col >= game_area->dim.col) {
-		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
-	}
-#endif
-
-	//
-	// The game pixel defines the background color.
-	//
-	int bg = game_area->blocks[pixel->row][pixel->col];
-
-	//
-	// If foreground and background have no color, we use the default
-	// background.
-	//
-	if (bg == color_none && fg == color_none) {
-		return (pixel->row % 2) == (pixel->col % 2) ? CP_LGR_LGR : CP_DGR_DGR;
-	}
-
-	//
-	// The concrete color is defined in the colors.c file.
-	//
-	return colors_get_pair(fg, bg);
-}
+///******************************************************************************
+// * The function gets the color pair of a pixel (terminal character) of the game
+// * area.
+// *****************************************************************************/
+//// TODO: deprecated
+//short game_get_color_pair(const s_area *game_area, const s_point *pixel, const enum e_colors fg) {
+//
+//#ifdef DEBUG
+//	if (pixel->row >= game_area->dim.row || pixel->col >= game_area->dim.col) {
+//		log_exit("Index out of range row: %d col: %d", pixel->row, pixel->col);
+//	}
+//#endif
+//
+//	//
+//	// The game pixel defines the background color.
+//	//
+//	int bg = game_area->blocks[pixel->row][pixel->col];
+//
+//	//
+//	// The concrete color is defined in the colors.c file.
+//	//
+//	return colors_get_pair(fg, bg, (pixel->row % 2) == (pixel->col % 2));
+//}
 
 /******************************************************************************
  * The function determines the character to display for a pixel (terminal
@@ -155,18 +147,16 @@ static wchar_t get_char(const s_area *game_area, const s_point *idx, const enum 
  *
  *****************************************************************************/
 // TODO:
-static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors color) {
+static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const enum e_colors fg_color) {
 	s_point idx;
 
-	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, color);
+	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, fg_color);
 
 	s_area_get_block(game_area, pixel, &idx);
 
-	const short color_pair = game_get_color_pair(game_area, &idx, color);
+	colors_game_attr(fg_color, game_area->blocks[idx.row][idx.col], colors_is_even(idx.row, idx.col));
 
-	attrset(COLOR_PAIR(color_pair));
-
-	const wchar_t chr = get_char(game_area, &idx, color);
+	const wchar_t chr = get_char(game_area, &idx, fg_color);
 
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
 }
@@ -355,7 +345,7 @@ static bool new_area_is_dropped() {
  *
  *****************************************************************************/
 
-static bool new_area_can_drop() {
+static bool new_area_can_drop_anywhere() {
 
 	s_used_area used_area;
 
@@ -513,7 +503,7 @@ void game_process_event_release(const int row, const int col) {
 
 		new_area_fill(&new_area);
 
-		if (!new_area_can_drop()) {
+		if (!new_area_can_drop_anywhere()) {
 			log_debug_str("ENDDDDDDDDDDDDD");
 			info_area_set_msg("End");
 		}

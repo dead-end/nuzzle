@@ -56,6 +56,49 @@
 #define DARK 300
 
 /******************************************************************************
+ * The definition of the color pairs..
+ *****************************************************************************/
+
+//#define CP_DEFAULT 0
+//
+// Used by: attrset(COLOR_PAIR(area->blocks[block.row][block.col]));
+//
+// TODO: rename
+#define CP_RED_BLACK 1
+#define CP_GREEN_BLACK 2
+#define CP_BLUE_BLACK 3
+#define CP_YELLOW_BLACK 4
+
+//
+// Definition of the color pairs for the game background.
+//
+#define CP_LGR_LGR 5
+#define CP_DGR_DGR 6
+
+//
+// Define color pairs for all color combinations.
+//
+#define CP_RED_RED 11
+#define CP_RED_GRE 12
+#define CP_RED_BLU 13
+#define CP_RED_YEL 14
+
+#define CP_GRE_RED 21
+#define CP_GRE_GRE 22
+#define CP_GRE_BLU 23
+#define CP_GRE_YEL 24
+
+#define CP_BLU_RED 31
+#define CP_BLU_GRE 32
+#define CP_BLU_BLU 33
+#define CP_BLU_YEL 34
+
+#define CP_YEL_RED 41
+#define CP_YEL_GRE 42
+#define CP_YEL_BLU 43
+#define CP_YEL_YEL 44
+
+/******************************************************************************
  * Simple wrapper that initializes a color pair with error handling.
  *****************************************************************************/
 
@@ -76,6 +119,121 @@ static void colors_init_color(const short color, const short red, const short gr
 		log_exit("Unable to init color: %d red: %d green: %d blue: %d", color, red, green, blue);
 	}
 }
+
+/******************************************************************************
+ * The function fills a block array with random colors. The function ensures
+ * that the center block has a color.
+ *****************************************************************************/
+
+void colors_init_random(t_block **blocks, const int rows, const int cols) {
+
+	//
+	// Get the center block coordinates.
+	//
+	const int row_center = (rows / 2);
+	const int col_center = (cols / 2);
+
+	log_debug("center: %d/%d", row_center, col_center);
+
+	//
+	// Set the center color
+	//
+	blocks[row_center][row_center] = colors_get_color();
+
+	for (int row = 0; row < rows; row++) {
+		for (int col = 0; col < cols; col++) {
+
+			//
+			// Skip the center block, which is already set.
+			//
+			if (row == row_center && col == col_center) {
+				continue;
+			}
+
+			//
+			// First check if a block should get a color.
+			//
+			if (rand() % 100 < 75) {
+				blocks[row][col] = CLR_NONE;
+
+			} else {
+				blocks[row][col] = colors_get_color();
+			}
+
+			log_debug("block: %d/%d color: %d", row, col, blocks[row][col]);
+		}
+	}
+}
+
+/******************************************************************************
+ * The function sets the color for the info area. It is called with a color of
+ * a block. If the color is defined, it is set to the background color of the
+ * info area.
+ *****************************************************************************/
+
+void colors_info_area_attr(const t_block bg_color) {
+
+	switch (bg_color) {
+
+	case CLR_NONE:
+		attrset(COLOR_PAIR(CP_DEFAULT));
+		break;
+
+	case CLR_RED:
+		attrset(A_REVERSE| COLOR_PAIR(CP_RED_BLACK));
+		break;
+
+	case CLR_GREEN:
+		attrset(A_REVERSE| COLOR_PAIR(CP_GREEN_BLACK));
+		break;
+
+	case CLR_BLUE:
+		attrset(A_REVERSE| COLOR_PAIR(CP_BLUE_BLACK));
+		break;
+
+	case CLR_YELLOW:
+		attrset(A_REVERSE| COLOR_PAIR(CP_YELLOW_BLACK));
+		break;
+
+	default:
+		log_exit("Unknown color: %d", bg_color)
+		;
+	}
+}
+
+/******************************************************************************
+ * The function sets the game color.
+ *****************************************************************************/
+
+void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool even) {
+	int color_pair;
+
+	//
+	// If foreground and background have no color, we use the default
+	// background, which is a chess pattern.
+	//
+	if (bg_color == CLR_NONE && fg_color == CLR_NONE) {
+		color_pair = even ? CP_LGR_LGR : CP_DGR_DGR;
+
+	} else {
+
+		if (fg_color == CLR_NONE) {
+			color_pair = 10 + bg_color;
+
+		} else if (bg_color == CLR_NONE) {
+			color_pair = fg_color * 10 + 1;
+
+		} else {
+			color_pair = fg_color * 10 + bg_color;
+		}
+	}
+
+	log_debug("fg: %d bg: %d pair: %d", fg_color, bg_color, color_pair);
+
+	attrset(COLOR_PAIR(color_pair));
+}
+
+// ---------------------
 
 /******************************************************************************
  *
@@ -154,161 +312,10 @@ void colors_init() {
 	colors_init_pair(CP_YEL_YEL, FG_YEL, BG_YEL);
 }
 
-// TODO: Deprecated
-short colors_get_pair(const enum e_colors fg, const enum e_colors bg) {
-	short result = 0;
-
-	if (fg == color_none) {
-		result = 10 + bg;
-
-	} else if (bg == color_none) {
-		result = fg * 10 + 1;
-
-	} else {
-		result = fg * 10 + bg;
-	}
-
-	log_debug("fg: %d bg: %d pair: %d", fg, bg, result);
-
-	return result;
-}
-
 /******************************************************************************
  *
  *****************************************************************************/
 
-void colors_info_area_attr(const enum e_colors color) {
-
-	switch (color) {
-
-	case color_none:
-		attrset(COLOR_PAIR(CP_DEFAULT));
-		break;
-
-	case color_red:
-		attrset(A_REVERSE| COLOR_PAIR(CP_RED_BLACK));
-		break;
-
-	case color_green:
-		attrset(A_REVERSE| COLOR_PAIR(CP_GREEN_BLACK));
-		break;
-
-	case color_blue:
-		attrset(A_REVERSE| COLOR_PAIR(CP_BLUE_BLACK));
-		break;
-
-	case color_yellow:
-		attrset(A_REVERSE| COLOR_PAIR(CP_YELLOW_BLACK));
-		break;
-
-	default:
-		log_exit("Unknown color: %d", color)
-		;
-	}
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void colors_bg_attr(const enum e_colors color) {
+void colors_bg_attr(const t_block color) {
 	attrset(COLOR_PAIR(color));
-}
-
-//TODO: currently unused
-// TODO:
-void colors_game_attr(const enum e_colors fg, const enum e_colors bg, const bool even) {
-	int color_pair;
-
-	if (bg == color_none && fg == color_none) {
-		color_pair = even ? CP_LGR_LGR : CP_DGR_DGR;
-
-	} else {
-
-		if (fg == color_none) {
-			color_pair = 10 + bg;
-
-		} else if (bg == color_none) {
-			color_pair = fg * 10 + 1;
-
-		} else {
-			color_pair = fg * 10 + bg;
-		}
-	}
-
-	log_debug("fg: %d bg: %d pair: %d", fg, bg, color_pair);
-
-	attrset(COLOR_PAIR(color_pair));
-}
-
-/******************************************************************************
- *
- *
- * The function initializes a s_area with random blocks. It is ensured that at
- * least one block is not empty.
- *****************************************************************************/
-
-void colors_init_random2(t_block **blocks, const int rows, const int cols) {
-	int count = 0;
-
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
-
-			//
-			// First check if the color is set
-			//
-			if (rand() % 100 < 80) {
-				blocks[row][col] = color_none;
-
-			} else {
-				blocks[row][col] = (rand() % 4) + 1;
-				count++;
-			}
-
-			log_debug("row: %d col: %d color: %d", row, col, blocks[row][col]);
-		}
-	}
-
-	//
-	// If all blocks are empty, try again.
-	//
-	if (count == 0) {
-		log_debug_str("Filling failed, try again!");
-
-		colors_init_random(blocks, rows, cols);
-	}
-}
-
-void colors_init_random(t_block **blocks, const int rows, const int cols) {
-
-	//
-	// set center
-	//
-	const int row_center = (rows / 2);
-	const int col_center = (cols / 2);
-
-	log_debug("center: %d/%d", row_center, col_center);
-
-	blocks[row_center][row_center] = colors_get_color();
-
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
-
-			if (row == row_center && col == col_center) {
-				continue;
-			}
-
-			//
-			// First check if the color is set
-			//
-			if (rand() % 100 < 70) {
-				blocks[row][col] = color_none;
-
-			} else {
-				blocks[row][col] = colors_get_color();
-			}
-
-			log_debug("block: %d/%d color: %d", row, col, blocks[row][col]);
-		}
-	}
 }
