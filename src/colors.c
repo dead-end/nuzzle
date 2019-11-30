@@ -59,11 +59,14 @@
  * The definition of the color pairs..
  *****************************************************************************/
 
-//#define CP_DEFAULT 0
+//
+// The default color pair is unchanged.
+//
+#define CP_DEFAULT 0
+
 //
 // Used by: attrset(COLOR_PAIR(area->blocks[block.row][block.col]));
 //
-// TODO: rename
 #define CP_RED_BLACK 1
 #define CP_GREEN_BLACK 2
 #define CP_BLUE_BLACK 3
@@ -118,6 +121,87 @@ static void colors_init_color(const short color, const short red, const short gr
 	if (init_color(color, red, green, blue) != OK) {
 		log_exit("Unable to init color: %d red: %d green: %d blue: %d", color, red, green, blue);
 	}
+}
+
+/******************************************************************************
+ * The function initializes the colors and color pairs. It ensures that the
+ * terminal supports colors.
+ *****************************************************************************/
+
+void colors_init() {
+
+	//
+	// Ensure that the terminal is ok.
+	//
+	if (!has_colors()) {
+		log_exit_str("Terminal does not support colors!");
+	}
+
+	if (!can_change_color()) {
+		log_exit_str("Terminal does not support color changes!");
+	}
+
+	//
+	// Start the color.
+	//
+	if (start_color() != OK) {
+		log_exit_str("Unable to init colors!");
+	}
+
+	//
+	// Initialize colors.
+	//
+	colors_init_color(BG_L_G, 250, 250, 250);
+	colors_init_color(BG_D_G, 230, 230, 230);
+
+	colors_init_color(FG_RED, FULL, DARK, DARK);
+	colors_init_color(BG_RED, FULL, LIGH, LIGH);
+
+	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK);
+	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
+
+	colors_init_color(FG_BLU, DARK, DARK, FULL);
+	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
+
+	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK);
+	colors_init_color(BG_YEL, FULL, FULL, LIGH);
+
+	//
+	// Initialize color pairs for the chess pattern.
+	//
+	colors_init_pair(CP_LGR_LGR, BG_L_G, BG_L_G);
+	colors_init_pair(CP_DGR_DGR, BG_D_G, BG_D_G);
+
+	//
+	// Initialize the color pairs with rgby foreground.
+	//
+	colors_init_pair(CP_RED_BLACK, FG_RED, COLOR_BLACK);
+	colors_init_pair(CP_GREEN_BLACK, FG_GRE, COLOR_BLACK);
+	colors_init_pair(CP_BLUE_BLACK, FG_BLU, COLOR_BLACK);
+	colors_init_pair(CP_YELLOW_BLACK, FG_YEL, COLOR_BLACK);
+
+	//
+	// Initialize the color pairs for the rgby combinations.
+	//
+	colors_init_pair(CP_RED_RED, FG_RED, BG_RED);
+	colors_init_pair(CP_RED_GRE, FG_RED, BG_GRE);
+	colors_init_pair(CP_RED_BLU, FG_RED, BG_BLU);
+	colors_init_pair(CP_RED_YEL, FG_RED, BG_YEL);
+
+	colors_init_pair(CP_GRE_RED, FG_GRE, BG_RED);
+	colors_init_pair(CP_GRE_GRE, FG_GRE, BG_GRE);
+	colors_init_pair(CP_GRE_BLU, FG_GRE, BG_BLU);
+	colors_init_pair(CP_GRE_YEL, FG_GRE, BG_YEL);
+
+	colors_init_pair(CP_BLU_RED, FG_BLU, BG_RED);
+	colors_init_pair(CP_BLU_GRE, FG_BLU, BG_GRE);
+	colors_init_pair(CP_BLU_BLU, FG_BLU, BG_BLU);
+	colors_init_pair(CP_BLU_YEL, FG_BLU, BG_YEL);
+
+	colors_init_pair(CP_YEL_RED, FG_YEL, BG_RED);
+	colors_init_pair(CP_YEL_GRE, FG_YEL, BG_GRE);
+	colors_init_pair(CP_YEL_BLU, FG_YEL, BG_BLU);
+	colors_init_pair(CP_YEL_YEL, FG_YEL, BG_YEL);
 }
 
 /******************************************************************************
@@ -202,7 +286,11 @@ void colors_info_area_attr(const t_block bg_color) {
 }
 
 /******************************************************************************
- * The function sets the game color.
+ * The function sets the game color. If foreground and background are not set
+ * this is the chess pattern. If only the foreground is defined, we have a
+ * simple foreground color and a solid block character. If both are defined we
+ * have a foreground and a background color defined and a "transparent" block
+ * character.
  *****************************************************************************/
 
 void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool even) {
@@ -233,87 +321,8 @@ void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool
 	attrset(COLOR_PAIR(color_pair));
 }
 
-// ---------------------
-
 /******************************************************************************
- *
- *****************************************************************************/
-
-void colors_init() {
-
-	//
-	// Ensure that the terminal is ok
-	//
-	if (!has_colors()) {
-		log_exit_str("Terminal does not support colors!");
-	}
-
-	if (!can_change_color()) {
-		log_exit_str("Terminal does not support color changes!");
-	}
-
-	//
-	// Start color
-	//
-	if (start_color() != OK) {
-		log_exit_str("Unable to init colors!");
-	}
-
-	//
-	// Initialize colors
-	//
-	colors_init_color(BG_L_G, 250, 250, 250);
-	colors_init_color(BG_D_G, 230, 230, 230);
-
-	colors_init_color(FG_RED, FULL, DARK, DARK);
-	colors_init_color(BG_RED, FULL, LIGH, LIGH);
-
-	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK);
-	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
-
-	colors_init_color(FG_BLU, DARK, DARK, FULL);
-	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
-
-	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK);
-	colors_init_color(BG_YEL, FULL, FULL, LIGH);
-
-	//
-	// Initialize color pairs
-	//
-	colors_init_pair(CP_LGR_LGR, BG_L_G, BG_L_G);
-	colors_init_pair(CP_DGR_DGR, BG_D_G, BG_D_G);
-
-	colors_init_pair(CP_RED_BLACK, FG_RED, COLOR_BLACK);
-	colors_init_pair(CP_GREEN_BLACK, FG_GRE, COLOR_BLACK);
-	colors_init_pair(CP_BLUE_BLACK, FG_BLU, COLOR_BLACK);
-	colors_init_pair(CP_YELLOW_BLACK, FG_YEL, COLOR_BLACK);
-
-	//
-	//
-	//
-	colors_init_pair(CP_RED_RED, FG_RED, BG_RED);
-	colors_init_pair(CP_RED_GRE, FG_RED, BG_GRE);
-	colors_init_pair(CP_RED_BLU, FG_RED, BG_BLU);
-	colors_init_pair(CP_RED_YEL, FG_RED, BG_YEL);
-
-	colors_init_pair(CP_GRE_RED, FG_GRE, BG_RED);
-	colors_init_pair(CP_GRE_GRE, FG_GRE, BG_GRE);
-	colors_init_pair(CP_GRE_BLU, FG_GRE, BG_BLU);
-	colors_init_pair(CP_GRE_YEL, FG_GRE, BG_YEL);
-
-	colors_init_pair(CP_BLU_RED, FG_BLU, BG_RED);
-	colors_init_pair(CP_BLU_GRE, FG_BLU, BG_GRE);
-	colors_init_pair(CP_BLU_BLU, FG_BLU, BG_BLU);
-	colors_init_pair(CP_BLU_YEL, FG_BLU, BG_YEL);
-
-	colors_init_pair(CP_YEL_RED, FG_YEL, BG_RED);
-	colors_init_pair(CP_YEL_GRE, FG_YEL, BG_GRE);
-	colors_init_pair(CP_YEL_BLU, FG_YEL, BG_BLU);
-	colors_init_pair(CP_YEL_YEL, FG_YEL, BG_YEL);
-}
-
-/******************************************************************************
- *
+ * The function sets the color.
  *****************************************************************************/
 
 void colors_bg_attr(const t_block color) {
