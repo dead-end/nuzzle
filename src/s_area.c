@@ -28,6 +28,21 @@
 #include "colors.h"
 
 /******************************************************************************
+ * The function returns a struct with the total size of the area.
+ *****************************************************************************/
+
+s_point s_area_get_size(const s_area *area) {
+	s_point result;
+
+	result.row = area->dim.row * area->size.row;
+	result.col = area->dim.col * area->size.col;
+
+	log_debug("size: %d/%d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
  * The function check whether a given pixel (terminal character) is inside an
  * area, which is a two-dimensional array of blocks. The position of the area
  * is the upper left corner. The size is the number of pixels (characters) of

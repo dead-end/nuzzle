@@ -84,6 +84,8 @@ typedef struct s_used_area {
  * The functions for the s_area.
  *****************************************************************************/
 
+s_point s_area_get_size(const s_area *area);
+
 bool s_area_is_inside(const s_area *area, const int row, const int col);
 
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block);
