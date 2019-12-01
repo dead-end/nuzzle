@@ -31,6 +31,58 @@
 #include "game.h"
 
 /******************************************************************************
+ * The function initializes ncurses and the locale, which is necessary for the
+ * wide character support of ncurses.
+ *****************************************************************************/
+
+static void init_ncurses() {
+
+	//
+	// Set the locale to allow utf8.
+	//
+	if (setlocale(LC_CTYPE, "") == NULL) {
+		log_exit_str("Unable to set the locale.");
+	}
+
+	//
+	// Initialize screen.
+	//
+	if (initscr() == NULL) {
+		log_exit_str("Unable to initialize the screen.");
+	}
+
+	//
+	// Disable line buffering.
+	//
+	if (raw() == ERR) {
+		log_exit_str("Unable to set raw mode.");
+	}
+
+	//
+	// Disable echoing.
+	//
+	if (noecho() == ERR) {
+		log_exit_str("Unable to switch off echoing.");
+	}
+
+	//
+	// Enable keypad for the terminal.
+	//
+	if (keypad(stdscr, TRUE) == ERR) {
+		log_exit_str("Unable to enable the keypad of the terminal.");
+	}
+
+	//
+	// Register mouse events (which do not have a propper error handling)
+	//
+	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
+
+	printf("\033[?1003h\n");
+
+	mouseinterval(0);
+}
+
+/******************************************************************************
  * The exit callback function resets the terminal and frees the memory. This is
  * important if the program terminates after an error.
  *****************************************************************************/
@@ -40,8 +92,6 @@ static void exit_callback() {
 	//
 	// Free the allocated memory.
 	//
-	//game_area_free();
-
 	game_free();
 
 	//
@@ -123,34 +173,12 @@ int main() {
 	bool pressed = false;
 
 	//
-	// Set the locale to allow utf8.
-	//
-	setlocale(LC_CTYPE, "");
-
-	//
 	// Intializes random number generator
 	//
 	time_t t;
 	srand((unsigned) time(&t));
 
-	initscr();
-
-	//
-	// Line buffering and echoing disabled.
-	//
-	raw();
-	noecho();
-
-	keypad(stdscr, TRUE);
-
-	//
-	// Register mouse events
-	//
-	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
-
-	printf("\033[?1003h\n");
-
-	mouseinterval(0);
+	init_ncurses();
 
 	//
 	// Register exit callback.
@@ -169,7 +197,7 @@ int main() {
 
 	//
 	// Move the cursor to the initial position (which prevents flickering) and
-	// hide the cursor
+	// hide the cursor.
 	//
 	move(0, 0);
 	curs_set(0);
