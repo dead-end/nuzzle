@@ -77,11 +77,15 @@ static s_area game_area;
 static t_block **marks;
 
 /******************************************************************************
- *
+ * The function prints the game area with no foreground color. This can be used
+ * as an initialization.
  *****************************************************************************/
 
 static void game_area_print(const s_area *game_area) {
 
+	//
+	// Iterate through the blocks of the game area.
+	//
 	for (int row = 0; row < game_area->dim.row; row++) {
 		for (int col = 0; col < game_area->dim.col; col++) {
 
@@ -110,7 +114,6 @@ static wchar_t get_char(const s_area *game_area, const s_point *idx, const t_blo
 		}
 	} else {
 		chr = BLOCK_EMPTY;
-
 	}
 
 	log_debug("block: (%d, %d) color: %d char '%lc", idx->row, idx->col, fg_color, chr);
