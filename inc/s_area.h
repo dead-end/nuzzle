@@ -56,20 +56,25 @@ typedef struct s_area {
 
 } s_area;
 
+/******************************************************************************
+ * The definition of the used area of a underlying area.
+ *****************************************************************************/
+
 typedef struct s_used_area {
 
 	//
-	//
+	// A reference to the underlying area.
 	//
 	s_area *area;
 
 	//
-	//
+	// The start index of the used area inside the underlying area (with
+	// used_area.idx >= 0/0)
 	//
 	s_point idx;
 
 	//
-	//
+	// The dimension of the used area (with used_area.dim <= area.dim).
 	//
 	s_point dim;
 
@@ -89,17 +94,16 @@ bool s_area_same_pos(const s_area *area, const int row, const int col);
 
 void s_area_print_block(const s_area *area, const int row, const int col, const wchar_t ch);
 
-void s_area_get_offset(const s_area *area, s_point *offset);
-
 void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col);
 
 void s_area_free(s_area *area);
 
 void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, const int col, t_block color, int *num);
 
-//void s_area_remove_marked(s_area *area, t_block **marks);
+/******************************************************************************
+ * The functions for the used area.
+ *****************************************************************************/
 
-// ---
 void s_area_get_used_area(s_area *area, s_used_area *used_area);
 
 bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area);

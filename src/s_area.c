@@ -26,7 +26,6 @@
 
 #include "s_area.h"
 #include "colors.h"
-#include "common.h"
 
 /******************************************************************************
  * The function check whether a given pixel (terminal character) is inside an
@@ -37,23 +36,33 @@
 
 bool s_area_is_inside(const s_area *area, const int row, const int col) {
 
-	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d", row, col, area->pos.row, area->pos.col, area->pos.row + area->dim.row * area->size.row, area->pos.col + area->dim.col * area->size.col);
+	bool result = true;
 
 	//
 	// Upper left corner
 	//
 	if (row < area->pos.row || col < area->pos.col) {
-		return false;
+		result = false;
 	}
+
+	//
+	// 0123456789
+	// 000111222
+	// dim * size = 3 * 3 = 9
+	//
+	const int lr_row = area->pos.row + area->dim.row * area->size.row;
+	const int lr_col = area->pos.col + area->dim.col * area->size.col;
 
 	//
 	// lower right corner
 	//
-	if (row >= area->pos.row + area->dim.row * area->size.row || col >= area->pos.col + area->dim.col * area->size.col) {
-		return false;
+	if (row >= lr_row || col >= lr_col) {
+		result = false;
 	}
 
-	return true;
+	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", row, col, area->pos.row, area->pos.col, lr_row, lr_col, boolstr(result));
+
+	return result;
 }
 
 /******************************************************************************
@@ -62,6 +71,9 @@ bool s_area_is_inside(const s_area *area, const int row, const int col) {
 
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) {
 
+	//
+	// Ensure that the pixel is inside the area
+	//
 	if (!s_area_is_inside(area, pixel->row, pixel->col)) {
 		log_exit("pixel: %d/%d not inside", pixel->row, pixel->col);
 	}
@@ -112,49 +124,6 @@ void s_area_print_block(const s_area *area, const int row, const int col, const 
 		}
 	}
 }
-
-/******************************************************************************
- * The function computes the offset, which is the relative upper left corner of
- * of the first none empty block in an area.
- *
- * Assume the area is at the home position and the mouse is not pressed. If the
- * user presses the mouse, this can be inside or outside the home area.
- *
- * If it is inside the home area, the mouse selects a pixel of the area.
- *
- * If it is outside the home area, the area is moved and the selected pixel is
- * the upper left corner of the moved area. But this is only true, if this
- * block is not empty. Otherwise it is the upper left corner of the first none
- * empty corner.
- *
- * TODO: check if it is better to compute the used area and subtract the upper
- * left corner of the used area from the area position.
- *****************************************************************************/
-
-void s_area_get_offset(const s_area *area, s_point *offset) {
-
-	for (int row = 0; row < area->dim.row; row++) {
-		for (int col = 0; col < area->dim.col; col++) {
-
-			//
-			// We are looking for the first none empty block.
-			//
-			if (area->blocks[row][col] == CLR_NONE) {
-				continue;
-			}
-
-			//
-			// Compute the relative upper left corner and we are done.
-			//
-			offset->row = row * area->size.row;
-			offset->col = col * area->size.col;
-
-			return;
-		}
-	}
-}
-
-// ---- OK -------below -------------------------------------------------------
 
 /******************************************************************************
  * The functions creates a s_area struct, by setting the values and allocating
