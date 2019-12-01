@@ -43,8 +43,6 @@ void blocks_free(t_block **blocks, const int rows);
 
 void blocks_set(t_block **blocks, const s_point *dim, const t_block value);
 
-s_point blocks_get_size(const s_point *dim, const s_point *size);
-
 #define block_upper_left(pos,size,idx) (pos) + (size) * (idx)
 
 #endif /* INC_BLOCKS_H_ */

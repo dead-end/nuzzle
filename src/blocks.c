@@ -22,9 +22,7 @@
  * SOFTWARE.
  */
 
-#include <blocks.h>
-
-#include "common.h"
+#include "blocks.h"
 #include "colors.h"
 
 /******************************************************************************
@@ -69,99 +67,4 @@ void blocks_set(t_block **blocks, const s_point *dim, const t_block value) {
 			blocks[row][col] = value;
 		}
 	}
-}
-
-/******************************************************************************
- * The function computes the used area of a block. A block may contain empty
- * rows or columns at the beginning or the end.
- *****************************************************************************/
-
-void blocks_get_used_area(t_block **blocks, const s_point *dim, s_point *used_idx, s_point *used_dim) {
-
-	//
-	// Initialize the upper left (used index) and the lower right corners of
-	// the used area with values that are to too small or too high.
-	//
-	s_point lower_right = { -1, -1 };
-
-	used_idx->row = dim->row;
-	used_idx->col = dim->col;
-
-	for (int row = 0; row < dim->row; row++) {
-		for (int col = 0; col < dim->col; col++) {
-
-			if (blocks[row][col] == CLR_NONE) {
-				continue;
-			}
-
-			if (used_idx->row > row) {
-				used_idx->row = row;
-			}
-
-			if (used_idx->col > col) {
-				used_idx->col = col;
-			}
-
-			if (lower_right.row < row) {
-				lower_right.row = row;
-			}
-
-			if (lower_right.col < col) {
-				lower_right.col = col;
-			}
-		}
-	}
-
-	//
-	// Compute the dimension from the upper left (used index) and the lower
-	// right corner of the used area.
-	//
-	used_dim->row = lower_right.row - used_idx->row + 1;
-	used_dim->col = lower_right.col - used_idx->col + 1;
-
-	log_debug("ul: %d/%d lr: %d/%d dim: %d/%d", used_idx->row, used_idx->col, lower_right.row, lower_right.col, used_dim->row, used_dim->col);
-}
-
-/******************************************************************************
- * The function can be used to check or to perform a drop at a given position.
- * It is assumed that the used area fits in the block area.
- *****************************************************************************/
-
-bool blocks_drop(t_block **blocks, const s_point *idx, t_block **drop_blocks, const s_point *drop_idx, const s_point *drop_dim, const bool do_drop) {
-
-	for (int row = 0; row < drop_dim->row; row++) {
-		for (int col = 0; col < drop_dim->col; col++) {
-
-			if (drop_blocks[drop_idx->row + row][drop_idx->col + col] == CLR_NONE) {
-				continue;
-			}
-
-			if (blocks[idx->row + row][idx->col + col] != CLR_NONE) {
-				return false;
-			}
-
-			if (do_drop) {
-				blocks[idx->row + row][idx->col + col] = drop_blocks[drop_idx->row + row][drop_idx->col + col];
-			}
-		}
-	}
-
-	log_debug("can drop at: %d/%d", idx->row, idx->col);
-
-	return true;
-}
-
-/******************************************************************************
- * The function returns a struct with the total size of the area.
- *****************************************************************************/
-
-s_point blocks_get_size(const s_point *dim, const s_point *size) {
-	s_point result;
-
-	result.row = dim->row * size->row;
-	result.col = dim->col * size->col;
-
-	log_debug("size: %d/%d", result.row, result.col);
-
-	return result;
 }
