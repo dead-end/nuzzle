@@ -228,7 +228,19 @@ static void new_area_process(s_area *new_area, const int event_row, const int ev
 				offset.col = event_col - home.col;
 
 			} else {
-				s_area_get_offset(new_area, &offset);
+
+				//
+				// Get the used area. The index of the used area is the index
+				// of the upper left corner.
+				//
+				s_used_area used_area;
+				s_area_get_used_area(new_area, &used_area);
+
+				//
+				// The offset is the relative position of the upper left corner
+				// of the used area, from the new area.
+				//
+				s_point_set(&offset, used_area.idx.row * new_area->size.row, used_area.idx.col * new_area->size.col);
 			}
 		}
 
@@ -281,6 +293,8 @@ static bool new_area_is_dropped() {
 	//
 	// Compute the upper left corner of the used area.
 	//
+	// TODO: function to compute the upper left corner of the used area, which has a reference to the underlying area.
+	// TODO: s_area_used_upper_left
 	s_point pixel;
 	pixel.row = block_upper_left(new_area.pos.row, new_area.size.row, used_area.idx.row);
 	pixel.col = block_upper_left(new_area.pos.col, new_area.size.col, used_area.idx.col);
@@ -388,7 +402,7 @@ void game_free() {
  *****************************************************************************/
 
 s_point game_get_game_area_size() {
-	return blocks_get_size(&game_area.dim, &game_area.size);
+	return s_area_get_size(&game_area);
 }
 
 /******************************************************************************
@@ -396,7 +410,7 @@ s_point game_get_game_area_size() {
  *****************************************************************************/
 
 s_point game_get_new_area_size() {
-	return blocks_get_size(&new_area.dim, &new_area.size);
+	return s_area_get_size(&new_area);
 }
 
 /******************************************************************************
