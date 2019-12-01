@@ -92,8 +92,8 @@ typedef struct s_point {
 //
 #define s_point_set(p,r,c) (p)->row = (r);(p)->col = (c)
 
-bool is_inside_area(const s_point *a_pos, const s_point *a_dim, const s_point *a_size, const int row, const int col);
-
 #define max(a,b) ((a) > (b) ? (a) : (b))
+
+#define boolstr(b) (b) ? "true" : "false"
 
 #endif /* INC_COMMON_H_ */

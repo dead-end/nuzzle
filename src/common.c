@@ -39,30 +39,3 @@ void* xmalloc(const size_t size) {
 
 	return ptr;
 }
-
-/******************************************************************************
- * The function check whether a given pixel (terminal character) is inside an
- * area, which is a two-dimensional array of blocks. The position of the area
- * is the upper left corner. The size is the number of pixels (characters) of
- * a block.
- *****************************************************************************/
-
-bool is_inside_area(const s_point *pos, const s_point *dim, const s_point *size, const int row, const int col) {
-
-	//
-	// Upper left corner
-	//
-	if (row < pos->row || col < pos->col) {
-		return false;
-	}
-
-	//
-	// lower right corner
-	//
-	if (row >= pos->row + dim->row * size->row || col >= pos->col + dim->col * size->col) {
-		return false;
-	}
-
-	return true;
-}
-
