@@ -30,12 +30,22 @@
  * Define the output data.
  *****************************************************************************/
 
+//
+// The info area has 4 rows with each 12 columns.
+//
 #define ROWS 4
 
 #define COLS 12
 
+//
+// We have an array that represents the rows and columns (including the
+// terminating \0 character)
+//
 static char data[ROWS][COLS + 1];
 
+//
+// The index defines the index for the informations.
+//
 #define IDX_HEAD 0
 
 #define IDX_HIGH 1
@@ -132,8 +142,6 @@ void info_area_print() {
 
 	log_debug("row: %d col: %d", pos.row, pos.col);
 
-	// TODO: color to colors.h ???
-	//attrset(COLOR_PAIR(CP_DEFAULT));
 	colors_info_area_attr(CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
@@ -172,31 +180,34 @@ bool info_area_contains(const s_point *pixel) {
 
 void info_area_print_pixel(const s_point *pixel, t_block color) {
 
-	//TODO: called with above
-	//
-	// Ensure that the pixel is
-	//
-//	if (!info_area_contains(pixel)) {
-//		log_exit("Wrong row: %d col: %d", pixel->row, pixel->col);
-//	}
-
 	const int row = pixel->row - pos.row;
 	const int col = pixel->col - pos.col;
 
-	colors_info_area_attr(color);
+#ifdef DEBUG
+
+	//
+	// Ensure that the data is not null (which should not be the case.
+	//
+	if (data[row][col] == '\0') {
+		log_exit("Data is null at: %d/%d", row, col);
+	}
 
 	log_debug("pixel: %d/%d '%c'", pixel->row, pixel->col, data[row][col]);
+#endif
 
-	// TODO: ensure that data[row][col] contains data other than \0
+	colors_info_area_attr(color);
+
 	mvprintw(pixel->row, pixel->col, "%c", data[row][col]);
 }
 
 /******************************************************************************
  * The function prints the status message with padding characters. This is a
  * first version, to show the end of the game.
+ *
+ * TODO: replace with menu / options
  *****************************************************************************/
 
-void info_area_set_msg(char *msg) {
+void info_area_set_msg(const char *msg) {
 
 	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, msg) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
