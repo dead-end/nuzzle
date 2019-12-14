@@ -167,23 +167,54 @@ void s_area_free(s_area *area) {
 }
 
 /******************************************************************************
- * The function computes the used area of a block. A block may contain empty
- * rows or columns at the beginning or the end.
+ * The function computes the lower right corner of the used area.
  *****************************************************************************/
 
-void s_area_get_used_area(s_area *area, s_used_area *used_area) {
+static void s_area_get_lr(const s_area *area, s_point *lr) {
 
 	//
-	// Initialize the upper left (used index) with values that are to too high.
+	// Initialize the lower right corner with a minimal, none valid value.
 	//
-	used_area->idx.row = area->dim.row;
-	used_area->idx.col = area->dim.col;
+	s_point_set(lr, -1, -1);
+
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
+
+			if (area->blocks[row][col] == CLR_NONE) {
+				continue;
+			}
+
+			//
+			// Increase the corner if necessary.
+			//
+			if (lr->row < row) {
+				lr->row = row;
+			}
+
+			if (lr->col < col) {
+				lr->col = col;
+			}
+		}
+	}
+
+	log_debug("lower right: %d/%d", lr->row, lr->col);
+}
+
+/******************************************************************************
+ * The function computes the upper left corner of the used area.
+ *****************************************************************************/
+
+static void s_area_get_ul(const s_area *area, s_point *ul) {
 
 	//
-	// Initialize the lower left corner with values that are too small.
+	// Initialize the upper left corner with a maximal, none valid value.
 	//
-	s_point lower_right = { -1, -1 };
+	ul->row = area->dim.row;
+	ul->col = area->dim.col;
 
+	//
+	// Compute the upper left corner of the used area.
+	//
 	for (int row = 0; row < area->dim.row; row++) {
 		for (int col = 0; col < area->dim.col; col++) {
 
@@ -194,54 +225,88 @@ void s_area_get_used_area(s_area *area, s_used_area *used_area) {
 			//
 			// Decrease the upper left corner
 			//
-			if (used_area->idx.row > row) {
-				used_area->idx.row = row;
+			if (ul->row > row) {
+				ul->row = row;
 			}
 
-			if (used_area->idx.col > col) {
-				used_area->idx.col = col;
-			}
-
-			//
-			// Increase the lower right corner
-			//
-			if (lower_right.row < row) {
-				lower_right.row = row;
-			}
-
-			if (lower_right.col < col) {
-				lower_right.col = col;
+			if (ul->col > col) {
+				ul->col = col;
 			}
 		}
 	}
 
-	//
-	// Compute the dimension from the upper left (used index) and the lower
-	// right corner of the used area.
-	//
-	used_area->dim.row = lower_right.row - used_area->idx.row + 1;
-	used_area->dim.col = lower_right.col - used_area->idx.col + 1;
-
-	//
-	// Add the underlying area.
-	//
-	used_area->area = area;
-
-	log_debug("ul: %d/%d lr: %d/%d dim: %d/%d", used_area->idx.row, used_area->idx.col, lower_right.row, lower_right.col, used_area->dim.row, used_area->dim.col);
+	log_debug("upper left: %d/%d", ul->row, ul->col);
 }
 
 /******************************************************************************
- * The function check whether the used area can be dropped anywhere on the
+ * The function normalizes a newly created drop area. This is done by removing
+ * empty rows and columns at the beginning. Example:
+ *
+ * 0 0 0
+ * 0 1 1
+ * 0 1 0
+ *
+ * To:
+ *
+ * 1 1 0
+ * 1 0 0
+ * 0 0 0
+ *****************************************************************************/
+
+void s_area_normalize(s_area *area) {
+
+	//
+	// Get the upper left corner of the used area.
+	//
+	s_point ul;
+	s_area_get_ul(area, &ul);
+
+	log_debug("ul: %d/%d -> 0/0", ul.row, ul.col);
+
+	//
+	// If the upper left corner is at the origin, there is nothing to do. The
+	// following loop would try to move the used area even if nothing would
+	// change.
+	//
+	if (ul.row == 0 && ul.col == 0) {
+		return;
+	}
+
+	//
+	// Copy the used area to the origin: 0/0
+	//
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
+
+			//
+			// Ensure that the target is part of the area
+			//
+			if (row + ul.row < area->dim.row && col + ul.col < area->dim.col) {
+				area->blocks[row][col] = area->blocks[row + ul.row][col + ul.col];
+
+			}
+			//
+			// If the index is outside fill the blocks with NONE.
+			//
+			else {
+				area->blocks[row][col] = CLR_NONE;
+			}
+		}
+	}
+}
+
+/******************************************************************************
+ * The function check whether the drop area can be dropped anywhere on the
  * other area.
  *****************************************************************************/
 
-bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
+bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
 
 	//
-	// Compute the end index to ensure that the used area fits in the other.
+	// Compute the end index to ensure that the drop area fits in the other.
 	//
-	const int row_end = area->dim.row - used_area->dim.row;
-	const int col_end = area->dim.col - used_area->dim.col;
+	const int row_end = area->dim.row - drop_area->dim.row;
+	const int col_end = area->dim.col - drop_area->dim.col;
 
 	s_point start;
 
@@ -249,9 +314,9 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
 		for (start.col = 0; start.col < col_end; start.col++) {
 
 			//
-			// Check if the used area can be dropped at this place.
+			// Check if the drop area can be dropped at this place.
 			//
-			if (s_area_drop(area, &start, used_area, false)) {
+			if (s_area_drop(area, &start, drop_area, false)) {
 				return true;
 			}
 		}
@@ -261,58 +326,69 @@ bool s_area_can_drop_anywhere(s_area *area, s_used_area *used_area) {
 }
 
 /******************************************************************************
- * The function check whether the used area is inside the game area, which is a
- * requirement for dropping the used area.
- * The function checks whether the upper left and the lower right corner of the
- * used area is inside the game area.
+ * The function checks whether the drop area is inside the given area. It is
+ * possible that the last rows or columns of the drop area are empty. They have
+ * to be ignored. Empty rows and columns at the beginning of the drop area are
+ * removed by the normalize function.
  *****************************************************************************/
 
-bool s_area_used_area_is_inside(const s_area *area, const s_used_area *used_area) {
+bool s_area_used_area_is_inside(const s_area *area, const s_area *drop_area) {
+
+#ifdef DEBUG
+	const int lr_area_row = area->pos.row + (area->dim.row - 1) * area->size.row;
+	const int lr_area_col = area->pos.col + (area->dim.col - 1) * area->size.col;
+
+	log_debug("Area: %d/%d %d/%d", area->pos.row, area->pos.col, lr_area_row, lr_area_col);
+
+	const int lr_drop_row = drop_area->pos.row + (drop_area->dim.row - 1) * drop_area->size.row;
+	const int lr_drop_col = drop_area->pos.col + (drop_area->dim.col - 1) * drop_area->size.col;
+
+	log_debug("Drop: %d/%d %d/%d", drop_area->pos.row, drop_area->pos.col, lr_drop_row, lr_drop_col);
+#endif
 
 	//
 	// Upper left corner
 	//
-	const int ul_row = used_area->area->pos.row + used_area->idx.row * area->size.row;
-	const int ul_col = used_area->area->pos.col + used_area->idx.col * area->size.col;
-
-	if (!s_area_is_inside(area, ul_row, ul_col)) {
-		log_debug("used area - upper left not inside: %d/%d", ul_row, ul_col);
+	if (!s_area_is_inside(area, drop_area->pos.row, drop_area->pos.col)) {
 		return false;
 	}
 
 	//
-	// Lower right corner
+	// lower right corner index
 	//
-	const int lr_row = ul_row + (used_area->dim.row - 1) * area->size.row;
-	const int lr_col = ul_col + (used_area->dim.col - 1) * area->size.col;
+	s_point lr;
+	s_area_get_lr(drop_area, &lr);
+
+	//
+	// Lower right corner position
+	//
+	const int lr_row = drop_area->pos.row + lr.row * drop_area->size.row;
+	const int lr_col = drop_area->pos.col + lr.col * drop_area->size.col;
 
 	if (!s_area_is_inside(area, lr_row, lr_col)) {
-		log_debug("used area - lower right not inside: %d/%d", lr_row, lr_col);
 		return false;
 	}
-
-	log_debug("used area - is inside ul: %d/%d area:", ul_row, ul_col);
 
 	return true;
 }
 
 /******************************************************************************
- * The function can be used to drop a used area on the game area or to check if
- * it is possible. It is assumed that the used area fits in the game area. So
- * the function checks whether there is already a block at the position, which
+ * The function can be used to drop an area on the game area or to check if it
+ * is possible. It is assumed that the drop area fits in the game area. So the
+ * function checks whether there is already a block at the position, which
  * blocks the dropping.
  *****************************************************************************/
 
-bool s_area_drop(s_area *area, const s_point *idx, s_used_area *used_area, const bool do_drop) {
+bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, const bool do_drop) {
 
-	for (int row = 0; row < used_area->dim.row; row++) {
-		for (int col = 0; col < used_area->dim.col; col++) {
+	for (int row = 0; row < drop_area->dim.row; row++) {
+		for (int col = 0; col < drop_area->dim.col; col++) {
 
 			//
 			// If the block of the used area is not defined, there is nothing
 			// to do or to check.
 			//
-			if (used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col] == CLR_NONE) {
+			if (drop_area->blocks[row][col] == CLR_NONE) {
 				continue;
 			}
 
@@ -329,7 +405,7 @@ bool s_area_drop(s_area *area, const s_point *idx, s_used_area *used_area, const
 			// defines whether the dropping should be performed.
 			//
 			if (do_drop) {
-				area->blocks[idx->row + row][idx->col + col] = used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col];
+				area->blocks[idx->row + row][idx->col + col] = drop_area->blocks[row][col];
 			}
 		}
 	}
@@ -361,7 +437,7 @@ static void s_area_remove_marked(s_area *area, t_block **marks) {
 				area->blocks[row][col] = CLR_NONE;
 
 				//
-				// REset the marked area.
+				// Reset the marked area.
 				//
 				marks[row][col] = 0;
 			}
@@ -419,26 +495,26 @@ void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, c
 }
 
 /******************************************************************************
- * The function is called after a used block is dropped. It checks if blocks of
- * the game area should disappear. If more than 4 blocks with the same color
- * are neighbors, they should be removed.
+ * The function is called after an area is dropped. It checks if blocks of the
+ * game area should disappear. If more than 4 blocks with the same color are
+ * neighbors, they should be removed.
  *
  * The function returns the number of removed blocks.
  *****************************************************************************/
 
-int s_area_remove_blocks(s_area *area, const s_point *idx, s_used_area *used_area, t_block **marks) {
+int s_area_remove_blocks(s_area *area, const s_point *idx, const s_area *drop_area, t_block **marks) {
 	int total = 0;
 	int num;
 
 	t_block color;
 
 	//
-	// Iterate over the blocks of the used area.
+	// Iterate over the blocks of the drop area.
 	//
-	for (int row = 0; row < used_area->dim.row; row++) {
-		for (int col = 0; col < used_area->dim.col; col++) {
+	for (int row = 0; row < drop_area->dim.row; row++) {
+		for (int col = 0; col < drop_area->dim.col; col++) {
 
-			color = used_area->area->blocks[used_area->idx.row + row][used_area->idx.col + col];
+			color = drop_area->blocks[row][col];
 
 			//
 			// If the current, dropped block of the area has no color, it
@@ -450,8 +526,8 @@ int s_area_remove_blocks(s_area *area, const s_point *idx, s_used_area *used_are
 			}
 
 			//
-			// If the block of the used area has a color, we mark all neighbors
-			// with the same color.
+			// If the block of the dropped area has a color, we mark all
+			// neighbors with the same color.
 			//
 			num = 0;
 			s_area_mark_neighbors(area, marks, idx->row + row, idx->col + col, color, &num);
