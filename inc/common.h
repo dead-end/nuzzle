@@ -92,6 +92,10 @@ typedef struct s_point {
 //
 #define s_point_set(p,r,c) (p)->row = (r);(p)->col = (c)
 
+#define s_point_copy(t,f) (t)->row = (f)->row; (t)->col = (f)->col
+
+#define s_point_same(t,f) (((t)->row == (f)->row) && ((t)->col == (f)->col))
+
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 #define boolstr(b) (b) ? "true" : "false"
