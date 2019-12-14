@@ -233,17 +233,32 @@ int main() {
 			//
 			//			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
 
-			if (event.bstate & BUTTON1_RELEASED) {
+//			if (event.bstate & BUTTON1_RELEASED) {
+//
+//				game_process_event_release(event.y, event.x);
+//
+//				pressed = false;
+//
+//			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
+//
+//				game_process_event_pressed(event.y, event.x);
+//
+//				pressed = true;
+//			}
 
-				game_process_event_release(event.y, event.x);
+			if (event.bstate & BUTTON1_PRESSED) {
+				pressed = !pressed;
+//				if (!pressed) {
+//					pressed = true;
+//				} else {
+//					pressed = false;
+//				}
+			}
 
-				pressed = false;
-
-			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
-
+			if (pressed) {
 				game_process_event_pressed(event.y, event.x);
-
-				pressed = true;
+			} else {
+				game_process_event_release(event.y, event.x);
 			}
 
 		} else {
