@@ -328,3 +328,28 @@ void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool
 void colors_bg_attr(const t_block color) {
 	attrset(COLOR_PAIR(color));
 }
+
+/******************************************************************************
+ * The function determines the character to display for a given foreground and
+ * background color.
+ *****************************************************************************/
+
+wchar_t colors_get_char(const t_block fg_color, const t_block bg_color) {
+	wchar_t chr;
+
+	if (fg_color != CLR_NONE) {
+
+		if (bg_color != CLR_NONE) {
+			chr = BLOCK_BOTH;
+
+		} else {
+			chr = BLOCK_FULL;
+		}
+	} else {
+		chr = BLOCK_EMPTY;
+	}
+
+	log_debug("color fg: %d bg: %d char '%lc", fg_color, bg_color, chr);
+
+	return chr;
+}

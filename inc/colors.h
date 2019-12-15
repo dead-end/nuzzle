@@ -55,4 +55,6 @@ void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool
 
 void colors_bg_attr(const t_block color);
 
+wchar_t colors_get_char(const t_block fg_color, const t_block bg_color);
+
 #endif /* INC_COLORS_H_ */
