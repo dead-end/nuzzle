@@ -102,31 +102,6 @@ static void game_area_print(const s_area *game_area) {
 }
 
 /******************************************************************************
- * The function determines the character to display for a pixel (terminal
- * character).
- *****************************************************************************/
-// TODO: be called with foreground and background color.
-static wchar_t get_char(const s_area *game_area, const s_point *idx, const t_block fg_color) {
-	wchar_t chr;
-
-	if (fg_color != CLR_NONE) {
-
-		if (game_area->blocks[idx->row][idx->col] != CLR_NONE) {
-			chr = BLOCK_BOTH;
-
-		} else {
-			chr = BLOCK_FULL;
-		}
-	} else {
-		chr = BLOCK_EMPTY;
-	}
-
-	log_debug("block: (%d, %d) color: %d char '%lc", idx->row, idx->col, fg_color, chr);
-
-	return chr;
-}
-
-/******************************************************************************
  *
  *****************************************************************************/
 // TODO:
@@ -136,13 +111,16 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 
 	const s_point idx = s_area_get_block(game_area, pixel);
 
-	colors_game_attr(fg_color, game_area->blocks[idx.row][idx.col], colors_is_even(idx.row, idx.col));
+	const t_block bg_color = game_area->blocks[idx.row][idx.col];
+
+	colors_game_attr(fg_color, bg_color, colors_is_even(idx.row, idx.col));
 
 	//
 	// Get the character to be printed. This can be a space, a block or
 	// transparent block character.
 	//
-	const wchar_t chr = get_char(game_area, &idx, fg_color);
+
+	const wchar_t chr = colors_get_char(fg_color, bg_color);
 
 	mvprintw(pixel->row, pixel->col, "%lc", chr);
 }
@@ -378,6 +356,7 @@ static bool new_area_is_dropped(s_area *game_area, s_area *drop_area, t_block **
 	//
 	s_area_drop(game_area, &drop_point, drop_area, true);
 	new_area_delete(game_area, drop_area);
+
 	refresh();
 	if (usleep(USLEEP) == -1) {
 		log_exit("Sleep failed: %s", strerror(errno));
@@ -547,7 +526,8 @@ void game_process_event_release(const int row, const int col) {
 		// Delete the current none-empty blocks. After calling
 		// new_area_fill(), the non-empty blocks may be different.
 		//
-		new_area_delete(&_game_area, &_drop_area);
+		//new_area_delete(&_game_area, &_drop_area);
+		new_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
 
 		//
 		// Fill the blocks with new, random colors.
@@ -560,7 +540,8 @@ void game_process_event_release(const int row, const int col) {
 			info_area_set_msg("End");
 		}
 	} else {
-		new_area_delete(&_game_area, &_drop_area);
+		//new_area_delete(&_game_area, &_drop_area);
+		new_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
 	}
 
 	new_area_process(&_game_area, &_drop_area, HOME_ROW, HOME_COL);
