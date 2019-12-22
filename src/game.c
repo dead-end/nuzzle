@@ -45,7 +45,9 @@
 #define DO_PRINT true
 #define DO_DELETE false
 
-#define USLEEP 200000
+//#define USLEEP 200000
+
+#define USLEEP 2000000
 
 /******************************************************************************
  *
@@ -153,25 +155,11 @@ static void game_print_foreground(const s_area *game_area, const s_point *area_p
 }
 
 /******************************************************************************
- * The function removes the foreground character in an area around the drop
- * area. If the block is not aligned at the time of dropping, the position is
- * adjusted. This adjustment is added on both sides of the area. This shifts
- * the position to the left and increases the size with twice the ADJUST size.
- *****************************************************************************/
-// TODO: necessary?? can be replaced with an exact function??
-static void new_area_delete(const s_area *game_area, const s_area *drop_area) {
-	s_point area_pos = { .row = drop_area->pos.row, .col = drop_area->pos.col - ADJUST };
-	s_point area_size = { .row = drop_area->size.row * drop_area->dim.row, .col = drop_area->size.col * drop_area->dim.col + 2 * ADJUST };
-
-	game_print_foreground(game_area, &area_pos, &area_size, CLR_NONE, BLOCK_EMPTY);
-}
-
-/******************************************************************************
  * The function processes all blocks. For each block, the upper left pixel
  * (terminal character) is computed.
  *****************************************************************************/
 
-static void new_area_process_blocks(const s_area *game_area, const s_area *drop_area, const bool do_print) {
+static void drop_area_process_blocks(const s_area *game_area, const s_area *drop_area, const bool do_print) {
 	s_point drop_area_ul;
 
 	for (int row = 0; row < drop_area->dim.row; row++) {
@@ -258,6 +246,72 @@ static void area_update(s_area *area) {
 	s_area_normalize(area);
 }
 
+/******************************************************************************
+ * The function moves the drop area to a given position.
+ *****************************************************************************/
+
+static void animate_move(s_area *game_area, s_area *drop_area, const s_point *to) {
+
+	log_debug("Move from: %d/%d to: %d/%d", drop_area->pos.row, drop_area->pos.col, to->row, to->col);
+
+	//
+	// If the drop area is already at the position, there is nothing to do.
+	//
+	if (s_point_same(&drop_area->pos, to)) {
+		return;
+	}
+
+	//
+	// Delete the drop area at the old position.
+	//
+	drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+
+	//
+	// Move the drop area to the new position.
+	//
+	s_point_copy(&drop_area->pos, to);
+
+	//
+	// Print and show the drop area at the new position.
+	//
+	drop_area_process_blocks(game_area, &_drop_area, DO_PRINT);
+
+	refresh();
+
+	//
+	// Sleep to show the movement
+	//
+	if (usleep(USLEEP) == -1) {
+		log_exit("Sleep failed: %s", strerror(errno));
+	}
+}
+
+/******************************************************************************
+ * The function drops the drop area at a given position.
+ *****************************************************************************/
+
+static void animate_drop(s_area *game_area, const s_point *drop_point, s_area *drop_area) {
+
+	//
+	// Drop the used area.
+	//
+	s_area_drop(game_area, drop_point, drop_area, true);
+
+	//
+	// Delete the drop area from the foreground
+	//
+	drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+
+	refresh();
+
+	//
+	// Sleep to show the movement
+	//
+	if (usleep(USLEEP) == -1) {
+		log_exit("Sleep failed: %s", strerror(errno));
+	}
+}
+
 // TODO: Mark OK ----- UPPER --------------------------------------------------
 
 /******************************************************************************
@@ -298,7 +352,7 @@ static void new_area_process(s_area *game_area, s_area *drop_area, const int eve
 		log_debug("pos: %d/%d offset:  %d/%d", drop_area->pos.row, drop_area->pos.col, _offset.row, _offset.col);
 	}
 
-	new_area_process_blocks(game_area, drop_area, DO_PRINT);
+	drop_area_process_blocks(game_area, drop_area, DO_PRINT);
 }
 
 /******************************************************************************
@@ -341,26 +395,9 @@ static bool new_area_is_dropped(s_area *game_area, s_area *drop_area, t_block **
 
 	log_debug("new: %d/%d adjust: %d/%d", drop_area->pos.row, drop_area->pos.col, adj_area.pos.row, adj_area.pos.col);
 
-	if (!s_point_same(&drop_area->pos, &adj_area.pos)) {
+	animate_move(game_area, drop_area, &adj_area.pos);
 
-		s_point_copy(&drop_area->pos, &adj_area.pos);
-		refresh();
-
-		if (usleep(USLEEP) == -1) {
-			log_exit("Sleep failed: %s", strerror(errno));
-		}
-	}
-
-	//
-	// Drop the used area.
-	//
-	s_area_drop(game_area, &drop_point, drop_area, true);
-	new_area_delete(game_area, drop_area);
-
-	refresh();
-	if (usleep(USLEEP) == -1) {
-		log_exit("Sleep failed: %s", strerror(errno));
-	}
+	animate_drop(game_area, &drop_point, drop_area);
 
 	//
 	// Remove adjacent blocks if possible.
@@ -369,7 +406,6 @@ static bool new_area_is_dropped(s_area *game_area, s_area *drop_area, t_block **
 	if (num_removed >= 4) {
 		info_area_add_to_score(num_removed);
 		game_area_print(game_area);
-
 	}
 
 	log_debug_str("Is dropped!");
@@ -436,73 +472,11 @@ void game_free() {
  *
  *****************************************************************************/
 
-s_point game_get_game_area_size() {
-	return s_area_get_size(&_game_area);
-}
-
-/******************************************************************************
- * The function returns a struct with the total size of the new area.
- *****************************************************************************/
-
-s_point game_get_new_area_size() {
-	return s_area_get_size(&_drop_area);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void game_set_game_area_pos(const int row, const int col) {
-	s_point_set(&_game_area.pos, row, col);
-}
-
-/******************************************************************************
- * The function sets the position of the new area. This is done on the
- * initialization and on resizing the terminal.
- *****************************************************************************/
-
-void game_set_new_area_pos(const int row, const int col) {
-
-	//
-	// The home position is the initial position and changes only on resizing
-	// the terminal
-	//
-	s_point_set(&_home, row, col);
-
-	//
-	// The initial position is the home position. It can change by the mouse
-	// motion.
-	//
-	s_point_set(&_drop_area.pos, row, col);
-
-	log_debug("position: %d/%d", _drop_area.pos.row, _drop_area.pos.col);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void game_print_game_area() {
-	game_area_print(&_game_area);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
-void game_print_new_area() {
-	new_area_process_blocks(&_game_area, &_drop_area, DO_PRINT);
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-
 void game_process_event_pressed(const int row, const int col) {
 
 	if (!s_area_same_pos(&_drop_area, row, col)) {
 
-		new_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
 
 		new_area_process(&_game_area, &_drop_area, row, col);
 	}
@@ -527,7 +501,7 @@ void game_process_event_release(const int row, const int col) {
 		// new_area_fill(), the non-empty blocks may be different.
 		//
 		//new_area_delete(&_game_area, &_drop_area);
-		new_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
 
 		//
 		// Fill the blocks with new, random colors.
@@ -541,8 +515,68 @@ void game_process_event_release(const int row, const int col) {
 		}
 	} else {
 		//new_area_delete(&_game_area, &_drop_area);
-		new_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
 	}
 
+	//
+	// Move the current drop area to the home position or create a new drop
+	// position at the home position.
+	//
+	// TODO: drop only if it is possible,
 	new_area_process(&_game_area, &_drop_area, HOME_ROW, HOME_COL);
+}
+
+// -------------------------------
+#define DELIM 4
+
+void game_do_center() {
+
+	//
+	// Get the sizes of the different areas.
+	//
+	const s_point game_size = s_area_get_size(&_game_area);
+
+	const s_point new_size = s_area_get_size(&_drop_area);
+
+	const s_point info_size = info_area_get_size();
+
+	//
+	// Compute the size of all areas.
+	//
+	int total_rows = game_size.row;
+	int total_cols = game_size.col + DELIM + max(info_size.col, new_size.col);
+
+	//
+	// Get the center positions
+	//
+	const int ul_row = (getmaxy(stdscr) - total_rows) / 2;
+	const int ul_col = (getmaxx(stdscr) - total_cols) / 2;
+
+	log_debug("upper left row: %d col: %d", ul_row, ul_col);
+
+	s_point_set(&_game_area.pos, ul_row, ul_col);
+
+	s_point_set(&_home, ul_row + info_size.row + DELIM, ul_col + game_size.col + DELIM);
+	s_point_set(&_drop_area.pos, _home.row, _home.col);
+
+	info_area_set_pos(ul_row, _home.col);
+
+	//
+	// Delete the old content.
+	//
+	erase();
+
+	//
+	// Print the areas at the updated position
+	//
+	game_area_print(&_game_area);
+
+	drop_area_process_blocks(&_game_area, &_drop_area, DO_PRINT);
+
+	info_area_print();
+
+	//
+	// Call refresh to show the result
+	//
+	refresh();
 }

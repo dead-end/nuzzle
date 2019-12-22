@@ -105,64 +105,6 @@ static void exit_callback() {
 }
 
 /******************************************************************************
- * The function places the areas of the game in the center of the terminal. It
- * is called after the initialization and on the resizing of the terminal.
- *****************************************************************************/
-
-#define DELIM 4
-
-void do_center() {
-
-	//
-	// Get the sizes of the different areas.
-	//
-	const s_point game_size = game_get_game_area_size();
-
-	const s_point new_size = game_get_new_area_size();
-
-	const s_point info_size = info_area_get_size();
-
-	//
-	// Compute the size of all areas.
-	//
-	int total_rows = game_size.row;
-	int total_cols = game_size.col + DELIM + max(info_size.col, new_size.col);
-
-	//
-	// Get the center positions
-	//
-	const int ul_row = (getmaxy(stdscr) - total_rows) / 2;
-	const int ul_col = (getmaxx(stdscr) - total_cols) / 2;
-
-	log_debug("upper left row: %d col: %d", ul_row, ul_col);
-
-	game_set_game_area_pos(ul_row, ul_col);
-
-	game_set_new_area_pos(ul_row + info_size.row + DELIM, ul_col + game_size.col + DELIM);
-
-	info_area_set_pos(ul_row, ul_col + game_size.col + DELIM);
-
-	//
-	// Delete the old content.
-	//
-	erase();
-
-	//
-	// Print the areas at the updated position
-	//
-	game_print_game_area();
-
-	game_print_new_area();
-
-	info_area_print();
-
-	//
-	// Call refresh to show the result
-	//
-	refresh();
-}
-
-/******************************************************************************
  * The main function.
  *****************************************************************************/
 
@@ -193,7 +135,7 @@ int main() {
 
 	info_area_init(0);
 
-	do_center();
+	game_do_center();
 
 	//
 	// Move the cursor to the initial position (which prevents flickering) and
@@ -218,7 +160,7 @@ int main() {
 			log_debug_str("Nothing happened.");
 
 		} else if (c == KEY_RESIZE) {
-			do_center();
+			game_do_center();
 
 		} else if (c == KEY_MOUSE) {
 			MEVENT event;
@@ -233,29 +175,30 @@ int main() {
 			//
 			//			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
 
-//			if (event.bstate & BUTTON1_RELEASED) {
-//
-//				game_process_event_release(event.y, event.x);
-//
-//				pressed = false;
-//
-//			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
-//
-//				game_process_event_pressed(event.y, event.x);
-//
-//				pressed = true;
-//			}
+			//			if (event.bstate & BUTTON1_RELEASED) {
+			//
+			//				game_process_event_release(event.y, event.x);
+			//
+			//				pressed = false;
+			//
+			//			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
+			//
+			//				game_process_event_pressed(event.y, event.x);
+			//
+			//				pressed = true;
+			//			}
 
 			if (event.bstate & BUTTON1_PRESSED) {
 				pressed = !pressed;
-//				if (!pressed) {
-//					pressed = true;
-//				} else {
-//					pressed = false;
-//				}
+				//				if (!pressed) {
+				//					pressed = true;
+				//				} else {
+				//					pressed = false;
+				//				}
 			}
 
 			if (pressed) {
+				// TODO: only if drop area is picked up.
 				game_process_event_pressed(event.y, event.x);
 			} else {
 				game_process_event_release(event.y, event.x);
