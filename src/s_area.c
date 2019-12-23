@@ -84,8 +84,7 @@ bool s_area_is_inside(const s_area *area, const int row, const int col) {
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
 
-s_point s_area_get_block(const s_area *area, const s_point *pixel) {
-	s_point block;
+void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) {
 
 	//
 	// Ensure that the pixel is inside the area
@@ -94,12 +93,10 @@ s_point s_area_get_block(const s_area *area, const s_point *pixel) {
 		log_exit("pixel: %d/%d not inside", pixel->row, pixel->col);
 	}
 
-	block.row = (pixel->row - area->pos.row) / area->size.row;
-	block.col = (pixel->col - area->pos.col) / area->size.col;
+	block->row = (pixel->row - area->pos.row) / area->size.row;
+	block->col = (pixel->col - area->pos.col) / area->size.col;
 
-	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block.row, block.col);
-
-	return block;
+	log_debug("pixel - row: %d col: %d block - row: %d col: %d", pixel->row, pixel->col, block->row, block->col);
 }
 
 /******************************************************************************

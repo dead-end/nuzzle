@@ -64,7 +64,7 @@ s_point s_area_get_size(const s_area *area);
 
 bool s_area_is_inside(const s_area *area, const int row, const int col);
 
-s_point s_area_get_block(const s_area *area, const s_point *pixel);
+void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block);
 
 bool s_area_is_aligned(const s_area *area, const int row, const int col);
 
