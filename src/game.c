@@ -111,7 +111,8 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 
 	log_debug("pixel: %d/%d, color: %d", pixel->row, pixel->col, fg_color);
 
-	const s_point idx = s_area_get_block(game_area, pixel);
+	s_point idx;
+	s_area_get_block(game_area, pixel, &idx);
 
 	const t_block bg_color = game_area->blocks[idx.row][idx.col];
 
@@ -359,63 +360,97 @@ static void new_area_process(s_area *game_area, s_area *drop_area, const int eve
  *
  *****************************************************************************/
 
-static bool new_area_is_dropped(s_area *game_area, s_area *drop_area, t_block **marks) {
+bool game_can_drop_area(s_area *game_area, s_point *drop_point, s_area *drop_area, s_area *adj_area) {
 
 	//
 	// Copy the drop area to the adjusted area.
 	//
-	s_area adj_area;
-	s_area_copy(&adj_area, drop_area);
+	s_area_copy(adj_area, drop_area);
 
 	//
 	// do adjust the new_area if possible
 	//
-	if (!do_adjust(game_area, drop_area, &adj_area)) {
+	if (!do_adjust(game_area, drop_area, adj_area)) {
 		return false;
 	}
+
+	log_debug("new: %d/%d adjust: %d/%d", drop_area->pos.row, drop_area->pos.col, adj_area->pos.row, adj_area->pos.col);
 
 	//
 	// Ensure that the used area is inside the game area.
 	//
-	if (!s_area_used_area_is_inside(game_area, &adj_area)) {
+	if (!s_area_used_area_is_inside(game_area, adj_area)) {
 		return false;
 	}
 
 	//
 	// Compute the corresponding index in the game area.
 	//
-	const s_point drop_point = s_area_get_block(game_area, &adj_area.pos);
+	s_area_get_block(game_area, &adj_area->pos, drop_point);
 
 	//
 	// Check if the used area can be dropped at the game area position.
 	//
-	if (!s_area_drop(game_area, &drop_point, drop_area, false)) {
-		return false;
-	}
-
-	log_debug("new: %d/%d adjust: %d/%d", drop_area->pos.row, drop_area->pos.col, adj_area.pos.row, adj_area.pos.col);
-
-	animate_move(game_area, drop_area, &adj_area.pos);
-
-	animate_drop(game_area, &drop_point, drop_area);
-
-	//
-	// Remove adjacent blocks if possible.
-	//
-	const int num_removed = s_area_remove_blocks(game_area, &drop_point, drop_area, marks);
-	if (num_removed >= 4) {
-		info_area_add_to_score(num_removed);
-		game_area_print(game_area);
-	}
-
-	log_debug_str("Is dropped!");
-
-	return true;
+	return s_area_drop(game_area, drop_point, drop_area, false);
 }
+/*
+ static bool new_area_is_dropped(s_area *game_area, s_area *drop_area, t_block **marks) {
 
+ //
+ // Copy the drop area to the adjusted area.
+ //
+ s_area adj_area;
+ s_area_copy(&adj_area, drop_area);
+
+ //
+ // do adjust the new_area if possible
+ //
+ if (!do_adjust(game_area, drop_area, &adj_area)) {
+ return false;
+ }
+
+ //
+ // Ensure that the used area is inside the game area.
+ //
+ if (!s_area_used_area_is_inside(game_area, &adj_area)) {
+ return false;
+ }
+
+ //
+ // Compute the corresponding index in the game area.
+ //
+ s_point drop_point;
+ s_area_get_block(game_area, &adj_area.pos, &drop_point);
+
+ //
+ // Check if the used area can be dropped at the game area position.
+ //
+ if (!s_area_drop(game_area, &drop_point, drop_area, false)) {
+ return false;
+ }
+
+ log_debug("new: %d/%d adjust: %d/%d", drop_area->pos.row, drop_area->pos.col, adj_area.pos.row, adj_area.pos.col);
+
+ animate_move(game_area, drop_area, &adj_area.pos);
+
+ animate_drop(game_area, &drop_point, drop_area);
+
+ //
+ // Remove adjacent blocks if possible.
+ //
+ const int num_removed = s_area_remove_blocks(game_area, &drop_point, drop_area, marks);
+ if (num_removed >= 4) {
+ info_area_add_to_score(num_removed);
+ game_area_print(game_area);
+ }
+
+ log_debug_str("Is dropped!");
+
+ return true;
+ }
+ */
 // ----------------------------------------
 // INTERFACE
-
 /******************************************************************************
  * The function initializes the new area.
  *****************************************************************************/
@@ -494,7 +529,26 @@ void game_process_event_release(const int row, const int col) {
 	// area is deleted, which means that the foreground is deleted,
 	// the background will be visible.
 	//
-	if (new_area_is_dropped(&_game_area, &_drop_area, _marks)) {
+
+	s_point drop_point;
+	s_area adj_area;
+
+	if (game_can_drop_area(&_game_area, &drop_point, &_drop_area, &adj_area)) {
+
+		animate_move(&_game_area, &_drop_area, &adj_area.pos);
+
+		animate_drop(&_game_area, &drop_point, &_drop_area);
+
+		//
+		// Remove adjacent blocks if possible.
+		//
+		const int num_removed = s_area_remove_blocks(&_game_area, &drop_point, &_drop_area, _marks);
+		if (num_removed >= 4) {
+			info_area_add_to_score(num_removed);
+			game_area_print(&_game_area);
+		}
+
+		log_debug_str("Is dropped!");
 
 		//
 		// Delete the current none-empty blocks. After calling
@@ -526,6 +580,47 @@ void game_process_event_release(const int row, const int col) {
 	new_area_process(&_game_area, &_drop_area, HOME_ROW, HOME_COL);
 }
 
+/*
+ void game_process_event_release2(const int row, const int col) {
+ log_debug("pos: %d/%d", row, col);
+
+ //
+ // Dropping means that the game area is updated. If the new
+ // area is deleted, which means that the foreground is deleted,
+ // the background will be visible.
+ //
+ if (new_area_is_dropped(&_game_area, &_drop_area, _marks)) {
+
+ //
+ // Delete the current none-empty blocks. After calling
+ // new_area_fill(), the non-empty blocks may be different.
+ //
+ //new_area_delete(&_game_area, &_drop_area);
+ drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+
+ //
+ // Fill the blocks with new, random colors.
+ //
+ area_update(&_drop_area);
+ //colors_init_random(_new_area.blocks, _new_area.dim.row, _new_area.dim.col);
+
+ if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
+ log_debug_str("ENDDDDDDDDDDDDD");
+ info_area_set_msg("End");
+ }
+ } else {
+ //new_area_delete(&_game_area, &_drop_area);
+ drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+ }
+
+ //
+ // Move the current drop area to the home position or create a new drop
+ // position at the home position.
+ //
+ // TODO: drop only if it is possible,
+ new_area_process(&_game_area, &_drop_area, HOME_ROW, HOME_COL);
+ }
+ */
 // -------------------------------
 #define DELIM 4
 
