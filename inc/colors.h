@@ -51,7 +51,7 @@ void colors_init_random(t_block **blocks, const int rows, const int cols);
 
 void colors_info_area_attr(const t_block bg_color);
 
-void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool even);
+void colors_set_game_attr(const t_block fg_color, const t_block bg_color, const bool even);
 
 void colors_bg_attr(const t_block color);
 
