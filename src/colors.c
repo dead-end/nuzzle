@@ -237,7 +237,7 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
 			//
 			// First check if a block should get a color.
 			//
-			if (rand() % 100 < 75) {
+			if (rand() % 100 < 80) {
 				blocks[row][col] = CLR_NONE;
 
 			} else {
@@ -293,7 +293,7 @@ void colors_info_area_attr(const t_block bg_color) {
  * character.
  *****************************************************************************/
 
-void colors_game_attr(const t_block fg_color, const t_block bg_color, const bool even) {
+void colors_set_game_attr(const t_block fg_color, const t_block bg_color, const bool even) {
 	int color_pair;
 
 	//
