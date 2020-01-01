@@ -39,3 +39,24 @@ void* xmalloc(const size_t size) {
 
 	return ptr;
 }
+
+/******************************************************************************
+ * The function is called with an array of strings, which is NULL terminated.
+ * It computes the maximal string length and the number of rows.
+ *****************************************************************************/
+
+s_point strs_dim(const char *strs[]) {
+	s_point dim = { .row = 0, .col = -1 };
+
+	int col;
+
+	for (int i = 0; strs[i] != NULL; i++) {
+		col = strlen(strs[i]);
+		if (col > dim.col) {
+			dim.col = col;
+		}
+		dim.row++;
+	}
+
+	return dim;
+}

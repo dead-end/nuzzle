@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 /******************************************************************************
  * Definition of the print_debug macro. It is only defined if the DEBUG flag is
@@ -99,5 +100,9 @@ typedef struct s_point {
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 #define boolstr(b) (b) ? "true" : "false"
+
+#define center(t,w) (((t) - (w)) / 2)
+
+s_point strs_dim(const char *strs[]);
 
 #endif /* INC_COMMON_H_ */
