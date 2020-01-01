@@ -29,6 +29,7 @@
 #include "info_area.h"
 #include "bg_area.h"
 #include "game.h"
+#include "win_menu.h"
 
 /******************************************************************************
  * The function initializes ncurses and the locale, which is necessary for the
@@ -80,6 +81,9 @@ static void init_ncurses() {
 	printf("\033[?1003h\n");
 
 	mouseinterval(0);
+
+	// TODO ERROR
+	curs_set(0);
 }
 
 /******************************************************************************
@@ -135,6 +139,18 @@ int main() {
 
 	info_area_init(0);
 
+	//---------------------------
+
+	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
+	int idx = wm_process_menu(choices);
+
+	if (idx == 1) {
+		exit(0);
+	}
+
+	//wgetch(stdscr);
+	// --------------------------
+
 	game_do_center();
 
 	//
@@ -142,7 +158,6 @@ int main() {
 	// hide the cursor.
 	//
 	move(0, 0);
-	curs_set(0);
 
 	refresh();
 
