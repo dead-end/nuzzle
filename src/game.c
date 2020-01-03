@@ -100,7 +100,7 @@ static void game_area_print(const s_area *game_area) {
 
 			colors_set_game_attr(CLR_NONE, game_area->blocks[row][col], colors_is_even(row, col));
 
-			s_area_print_block(game_area, row, col, BLOCK_EMPTY);
+			s_area_print_block(stdscr, game_area, row, col, BLOCK_EMPTY);
 		}
 	}
 }
@@ -137,7 +137,7 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 	//
 	// Print the character at the position.
 	//
-	mvprintw(pixel->row, pixel->col, "%lc", chr);
+	mvwprintw(stdscr, pixel->row, pixel->col, "%lc", chr);
 }
 
 /******************************************************************************
@@ -156,10 +156,10 @@ static void game_print_foreground(const s_area *game_area, const s_point *area_p
 				game_area_print_pixel(game_area, &pixel, color);
 
 			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(&pixel, color);
+				info_area_print_pixel(stdscr, &pixel, color);
 
 			} else {
-				bg_area_print_pixel(&pixel, color, chr);
+				bg_area_print_pixel(stdscr, &pixel, color, chr);
 			}
 		}
 	}
@@ -422,7 +422,7 @@ void game_process_event_release(const int event_row, const int event_col) {
 		//
 		const int num_removed = s_area_remove_blocks(&_game_area, &drop_point, &_drop_area, _marks);
 		if (num_removed >= 4) {
-			info_area_add_to_score(num_removed);
+			info_area_add_to_score(stdscr, num_removed);
 			game_area_print(&_game_area);
 		}
 
@@ -439,7 +439,7 @@ void game_process_event_release(const int event_row, const int event_col) {
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
 			log_debug_str("ENDDDDDDDDDDDDD");
-			info_area_set_msg("End");
+			info_area_set_msg(stdscr, "End");
 		}
 	}
 
@@ -567,7 +567,7 @@ void game_do_center() {
 
 	drop_area_process_blocks(&_game_area, &_drop_area, DO_PRINT);
 
-	info_area_print();
+	info_area_print(stdscr);
 
 	//
 	// Call refresh to show the result.
