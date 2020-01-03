@@ -32,6 +32,8 @@
 #define STR_CONT "  Continue  "
 #define STR_EXIT "    Exit    "
 
-int wm_process_menu(const char **labels);
+#define ESC_RETURN -1
+
+int wm_process_menu(const char **labels, const bool ignore_esc);
 
 #endif /* INC_WIN_MENU_H_ */

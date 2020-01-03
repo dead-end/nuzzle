@@ -26,6 +26,7 @@
 #include <menu.h>
 #include <string.h>
 
+#include "win_menu.h"
 #include "common.h"
 
 const char *headers[] = {
@@ -282,7 +283,7 @@ static WINDOW* wm_create_centered_derwin(WINDOW *win_parent, const s_point *dim)
  *
  *****************************************************************************/
 
-static int wm_event_loop(WINDOW *menu_win, MENU *menu) {
+static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 	int c;
 	ITEM *item;
 
@@ -295,6 +296,12 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu) {
 		c = wgetch(menu_win);
 
 		switch (c) {
+
+		case KEY_ESC:
+			if (!ignore_esc) {
+				return ESC_RETURN;
+			}
+			break;
 
 		case KEY_ENTER:
 		case 10:
@@ -321,7 +328,7 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu) {
  * resources are allocated and freed.
  *****************************************************************************/
 
-int wm_process_menu(const char **labels) {
+int wm_process_menu(const char **labels, const bool ignore_esc) {
 	MENU *menu;
 	WINDOW *menu_win;
 	WINDOW *menu_derwin;
@@ -352,7 +359,7 @@ int wm_process_menu(const char **labels) {
 
 	wrefresh(menu_win);
 
-	const int idx = wm_event_loop(menu_win, menu);
+	const int idx = wm_event_loop(menu_win, menu, ignore_esc);
 
 	wm_free(menu_win, menu_derwin, menu);
 
