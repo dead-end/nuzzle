@@ -97,7 +97,7 @@ void info_area_init(const int hs) {
  * updated info area has to be reprinted.
  *****************************************************************************/
 
-void info_area_add_to_score(const int add_2_score) {
+void info_area_add_to_score(WINDOW *win, const int add_2_score) {
 
 	cur_score += add_2_score;
 
@@ -105,7 +105,7 @@ void info_area_add_to_score(const int add_2_score) {
 		log_exit("Truncated: %s", data[IDX_SCORE]);
 	}
 
-	info_area_print();
+	info_area_print(win);
 }
 
 /******************************************************************************
@@ -138,14 +138,14 @@ void info_area_set_pos(const int row, const int col) {
  * The function prints the info area at the absolute position.
  *****************************************************************************/
 
-void info_area_print() {
+void info_area_print(WINDOW *win) {
 
 	log_debug("row: %d col: %d", pos.row, pos.col);
 
 	colors_info_area_attr(CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
-		mvprintw(pos.row + i, pos.col, data[i]);
+		mvwprintw(win, pos.row + i, pos.col, data[i]);
 	}
 }
 
@@ -178,7 +178,7 @@ bool info_area_contains(const s_point *pixel) {
  * pixel is inside the info area.
  *****************************************************************************/
 
-void info_area_print_pixel(const s_point *pixel, t_block color) {
+void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
 
 	const int row = pixel->row - pos.row;
 	const int col = pixel->col - pos.col;
@@ -197,7 +197,7 @@ void info_area_print_pixel(const s_point *pixel, t_block color) {
 
 	colors_info_area_attr(color);
 
-	mvprintw(pixel->row, pixel->col, "%c", data[row][col]);
+	mvwprintw(win, pixel->row, pixel->col, "%c", data[row][col]);
 }
 
 /******************************************************************************
@@ -207,7 +207,7 @@ void info_area_print_pixel(const s_point *pixel, t_block color) {
  * TODO: replace with menu / options
  *****************************************************************************/
 
-void info_area_set_msg(const char *msg) {
+void info_area_set_msg(WINDOW *win, const char *msg) {
 
 	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, msg) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
@@ -215,5 +215,5 @@ void info_area_set_msg(const char *msg) {
 
 	colors_info_area_attr(CLR_NONE);
 
-	mvprintw(pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
+	mvwprintw(win, pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
 }
