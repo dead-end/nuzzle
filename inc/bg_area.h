@@ -28,6 +28,6 @@
 #include "common.h"
 #include "colors.h"
 
-void bg_area_print_pixel(const s_point *pixel, const t_block color, const wchar_t chr);
+void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color, const wchar_t chr);
 
 #endif /* INC_BG_AREA_H_ */
