@@ -125,7 +125,7 @@ bool s_area_same_pos(const s_area *area, const int pos_row, const int pos_col) {
  * assumed that the color is already set.
  *****************************************************************************/
 
-void s_area_print_block(const s_area *area, const int row, const int col, const wchar_t ch) {
+void s_area_print_block(WINDOW *win, const s_area *area, const int row, const int col, const wchar_t ch) {
 
 	const int ul_row = block_upper_left(area->pos.row, area->size.row, row);
 	const int ul_col = block_upper_left(area->pos.col, area->size.col, col);
@@ -135,7 +135,7 @@ void s_area_print_block(const s_area *area, const int row, const int col, const 
 
 	for (int r = ul_row; r < lr_row; r++) {
 		for (int c = ul_col; c < lr_col; c++) {
-			mvprintw(r, c, "%lc", ch);
+			mvwprintw(win, r, c, "%lc", ch);
 		}
 	}
 }

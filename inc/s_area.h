@@ -70,7 +70,7 @@ bool s_area_is_aligned(const s_area *area, const int row, const int col);
 
 bool s_area_same_pos(const s_area *area, const int row, const int col);
 
-void s_area_print_block(const s_area *area, const int row, const int col, const wchar_t ch);
+void s_area_print_block(WINDOW *win, const s_area *area, const int row, const int col, const wchar_t ch);
 
 void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col);
 
