@@ -29,6 +29,7 @@
 
 //               "123456654321"
 #define STR_GAME "  New game  "
+#define STR_CONT "  Continue  "
 #define STR_EXIT "    Exit    "
 
 int wm_process_menu(const char **labels);

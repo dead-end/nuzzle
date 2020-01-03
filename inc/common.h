@@ -75,6 +75,8 @@ void* xmalloc(const size_t size);
 
 #define BLOCK_BOTH L'\u2592'
 
+#define KEY_ESC 27
+
 /******************************************************************************
  * The s_point struct represents an element that has a row and a column. This
  * can be a pixel (terminal character), an array dimension, a block size...
