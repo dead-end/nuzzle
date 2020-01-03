@@ -74,6 +74,11 @@ static void init_ncurses() {
 	}
 
 	//
+	// Disable ESC delay.
+	//
+	set_escdelay(0);
+
+	//
 	// Register mouse events (which do not have a propper error handling)
 	//
 	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
@@ -142,7 +147,7 @@ int main() {
 	//---------------------------
 
 	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
-	int idx = wm_process_menu(choices);
+	int idx = wm_process_menu(choices, true);
 
 	if (idx == 1) {
 		exit(0);
@@ -176,6 +181,24 @@ int main() {
 
 		} else if (c == KEY_RESIZE) {
 			game_do_center();
+
+		} else if (c == KEY_ESC || c == 'm') {
+			log_debug_str("ESC");
+
+			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
+
+			clear();
+			const int idx = wm_process_menu(choices, false);
+
+			if (idx == 0 || idx == ESC_RETURN) {
+				//touchwin(stdscr);
+				game_do_center();
+
+			} else if (idx == 1) {
+
+			} else if (idx == 2) {
+				exit(0);
+			}
 
 		} else if (c == KEY_MOUSE) {
 			MEVENT event;
