@@ -44,7 +44,7 @@ BUILD_FLAGS = -std=c11 -O2
 
 FLAGS      = $(BUILD_FLAGS) $(OPTION_FLAGS) $(WARN_FLAGS) -I$(INCLUDE_DIR) $(shell $(NCURSES_CONFIG) --cflags)
 
-LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm
+LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm -lmenuw
 
 ################################################################################
 # The list of sources that are used to build the executable. Each of the source 
@@ -59,6 +59,8 @@ SRC_LIBS = \
 	$(SRC_DIR)/game.c \
 	$(SRC_DIR)/blocks.c \
 	$(SRC_DIR)/s_area.c \
+	$(SRC_DIR)/win_menu.c \
+	$(SRC_DIR)/nz_curses.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
