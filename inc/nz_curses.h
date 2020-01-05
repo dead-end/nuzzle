@@ -33,4 +33,6 @@ void nzc_win_del(WINDOW *win);
 
 void nzc_win_refresh(WINDOW *win);
 
+bool nzc_win_is_inside(WINDOW *win, const int row, const int col);
+
 #endif /* INC_NZ_CURSES_H_ */

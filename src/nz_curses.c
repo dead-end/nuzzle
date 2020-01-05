@@ -81,3 +81,24 @@ void nzc_win_refresh(WINDOW *win) {
 	}
 }
 
+/******************************************************************************
+ * The function checks whether a row / column is inside a window or not.
+ *****************************************************************************/
+
+bool nzc_win_is_inside(WINDOW *win, const int row, const int col) {
+
+	const int start_row = getbegy(win);
+
+	if (row < start_row || row > start_row + getmaxy(win)) {
+		return false;
+	}
+
+	const int start_col = getbegx(win);
+
+	if (col < start_col || col > start_col + getmaxx(win)) {
+		return false;
+	}
+
+	return true;
+}
+
