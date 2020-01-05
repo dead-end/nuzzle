@@ -355,8 +355,6 @@ int wm_process_menu(const char **labels, const bool ignore_esc) {
 
 	wm_print_header(menu_win);
 
-	refresh();
-
 	wrefresh(menu_win);
 
 	const int idx = wm_event_loop(menu_win, menu, ignore_esc);
