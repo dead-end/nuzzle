@@ -125,7 +125,13 @@ static void wm_free_menu(MENU *menu) {
 	// the data cannot be retrieved.
 	//
 	ITEM **item_ptr = menu_items(menu);
+	if (item_ptr == NULL) {
+		log_exit_str("Unable get menu items!");
+	}
 
+	//
+	// The function returns NULL if the menu is NULL, which was check upfront.
+	//
 	const int num_items = item_count(menu);
 
 	//
