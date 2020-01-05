@@ -142,7 +142,7 @@ void info_area_print(WINDOW *win) {
 
 	log_debug("row: %d col: %d", pos.row, pos.col);
 
-	colors_info_area_attr(CLR_NONE);
+	colors_info_area_attr(win, CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
 		mvwprintw(win, pos.row + i, pos.col, data[i]);
@@ -195,7 +195,7 @@ void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
 	log_debug("pixel: %d/%d '%c'", pixel->row, pixel->col, data[row][col]);
 #endif
 
-	colors_info_area_attr(color);
+	colors_info_area_attr(win, color);
 
 	mvwprintw(win, pixel->row, pixel->col, "%c", data[row][col]);
 }
@@ -213,7 +213,7 @@ void info_area_set_msg(WINDOW *win, const char *msg) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
 	}
 
-	colors_info_area_attr(CLR_NONE);
+	colors_info_area_attr(win, CLR_NONE);
 
 	mvwprintw(win, pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
 }
