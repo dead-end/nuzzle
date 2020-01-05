@@ -41,3 +41,24 @@ WINDOW* nzc_win_create_fully() {
 
 	return win;
 }
+
+/******************************************************************************
+ * The function frees a window.
+ *****************************************************************************/
+
+void nzc_win_del(WINDOW *win) {
+
+	//
+	// Ensure that the window is initialized.
+	//
+	if (win == NULL) {
+		return;
+	}
+
+	//
+	// Free the windows.
+	//
+	if (delwin(win) != OK) {
+		log_exit_str("Unable to delete the window!");
+	}
+}
