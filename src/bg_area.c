@@ -34,7 +34,7 @@
 
 void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color, const wchar_t chr) {
 
-	colors_bg_attr(color);
+	colors_bg_attr(win, color);
 
 	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
 }
