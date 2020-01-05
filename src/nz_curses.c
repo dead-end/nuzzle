@@ -69,11 +69,10 @@ void nzc_init_curses() {
 	}
 
 	//
-	// Disable ESC delay.
+	// Disable ESC delay. (The man page says: "These functions all return TRUE
+	// or FALSE, except as noted." which seems not to be correct.
 	//
-	if (set_escdelay(0) == FALSE) {
-		log_exit_str("Unable to switch off ESC delay.");
-	}
+	set_escdelay(0);
 }
 
 /******************************************************************************
