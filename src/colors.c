@@ -255,28 +255,28 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
  * info area.
  *****************************************************************************/
 
-void colors_info_area_attr(const t_block bg_color) {
+void colors_info_area_attr(WINDOW *win, const t_block bg_color) {
 
 	switch (bg_color) {
 
 	case CLR_NONE:
-		attrset(COLOR_PAIR(CP_DEFAULT));
+		wattrset(win, COLOR_PAIR(CP_DEFAULT));
 		break;
 
 	case CLR_RED:
-		attrset(A_REVERSE| COLOR_PAIR(CP_RED_BLACK));
+		wattrset(win, A_REVERSE| COLOR_PAIR(CP_RED_BLACK));
 		break;
 
 	case CLR_GREEN:
-		attrset(A_REVERSE| COLOR_PAIR(CP_GREEN_BLACK));
+		wattrset(win, A_REVERSE| COLOR_PAIR(CP_GREEN_BLACK));
 		break;
 
 	case CLR_BLUE:
-		attrset(A_REVERSE| COLOR_PAIR(CP_BLUE_BLACK));
+		wattrset(win, A_REVERSE| COLOR_PAIR(CP_BLUE_BLACK));
 		break;
 
 	case CLR_YELLOW:
-		attrset(A_REVERSE| COLOR_PAIR(CP_YELLOW_BLACK));
+		wattrset(win, A_REVERSE| COLOR_PAIR(CP_YELLOW_BLACK));
 		break;
 
 	default:
@@ -293,7 +293,7 @@ void colors_info_area_attr(const t_block bg_color) {
  * character.
  *****************************************************************************/
 
-void colors_set_game_attr(const t_block fg_color, const t_block bg_color, const bool even) {
+void colors_set_game_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even) {
 	int color_pair;
 
 	//
@@ -318,15 +318,15 @@ void colors_set_game_attr(const t_block fg_color, const t_block bg_color, const 
 
 	log_debug("fg: %d bg: %d pair: %d", fg_color, bg_color, color_pair);
 
-	attrset(COLOR_PAIR(color_pair));
+	wattrset(win, COLOR_PAIR(color_pair));
 }
 
 /******************************************************************************
  * The function sets the color.
  *****************************************************************************/
 
-void colors_bg_attr(const t_block color) {
-	attrset(COLOR_PAIR(color));
+void colors_bg_attr(WINDOW *win, const t_block color) {
+	wattrset(win, COLOR_PAIR(color));
 }
 
 /******************************************************************************

@@ -25,6 +25,8 @@
 #ifndef INC_COLORS_H_
 #define INC_COLORS_H_
 
+#include <ncurses.h>
+
 #include "blocks.h"
 
 /******************************************************************************
@@ -49,11 +51,11 @@ void colors_init();
 
 void colors_init_random(t_block **blocks, const int rows, const int cols);
 
-void colors_info_area_attr(const t_block bg_color);
+void colors_info_area_attr(WINDOW *win, const t_block bg_color);
 
-void colors_set_game_attr(const t_block fg_color, const t_block bg_color, const bool even);
+void colors_set_game_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even);
 
-void colors_bg_attr(const t_block color);
+void colors_bg_attr(WINDOW *win, const t_block color);
 
 wchar_t colors_get_char(const t_block fg_color, const t_block bg_color);
 
