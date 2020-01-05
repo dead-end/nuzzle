@@ -23,6 +23,7 @@
  */
 
 #include <ncurses.h>
+#include <menu.h>
 
 #include "common.h"
 
@@ -89,16 +90,81 @@ bool nzc_win_is_inside(WINDOW *win, const int row, const int col) {
 
 	const int start_row = getbegy(win);
 
-	if (row < start_row || row > start_row + getmaxy(win)) {
+	if (row < start_row || row >= start_row + getmaxy(win)) {
 		return false;
 	}
 
 	const int start_col = getbegx(win);
 
-	if (col < start_col || col > start_col + getmaxx(win)) {
+	if (col < start_col || col >= start_col + getmaxx(win)) {
 		return false;
 	}
 
 	return true;
+}
+
+/******************************************************************************
+ * The function returns the index of the current item of a menu.
+ *****************************************************************************/
+
+int nzc_menu_cur_item_idx(MENU *menu) {
+
+	//
+	// Get the currently selected item of the menu
+	//
+	const ITEM *item = current_item(menu);
+	if (item == NULL) {
+		log_exit_str("Unable to get current item!");
+	}
+
+	//
+	// Get the index of the item
+	//
+	const int idx = item_index(item);
+	if (idx == ERR) {
+		log_exit_str("Unable to get current item index!");
+	}
+
+	log_debug("Current item: %s with index: %d", item_name(item), idx);
+
+	return idx;
+}
+
+/******************************************************************************
+ * The function sets the index of the currently selected item in a menu. It is
+ * ensured that the index is valid.
+ *****************************************************************************/
+
+void nzc_menu_set_cur_item_idx(MENU *menu, const int idx) {
+
+	//
+	// Get the number of items in the menu
+	//
+	const int count = item_count(menu);
+	if (count == ERR) {
+		log_exit_str("Unable to count items!");
+	}
+
+	//
+	// Ensure that the index is valid
+	//
+	if (idx < 0 || count - 1 < idx) {
+		log_exit("Item index: %d out of range - count: %d", idx, count);
+	}
+
+	//
+	// Get the array of the items
+	//
+	ITEM **items = menu_items(menu);
+	if (items == NULL) {
+		log_exit_str("Unable to get items from the menu!");
+	}
+
+	//
+	// Set the item index
+	//
+	if (set_current_item(menu, items[idx]) != E_OK) {
+		log_exit("Unable to set the item index: %d", idx);
+	}
 }
 

@@ -26,6 +26,7 @@
 #define INC_NZ_CURSES_H_
 
 #include <ncurses.h>
+#include <menu.h>
 
 WINDOW* nzc_win_create_fully();
 
@@ -34,5 +35,9 @@ void nzc_win_del(WINDOW *win);
 void nzc_win_refresh(WINDOW *win);
 
 bool nzc_win_is_inside(WINDOW *win, const int row, const int col);
+
+int nzc_menu_cur_item_idx(MENU *menu);
+
+void nzc_menu_set_cur_item_idx(MENU *menu, const int idx);
 
 #endif /* INC_NZ_CURSES_H_ */
