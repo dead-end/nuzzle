@@ -34,6 +34,6 @@
 
 #define ESC_RETURN -1
 
-int wm_process_menu(const char **labels, const bool ignore_esc);
+int wm_process_menu(const char **labels, const int selected, const bool ignore_esc);
 
 #endif /* INC_WIN_MENU_H_ */

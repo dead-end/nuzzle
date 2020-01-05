@@ -282,7 +282,6 @@ static WINDOW* wm_create_centered_derwin(WINDOW *win_parent, const s_point *dim)
 
 static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 	int c;
-	ITEM *item;
 
 	if (keypad(menu_win, TRUE) != OK) {
 		log_exit_str("Unable to set key pad!");
@@ -292,30 +291,73 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 
 		c = wgetch(menu_win);
 
-		switch (c) {
-
-		case KEY_ESC:
+		//
+		// On escape return or ignore
+		//
+		if (c == KEY_ESC) {
 			if (!ignore_esc) {
 				return ESC_RETURN;
 			}
-			break;
-
-		case KEY_ENTER:
-		case 10:
-			item = current_item(menu);
-			log_debug("Selected menu item: %s", item_name(item));
-			return item_index(current_item(menu));
-
-		case KEY_DOWN:
-			menu_driver(menu, REQ_DOWN_ITEM);
-			break;
-
-		case KEY_UP:
-			menu_driver(menu, REQ_UP_ITEM);
-			break;
 		}
 
-		nzc_win_refresh(menu_win);
+		//
+		// On enter return the selected item
+		//
+		else if (c == KEY_ENTER || c == 10) {
+			return nzc_menu_cur_item_idx(menu);
+		}
+
+		//
+		// Key DOWN
+		//
+		else if (c == KEY_DOWN) {
+			menu_driver(menu, REQ_DOWN_ITEM);
+			nzc_win_refresh(menu_win);
+
+		}
+
+		//
+		// Key UP
+		//
+		else if (c == KEY_UP) {
+			menu_driver(menu, REQ_UP_ITEM);
+			nzc_win_refresh(menu_win);
+		}
+
+		//
+		// Process mouse events
+		//
+		else if (c == KEY_MOUSE) {
+			MEVENT event;
+
+			if (getmouse(&event) != OK) {
+				log_exit_str("Unable to get mouse event!");
+			}
+
+			WINDOW *win_sub = menu_sub(menu);
+			if (!nzc_win_is_inside(win_sub, event.y, event.x)) {
+				continue;
+			}
+
+			const int idx = event.y - getbegy(win_sub);
+
+			//
+			// Get the index of the currently selected item
+			//
+			const int cur_idx = nzc_menu_cur_item_idx(menu);
+
+			if (idx != cur_idx) {
+				nzc_menu_set_cur_item_idx(menu, idx);
+				nzc_win_refresh(menu_win);
+			}
+
+			//
+			// If the button was pressed
+			//
+			if (event.bstate & BUTTON1_PRESSED) {
+				return idx;
+			}
+		}
 	}
 }
 
@@ -325,7 +367,7 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
  * resources are allocated and freed.
  *****************************************************************************/
 
-int wm_process_menu(const char **labels, const bool ignore_esc) {
+int wm_process_menu(const char **labels, const int selected, const bool ignore_esc) {
 	MENU *menu;
 	WINDOW *menu_win;
 	WINDOW *menu_derwin;
@@ -349,6 +391,8 @@ int wm_process_menu(const char **labels, const bool ignore_esc) {
 	menu = wm_create_menu(labels);
 
 	wm_menu_link(menu_win, menu_derwin, menu);
+
+	nzc_menu_set_cur_item_idx(menu, selected);
 
 	wm_print_header(menu_win);
 
