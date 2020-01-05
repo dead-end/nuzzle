@@ -303,7 +303,7 @@ static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, cons
 	//
 	drop_area_process_blocks(win, game_area, &_drop_area, DO_PRINT);
 
-	wrefresh(win);
+	nzc_win_refresh(win);
 
 	//
 	// Sleep to show the movement
@@ -331,7 +331,7 @@ static void animate_drop(WINDOW *win, s_area *game_area, const s_point *drop_poi
 	//
 	drop_area_process_blocks(win, &_game_area, &_drop_area, DO_DELETE);
 
-	wrefresh(win);
+	nzc_win_refresh(win);
 
 	//
 	// Sleep to show the movement
@@ -521,7 +521,8 @@ void game_process_event_pressed(const int event_row, const int event_col) {
 
 /******************************************************************************
  * The function prints the game area, the drop area and the info area centered
- * on the screen.
+ * on the screen. After this function a call to refresh on the game window is 
+ * necessary.
  *****************************************************************************/
 
 #define DELIM 4
@@ -571,11 +572,6 @@ void game_do_center() {
 	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
 
 	info_area_print(_win_game);
-
-	//
-	// Call refresh to show the result.
-	//
-	wrefresh(_win_game);
 }
 
 /******************************************************************************
@@ -637,9 +633,19 @@ void game_free() {
 }
 
 /******************************************************************************
- *
+ * The function refreshes the game window.
  *****************************************************************************/
 
-WINDOW* game_get_win() {
-	return _win_game;
+void game_win_refresh() {
+
+	//
+	// Move the cursor to a save place and do the refreshing. If the cursor
+	// is not moved a flickering can occur. (I am not sure if this is necessary
+	// for this game, but I had trouble with it in the past)
+	//
+	if (wmove(_win_game, 0, 0) == ERR) {
+		log_exit_str("Unable to move the cursor!");
+	}
+
+	nzc_win_refresh(_win_game);
 }

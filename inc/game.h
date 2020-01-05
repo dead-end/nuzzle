@@ -49,6 +49,6 @@ void game_process_event_release(const int row, const int col);
 
 void game_do_center();
 
-WINDOW* game_get_win();
+void game_win_refresh();
 
 #endif /* INC_GAME_H_ */
