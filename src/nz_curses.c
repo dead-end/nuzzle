@@ -28,6 +28,88 @@
 #include "common.h"
 
 /******************************************************************************
+ * The function initializes the main features of ncurses .
+ *****************************************************************************/
+
+void nzc_init_curses() {
+
+	//
+	// Initialize screen.
+	//
+	if (initscr() == NULL) {
+		log_exit_str("Unable to initialize the screen.");
+	}
+
+	//
+	// Disable line buffering.
+	//
+	if (raw() == ERR) {
+		log_exit_str("Unable to set raw mode.");
+	}
+
+	//
+	// Disable echoing.
+	//
+	if (noecho() == ERR) {
+		log_exit_str("Unable to switch off echoing.");
+	}
+
+	//
+	// Enable keypad for the terminal.
+	//
+	if (keypad(stdscr, TRUE) == ERR) {
+		log_exit_str("Unable to enable the keypad of the terminal.");
+	}
+
+	//
+	// Switch off the cursor.
+	//
+	if (curs_set(0) == ERR) {
+		log_exit_str("Unable to set cursor visibility.");
+	}
+
+	//
+	// Disable ESC delay.
+	//
+	if (set_escdelay(0) == FALSE) {
+		log_exit_str("Unable to switch off ESC delay.");
+	}
+}
+
+/******************************************************************************
+ * The function initializes the ncurses mouse support.
+ *****************************************************************************/
+
+void nzc_init_mouse() {
+
+	if (has_mouse()) {
+		log_exit_str("Terminal does not support a mouse!");
+	}
+
+	//
+	// Register mouse events (which do not have a propper error handling)
+	//
+	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
+
+	printf("\033[?1003h\n");
+
+	mouseinterval(0);
+}
+
+/******************************************************************************
+ * The function finishes the ncurses mouse support.
+ *****************************************************************************/
+
+void nzc_finish_mouse() {
+
+	//
+	// Disable mouse movement events, as l = low
+	//
+	printf("\033[?1003l\n");
+
+}
+
+/******************************************************************************
  * The function creates a window with the size of the stdscr.
  *****************************************************************************/
 
