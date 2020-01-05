@@ -26,6 +26,7 @@
 #include <menu.h>
 #include <string.h>
 
+#include "nz_curses.h"
 #include "win_menu.h"
 #include "common.h"
 
@@ -223,13 +224,9 @@ static void wm_free(WINDOW *menu_win, WINDOW *menu_derwin, MENU *menu) {
 	//
 	// Free the windows.
 	//
-	if (delwin(menu_derwin) != OK) {
-		log_exit_str("Unable to delete derived window!");
-	}
+	nzc_win_del(menu_derwin);
 
-	if (delwin(menu_win) != OK) {
-		log_exit_str("Unable to delete window!");
-	}
+	nzc_win_del(menu_win);
 }
 
 /******************************************************************************
