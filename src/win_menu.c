@@ -315,7 +315,7 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 			break;
 		}
 
-		wrefresh(menu_win);
+		nzc_win_refresh(menu_win);
 	}
 }
 
@@ -352,7 +352,7 @@ int wm_process_menu(const char **labels, const bool ignore_esc) {
 
 	wm_print_header(menu_win);
 
-	wrefresh(menu_win);
+	nzc_win_refresh(menu_win);
 
 	const int idx = wm_event_loop(menu_win, menu, ignore_esc);
 
