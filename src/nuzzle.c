@@ -147,7 +147,7 @@ int main() {
 	//---------------------------
 
 	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
-	int idx = wm_process_menu(choices, true);
+	int idx = wm_process_menu(choices, 0, true);
 
 	if (idx == 1) {
 		exit(0);
@@ -197,7 +197,7 @@ int main() {
 			// Show the menu
 			//
 			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
-			const int idx = wm_process_menu(choices, false);
+			const int idx = wm_process_menu(choices, 0, false);
 
 			if (idx == 0 || idx == ESC_RETURN) {
 				game_do_center();
