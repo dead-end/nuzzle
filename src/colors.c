@@ -237,7 +237,8 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
 			//
 			// First check if a block should get a color.
 			//
-			if (rand() % 100 < 80) {
+			//if (rand() % 100 < 80) {
+			if (rand() % 100 < 75) {
 				blocks[row][col] = CLR_NONE;
 
 			} else {
