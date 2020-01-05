@@ -153,18 +153,14 @@ int main() {
 		exit(0);
 	}
 
-	//wgetch(stdscr);
-	// --------------------------
+	//
+	// Without the refresh() the centered window will not be printed.
+	//
+	refresh();
 
 	game_do_center();
 
-	//
-	// Move the cursor to the initial position (which prevents flickering) and
-	// hide the cursor.
-	//
-	move(0, 0);
-
-	refresh();
+	game_win_refresh();
 
 	for (;;) {
 		int c = wgetch(stdscr);
@@ -180,18 +176,30 @@ int main() {
 			log_debug_str("Nothing happened.");
 
 		} else if (c == KEY_RESIZE) {
+
+			//
+			// Without the refresh() the centered window will not be printed.
+			//
+			refresh();
+
 			game_do_center();
 
 		} else if (c == KEY_ESC || c == 'm') {
 			log_debug_str("ESC");
 
-			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
-
+			//
+			// Delete the old content
+			//
 			clear();
+			refresh();
+
+			//
+			// Show the menu
+			//
+			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
 			const int idx = wm_process_menu(choices, false);
 
 			if (idx == 0 || idx == ESC_RETURN) {
-				//touchwin(stdscr);
 				game_do_center();
 
 			} else if (idx == 1) {
@@ -246,12 +254,8 @@ int main() {
 			log_debug("Pressed key %d (%s)", c, keyname(c));
 		}
 
-		//
-		// Move the cursor to a save place and do the refreshing. If the cursor
-		// is not moved a flickering can occur.
-		//
-		move(0, 0);
-		refresh();
+		// TODO: this is called even oif nothing changed.
+		game_win_refresh();
 	}
 
 	log_debug_str("Nuzzle finished!");
