@@ -31,4 +31,6 @@ WINDOW* nzc_win_create_fully();
 
 void nzc_win_del(WINDOW *win);
 
+void nzc_win_refresh(WINDOW *win);
+
 #endif /* INC_NZ_CURSES_H_ */

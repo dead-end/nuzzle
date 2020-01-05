@@ -43,7 +43,7 @@ WINDOW* nzc_win_create_fully() {
 }
 
 /******************************************************************************
- * The function frees a window.
+ * The function frees a window. It is a simple wrapper with error handling.
  *****************************************************************************/
 
 void nzc_win_del(WINDOW *win) {
@@ -62,3 +62,22 @@ void nzc_win_del(WINDOW *win) {
 		log_exit_str("Unable to delete the window!");
 	}
 }
+
+/******************************************************************************
+ * The function refreshes a window. It is a simple wrapper with error handling.
+ *****************************************************************************/
+
+void nzc_win_refresh(WINDOW *win) {
+
+	//
+	// Ensure that the window is initialized.
+	//
+	if (win == NULL) {
+		return;
+	}
+
+	if (wrefresh(win) == ERR) {
+		log_exit_str("Unable to refresh window!");
+	}
+}
+
