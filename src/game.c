@@ -25,6 +25,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <errno.h>
+#include <nz_curses.h>
 #include <string.h>
 
 #include "game.h"
@@ -85,12 +86,14 @@ static s_point _home;
 //
 static s_point _offset;
 
+static WINDOW *_win_game = NULL;
+
 /******************************************************************************
  * The function prints the game area with no foreground color. This can be used
  * as an initialization.
  *****************************************************************************/
 
-static void game_area_print(const s_area *game_area) {
+static void game_area_print(WINDOW *win, const s_area *game_area) {
 
 	//
 	// Iterate through the blocks of the game area.
@@ -98,9 +101,9 @@ static void game_area_print(const s_area *game_area) {
 	for (int row = 0; row < game_area->dim.row; row++) {
 		for (int col = 0; col < game_area->dim.col; col++) {
 
-			colors_set_game_attr(CLR_NONE, game_area->blocks[row][col], colors_is_even(row, col));
+			colors_set_game_attr(win, CLR_NONE, game_area->blocks[row][col], colors_is_even(row, col));
 
-			s_area_print_block(stdscr, game_area, row, col, BLOCK_EMPTY);
+			s_area_print_block(win, game_area, row, col, BLOCK_EMPTY);
 		}
 	}
 }
@@ -111,7 +114,7 @@ static void game_area_print(const s_area *game_area) {
  * character.
  *****************************************************************************/
 
-static void game_area_print_pixel(const s_area *game_area, const s_point *pixel, const t_block fg_color) {
+static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_point *pixel, const t_block fg_color) {
 
 	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, fg_color);
 
@@ -126,7 +129,7 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 	//
 	// Set the color attribute for the foreground and background color.
 	//
-	colors_set_game_attr(fg_color, bg_color, colors_is_even(block_idx.row, block_idx.col));
+	colors_set_game_attr(win, fg_color, bg_color, colors_is_even(block_idx.row, block_idx.col));
 
 	//
 	// Get the character to be printed. This can be a space, a block or
@@ -137,7 +140,7 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
 	//
 	// Print the character at the position.
 	//
-	mvwprintw(stdscr, pixel->row, pixel->col, "%lc", chr);
+	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
 }
 
 /******************************************************************************
@@ -146,20 +149,20 @@ static void game_area_print_pixel(const s_area *game_area, const s_point *pixel,
  * area is deleted.
  *****************************************************************************/
 
-static void game_print_foreground(const s_area *game_area, const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
+static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
 	s_point pixel;
 
 	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
 		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
 
 			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
-				game_area_print_pixel(game_area, &pixel, color);
+				game_area_print_pixel(win, game_area, &pixel, color);
 
 			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(stdscr, &pixel, color);
+				info_area_print_pixel(win, &pixel, color);
 
 			} else {
-				bg_area_print_pixel(stdscr, &pixel, color, chr);
+				bg_area_print_pixel(win, &pixel, color, chr);
 			}
 		}
 	}
@@ -170,7 +173,7 @@ static void game_print_foreground(const s_area *game_area, const s_point *area_p
  * (terminal character) is computed.
  *****************************************************************************/
 
-static void drop_area_process_blocks(const s_area *game_area, const s_area *drop_area, const bool do_print) {
+static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const s_area *drop_area, const bool do_print) {
 	s_point drop_area_ul;
 
 	for (int row = 0; row < drop_area->dim.row; row++) {
@@ -191,10 +194,10 @@ static void drop_area_process_blocks(const s_area *game_area, const s_area *drop
 			drop_area_ul.col = block_upper_left(drop_area->pos.col, drop_area->size.col, col);
 
 			if (do_print) {
-				game_print_foreground(game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[row][col], BLOCK_FULL);
+				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[row][col], BLOCK_FULL);
 
 			} else {
-				game_print_foreground(game_area, &drop_area_ul, &drop_area->size, CLR_NONE, BLOCK_EMPTY);
+				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, CLR_NONE, BLOCK_EMPTY);
 			}
 		}
 	}
@@ -261,20 +264,20 @@ static void area_update(s_area *area) {
  * The function moves the drop area to the home position.
  *****************************************************************************/
 
-static void drop_area_move_home(s_area *game_area, s_area *drop_area, const s_point *home, s_point *offset) {
+static void drop_area_move_home(WINDOW *win, s_area *game_area, s_area *drop_area, const s_point *home, s_point *offset) {
 
 	s_point_set(&drop_area->pos, home->row, home->col);
 
 	s_point_set(offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
 
-	drop_area_process_blocks(game_area, drop_area, DO_PRINT);
+	drop_area_process_blocks(win, game_area, drop_area, DO_PRINT);
 }
 
 /******************************************************************************
  * The function moves the drop area to a given position.
  *****************************************************************************/
 
-static void animate_move(s_area *game_area, s_area *drop_area, const s_point *to) {
+static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, const s_point *to) {
 
 	log_debug("Move from: %d/%d to: %d/%d", drop_area->pos.row, drop_area->pos.col, to->row, to->col);
 
@@ -288,7 +291,7 @@ static void animate_move(s_area *game_area, s_area *drop_area, const s_point *to
 	//
 	// Delete the drop area at the old position.
 	//
-	drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(win, &_game_area, &_drop_area, DO_DELETE);
 
 	//
 	// Move the drop area to the new position.
@@ -298,9 +301,9 @@ static void animate_move(s_area *game_area, s_area *drop_area, const s_point *to
 	//
 	// Print and show the drop area at the new position.
 	//
-	drop_area_process_blocks(game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(win, game_area, &_drop_area, DO_PRINT);
 
-	refresh();
+	wrefresh(win);
 
 	//
 	// Sleep to show the movement
@@ -314,7 +317,7 @@ static void animate_move(s_area *game_area, s_area *drop_area, const s_point *to
  * The function drops the drop area at a given position.
  *****************************************************************************/
 
-static void animate_drop(s_area *game_area, const s_point *drop_point, s_area *drop_area) {
+static void animate_drop(WINDOW *win, s_area *game_area, const s_point *drop_point, s_area *drop_area) {
 
 	log_debug("Dropping drop area: %d/%d at game: %d/%d", drop_area->pos.row, drop_area->pos.col, drop_point->row, drop_point->col);
 
@@ -326,9 +329,9 @@ static void animate_drop(s_area *game_area, const s_point *drop_point, s_area *d
 	//
 	// Delete the drop area from the foreground
 	//
-	drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(win, &_game_area, &_drop_area, DO_DELETE);
 
-	refresh();
+	wrefresh(win);
 
 	//
 	// Sleep to show the movement
@@ -410,27 +413,27 @@ void game_process_event_release(const int event_row, const int event_col) {
 		//
 		// Move the drop area to the adjusted position if necessary.
 		//
-		animate_move(&_game_area, &_drop_area, &adj_area.pos);
+		animate_move(_win_game, &_game_area, &_drop_area, &adj_area.pos);
 
 		//
 		// Drop the drop area.
 		//
-		animate_drop(&_game_area, &drop_point, &_drop_area);
+		animate_drop(_win_game, &_game_area, &drop_point, &_drop_area);
 
 		//
 		// Remove adjacent blocks if possible.
 		//
 		const int num_removed = s_area_remove_blocks(&_game_area, &drop_point, &_drop_area, _marks);
 		if (num_removed >= 4) {
-			info_area_add_to_score(stdscr, num_removed);
-			game_area_print(&_game_area);
+			info_area_add_to_score(_win_game, num_removed);
+			game_area_print(_win_game, &_game_area);
 		}
 
 		//
 		// Dropping the drop area means copying the blocks to the background.
 		// After this, the drop area can be deleted from the foreground.
 		//
-		drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
 
 		//
 		// Fill the blocks with new, random colors.
@@ -439,7 +442,7 @@ void game_process_event_release(const int event_row, const int event_col) {
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
 			log_debug_str("ENDDDDDDDDDDDDD");
-			info_area_set_msg(stdscr, "End");
+			info_area_set_msg(_win_game, "End");
 		}
 	}
 
@@ -448,14 +451,14 @@ void game_process_event_release(const int event_row, const int event_col) {
 	// old position. It will be printed at the home position.
 	//
 	else {
-		drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
 	}
 
 	//
 	// Move the current drop area to the home position or create a new drop
 	// position at the home position.
 	//
-	drop_area_move_home(&_game_area, &_drop_area, &_home, &_offset);
+	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, &_offset);
 }
 
 /******************************************************************************
@@ -476,7 +479,7 @@ void game_process_event_pressed(const int event_row, const int event_col) {
 		return;
 	}
 
-	drop_area_process_blocks(&_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
 
 	//
 	// If the offset is negative, then the drop area was not picked up. In this
@@ -513,7 +516,7 @@ void game_process_event_pressed(const int event_row, const int event_col) {
 	//
 	// Print the drop area at the new position.
 	//
-	drop_area_process_blocks(&_game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
 }
 
 /******************************************************************************
@@ -543,8 +546,8 @@ void game_do_center() {
 	//
 	// Get the center positions.
 	//
-	const int ul_row = (getmaxy(stdscr) - total_rows) / 2;
-	const int ul_col = (getmaxx(stdscr) - total_cols) / 2;
+	const int ul_row = (getmaxy(_win_game) - total_rows) / 2;
+	const int ul_col = (getmaxx(_win_game) - total_cols) / 2;
 
 	log_debug("upper left row: %d col: %d", ul_row, ul_col);
 
@@ -558,21 +561,21 @@ void game_do_center() {
 	//
 	// Delete the old content.
 	//
-	erase();
+	werase(_win_game);
 
 	//
 	// Print the areas at the updated position.
 	//
-	game_area_print(&_game_area);
+	game_area_print(_win_game, &_game_area);
 
-	drop_area_process_blocks(&_game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
 
-	info_area_print(stdscr);
+	info_area_print(_win_game);
 
 	//
 	// Call refresh to show the result.
 	//
-	refresh();
+	wrefresh(_win_game);
 }
 
 /******************************************************************************
@@ -580,6 +583,11 @@ void game_do_center() {
  *****************************************************************************/
 
 void game_init() {
+
+	//
+	// Create the game window
+	//
+	_win_game = nzc_win_create_fully();
 
 	//
 	// Game area
@@ -624,4 +632,14 @@ void game_free() {
 	blocks_free(_marks, _game_area.dim.row);
 
 	s_area_free(&_drop_area);
+
+	nzc_win_del(_win_game);
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
+
+WINDOW* game_get_win() {
+	return _win_game;
 }
