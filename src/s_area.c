@@ -100,6 +100,20 @@ void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) 
 }
 
 /******************************************************************************
+ * The function sets the blocks of the area to a given value. It is used to
+ * reset the s_area.
+ *****************************************************************************/
+
+void s_area_set_blocks(const s_area *area, const t_block value) {
+
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
+			area->blocks[row][col] = value;
+		}
+	}
+}
+
+/******************************************************************************
  * The function checks if the current pixel is aligned with the s_area. This
  * does not mean that the pixel is inside the s_area.
  *****************************************************************************/
