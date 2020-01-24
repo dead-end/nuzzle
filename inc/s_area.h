@@ -66,6 +66,8 @@ bool s_area_is_inside(const s_area *area, const int row, const int col);
 
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block);
 
+void s_area_set_blocks(const s_area *area, const t_block value);
+
 bool s_area_is_aligned(const s_area *area, const int row, const int col);
 
 bool s_area_same_pos(const s_area *area, const int row, const int col);
@@ -76,6 +78,7 @@ void s_area_create(s_area *area, const int dim_row, const int dim_col, const int
 
 void s_area_free(s_area *area);
 
+// TODO: comment for the separation
 /******************************************************************************
  *
  *****************************************************************************/
