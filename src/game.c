@@ -521,7 +521,7 @@ void game_process_event_pressed(const int event_row, const int event_col) {
 
 /******************************************************************************
  * The function prints the game area, the drop area and the info area centered
- * on the screen. After this function a call to refresh on the game window is 
+ * on the screen. After this function a call to refresh on the game window is
  * necessary.
  *****************************************************************************/
 
@@ -630,6 +630,33 @@ void game_free() {
 	s_area_free(&_drop_area);
 
 	nzc_win_del(_win_game);
+}
+
+/******************************************************************************
+ * The function resets the game on the user input.
+ *****************************************************************************/
+
+void game_reset() {
+
+	//
+	// Reset the game area
+	//
+	s_area_set_blocks(&_game_area, 0);
+
+	//
+	// Load a new drop area
+	//
+	area_update(&_drop_area);
+
+	//
+	// Move the drop area to the home position.
+	//
+	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, &_offset);
+
+	//
+	// Reset the score
+	//
+	info_area_reset_score(_win_game);
 }
 
 /******************************************************************************
