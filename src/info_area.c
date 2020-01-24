@@ -93,6 +93,19 @@ void info_area_init(const int hs) {
 }
 
 /******************************************************************************
+ * Print the score.
+ *****************************************************************************/
+
+static void info_area_print_score(WINDOW *win) {
+
+	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_SCORE]);
+	}
+
+	info_area_print(win);
+}
+
+/******************************************************************************
  * The function updates the current score, by adding something. After this the
  * updated info area has to be reprinted.
  *****************************************************************************/
@@ -101,11 +114,18 @@ void info_area_add_to_score(WINDOW *win, const int add_2_score) {
 
 	cur_score += add_2_score;
 
-	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_SCORE]);
-	}
+	info_area_print_score(win);
+}
 
-	info_area_print(win);
+/******************************************************************************
+ * The function resets the score to 0..
+ *****************************************************************************/
+
+void info_area_reset_score(WINDOW *win) {
+
+	cur_score = 0;
+
+	info_area_print_score(win);
 }
 
 /******************************************************************************
