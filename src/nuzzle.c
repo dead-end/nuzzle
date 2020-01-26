@@ -26,6 +26,7 @@
 #include <time.h>
 #include <locale.h>
 
+#include "nuzzle.h"
 #include "nz_curses.h"
 #include "info_area.h"
 #include "bg_area.h"
@@ -58,7 +59,7 @@ static void exit_callback() {
  * The method initializes the application.
  *****************************************************************************/
 
-static void init() {
+static void init(s_status *status) {
 
 	//
 	// Set the locale to allow utf8.
@@ -96,9 +97,9 @@ static void init() {
 	//
 	colors_init();
 
-	game_init();
-
 	info_area_init(0);
+
+	game_init(status);
 }
 
 /******************************************************************************
@@ -121,12 +122,13 @@ static void show_start_menu() {
  *****************************************************************************/
 
 int main() {
+	s_status status;
 
 	log_debug_str("Starting nuzzle...");
 
 	bool pressed = false;
 
-	init();
+	init(&status);
 
 	show_start_menu();
 
@@ -178,17 +180,30 @@ int main() {
 			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
 			const int idx = wm_process_menu(choices, 0, false);
 
+			//
+			// IDX 0: continue
+			//
 			if (idx == 0 || idx == ESC_RETURN) {
 				game_do_center();
 
-			} else if (idx == 1) {
-				game_reset();
+			}
+
+			//
+			// IDX 1: new game
+			//
+			else if (idx == 1) {
+				game_reset(&status);
 
 				game_do_center();
 
 				pressed = false;
 
-			} else if (idx == 2) {
+			}
+
+			//
+			// IDX 2: end
+			//
+			else if (idx == 2) {
 				exit(0);
 			}
 
@@ -205,9 +220,9 @@ int main() {
 
 			if (pressed) {
 				// TODO: only if drop area is picked up.
-				game_process_event_pressed(event.y, event.x);
+				game_process_event_pressed(&status, event.y, event.x);
 			} else {
-				game_process_event_release(event.y, event.x);
+				game_process_event_release(&status, event.y, event.x);
 			}
 
 		} else {

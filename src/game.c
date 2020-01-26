@@ -28,6 +28,7 @@
 #include <nz_curses.h>
 #include <string.h>
 
+#include "nuzzle.h"
 #include "game.h"
 #include "info_area.h"
 #include "bg_area.h"
@@ -390,7 +391,7 @@ static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *d
  * drop area can be dropped, and if so, if the game ended.
  *****************************************************************************/
 
-void game_process_event_release(const int event_row, const int event_col) {
+void game_process_event_release(s_status *status, const int event_row, const int event_col) {
 
 	log_debug("Event pos: %d/%d", event_row, event_col);
 
@@ -441,6 +442,7 @@ void game_process_event_release(const int event_row, const int event_col) {
 		area_update(&_drop_area);
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
+			s_status_set_end(status);
 			log_debug_str("ENDDDDDDDDDDDDD");
 			info_area_set_msg(_win_game, "END!");
 		}
@@ -468,7 +470,15 @@ void game_process_event_release(const int event_row, const int event_col) {
  * picked up.
  *****************************************************************************/
 
-void game_process_event_pressed(const int event_row, const int event_col) {
+void game_process_event_pressed(s_status *status, const int event_row, const int event_col) {
+
+	//
+	// Check if current game has ended
+	//
+	if (s_status_is_end(status)) {
+		log_debug_str("Ignoring event due to current game end!");
+		return;
+	}
 
 	log_debug("Event pos: %d/%d", event_row, event_col);
 
@@ -578,7 +588,7 @@ void game_do_center() {
  * The function initializes the new area.
  *****************************************************************************/
 
-void game_init() {
+void game_init(s_status *status) {
 
 	//
 	// Create the game window
@@ -613,6 +623,11 @@ void game_init() {
 	// Offset
 	//
 	s_point_set(&_offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
+
+	//
+	// Initialize the game status
+	//
+	s_status_init(status);
 }
 
 /******************************************************************************
@@ -636,7 +651,7 @@ void game_free() {
  * The function resets the game on the user input.
  *****************************************************************************/
 
-void game_reset() {
+void game_reset(s_status *status) {
 
 	//
 	// Reset the game area
@@ -662,6 +677,11 @@ void game_reset() {
 	// Reset message
 	//
 	info_area_set_msg(_win_game, "");
+
+	//
+	// Initialize the game status
+	//
+	s_status_init(status);
 }
 
 /******************************************************************************
