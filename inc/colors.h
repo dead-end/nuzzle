@@ -53,6 +53,8 @@ void colors_init_random(t_block **blocks, const int rows, const int cols);
 
 void colors_info_area_attr(WINDOW *win, const t_block bg_color);
 
+void colors_info_end_attr(WINDOW *win);
+
 void colors_set_game_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even);
 
 void colors_bg_attr(WINDOW *win, const t_block color);

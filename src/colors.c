@@ -287,6 +287,14 @@ void colors_info_area_attr(WINDOW *win, const t_block bg_color) {
 }
 
 /******************************************************************************
+ * The function sets the color for the info area if the current game ended.
+ *****************************************************************************/
+
+void colors_info_end_attr(WINDOW *win) {
+	wattrset(win, A_BLINK| COLOR_PAIR(CP_RED_BLACK));
+}
+
+/******************************************************************************
  * The function sets the game color. If foreground and background are not set
  * this is the chess pattern. If only the foreground is defined, we have a
  * simple foreground color and a solid block character. If both are defined we
