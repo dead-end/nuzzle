@@ -23,73 +23,14 @@
  */
 
 #include <ncurses.h>
-#include <locale.h>
 #include <time.h>
+#include <locale.h>
 
+#include "nz_curses.h"
 #include "info_area.h"
 #include "bg_area.h"
 #include "game.h"
 #include "win_menu.h"
-
-/******************************************************************************
- * The function initializes ncurses and the locale, which is necessary for the
- * wide character support of ncurses.
- *****************************************************************************/
-
-static void init_ncurses() {
-
-	//
-	// Set the locale to allow utf8.
-	//
-	if (setlocale(LC_CTYPE, "") == NULL) {
-		log_exit_str("Unable to set the locale.");
-	}
-
-	//
-	// Initialize screen.
-	//
-	if (initscr() == NULL) {
-		log_exit_str("Unable to initialize the screen.");
-	}
-
-	//
-	// Disable line buffering.
-	//
-	if (raw() == ERR) {
-		log_exit_str("Unable to set raw mode.");
-	}
-
-	//
-	// Disable echoing.
-	//
-	if (noecho() == ERR) {
-		log_exit_str("Unable to switch off echoing.");
-	}
-
-	//
-	// Enable keypad for the terminal.
-	//
-	if (keypad(stdscr, TRUE) == ERR) {
-		log_exit_str("Unable to enable the keypad of the terminal.");
-	}
-
-	//
-	// Disable ESC delay.
-	//
-	set_escdelay(0);
-
-	//
-	// Register mouse events (which do not have a propper error handling)
-	//
-	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
-
-	printf("\033[?1003h\n");
-
-	mouseinterval(0);
-
-	// TODO ERROR
-	curs_set(0);
-}
 
 /******************************************************************************
  * The exit callback function resets the terminal and frees the memory. This is
@@ -104,13 +45,75 @@ static void exit_callback() {
 	game_free();
 
 	//
-	// Disable mouse movement events, as l = low
+	// Disable mouse movement events
 	//
-	printf("\033[?1003l\n");
+	nzc_finish_mouse();
 
 	endwin();
 
 	log_debug_str("Exit callback finished!");
+}
+
+/******************************************************************************
+ * The method initializes the application.
+ *****************************************************************************/
+
+static void init() {
+
+	//
+	// Set the locale to allow utf8.
+	//
+	if (setlocale(LC_CTYPE, "") == NULL) {
+		log_exit_str("Unable to set the locale.");
+	}
+
+	//
+	// Initializes random number generator. The function does not return a
+	// value.
+	//
+	time_t t;
+	srand((unsigned) time(&t));
+
+	//
+	// Initialize the standard ncurses stuff
+	//
+	nzc_init_curses();
+
+	//
+	// Initialize the mouse support for ncurses.
+	//
+	nzc_init_mouse();
+
+	//
+	// Register exit callback.
+	//
+	if (on_exit(exit_callback, NULL) != 0) {
+		log_exit_str("Unable to register exit function!");
+	}
+
+	//
+	// Initialize the application stuff.
+	//
+	colors_init();
+
+	game_init();
+
+	info_area_init(0);
+}
+
+/******************************************************************************
+ * The function shows the start menu, which has only two options: "start" or
+ * "exit"
+ *****************************************************************************/
+
+static void show_start_menu() {
+
+	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
+	int idx = wm_process_menu(choices, 0, true);
+
+	if (idx == 1) {
+		exit(0);
+	}
 }
 
 /******************************************************************************
@@ -123,35 +126,9 @@ int main() {
 
 	bool pressed = false;
 
-	//
-	// Intializes random number generator
-	//
-	time_t t;
-	srand((unsigned) time(&t));
+	init();
 
-	init_ncurses();
-
-	//
-	// Register exit callback.
-	//
-	if (on_exit(exit_callback, NULL) != 0) {
-		log_exit_str("Unable to register exit function!");
-	}
-
-	colors_init();
-
-	game_init();
-
-	info_area_init(0);
-
-	//---------------------------
-
-	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
-	int idx = wm_process_menu(choices, 0, true);
-
-	if (idx == 1) {
-		exit(0);
-	}
+	show_start_menu();
 
 	//
 	// Without the refresh() the centered window will not be printed.
@@ -174,8 +151,10 @@ int main() {
 
 		if (c == ERR) {
 			log_debug_str("Nothing happened.");
+			continue;
+		}
 
-		} else if (c == KEY_RESIZE) {
+		if (c == KEY_RESIZE) {
 
 			//
 			// Without the refresh() the centered window will not be printed.
@@ -203,6 +182,11 @@ int main() {
 				game_do_center();
 
 			} else if (idx == 1) {
+				game_reset();
+
+				game_do_center();
+
+				pressed = false;
 
 			} else if (idx == 2) {
 				exit(0);
@@ -215,32 +199,8 @@ int main() {
 				log_exit_str("Unable to get mouse event!");
 			}
 
-			//			log_debug("Mouse at row=%d, column=%d bstate=0x%08lx BUTTON: PRESS=%ld CLICK=%ld RELEASE=%ld",
-			//
-			//			event.y, event.x, event.bstate,
-			//
-			//			event.bstate & BUTTON1_PRESSED, event.bstate & BUTTON1_CLICKED, event.bstate & BUTTON1_RELEASED);
-
-			//			if (event.bstate & BUTTON1_RELEASED) {
-			//
-			//				game_process_event_release(event.y, event.x);
-			//
-			//				pressed = false;
-			//
-			//			} else if ((event.bstate & BUTTON1_PRESSED) || pressed) {
-			//
-			//				game_process_event_pressed(event.y, event.x);
-			//
-			//				pressed = true;
-			//			}
-
 			if (event.bstate & BUTTON1_PRESSED) {
 				pressed = !pressed;
-				//				if (!pressed) {
-				//					pressed = true;
-				//				} else {
-				//					pressed = false;
-				//				}
 			}
 
 			if (pressed) {
@@ -252,9 +212,12 @@ int main() {
 
 		} else {
 			log_debug("Pressed key %d (%s)", c, keyname(c));
+			continue;
 		}
 
-		// TODO: this is called even oif nothing changed.
+		//
+		// Do a refresh
+		//
 		game_win_refresh();
 	}
 
