@@ -442,7 +442,7 @@ void game_process_event_release(const int event_row, const int event_col) {
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
 			log_debug_str("ENDDDDDDDDDDDDD");
-			info_area_set_msg(_win_game, "End");
+			info_area_set_msg(_win_game, "END!");
 		}
 	}
 
@@ -657,6 +657,11 @@ void game_reset() {
 	// Reset the score
 	//
 	info_area_reset_score(_win_game);
+
+	//
+	// Reset message
+	//
+	info_area_set_msg(_win_game, "");
 }
 
 /******************************************************************************
