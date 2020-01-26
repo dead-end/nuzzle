@@ -253,7 +253,7 @@ static void area_update(s_area *area) {
 	//
 	// Fill the blocks with random colors.
 	//
-	colors_init_random(_drop_area.blocks, _drop_area.dim.row, _drop_area.dim.col);
+	colors_init_random(area->blocks, area->dim.row, area->dim.col);
 
 	//
 	// Normalize the area.
@@ -442,9 +442,9 @@ void game_process_event_release(s_status *status, const int event_row, const int
 		area_update(&_drop_area);
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
-			s_status_set_end(status);
+			//s_status_set_end(status);
 			log_debug_str("ENDDDDDDDDDDDDD");
-			info_area_set_msg(_win_game, "END!");
+			info_area_set_msg(_win_game, "END!", status);
 		}
 	}
 
@@ -654,6 +654,11 @@ void game_free() {
 void game_reset(s_status *status) {
 
 	//
+	// Initialize the game status
+	//
+	s_status_init(status);
+
+	//
 	// Reset the game area
 	//
 	s_area_set_blocks(&_game_area, 0);
@@ -676,12 +681,8 @@ void game_reset(s_status *status) {
 	//
 	// Reset message
 	//
-	info_area_set_msg(_win_game, "");
+	info_area_set_msg(_win_game, "", status);
 
-	//
-	// Initialize the game status
-	//
-	s_status_init(status);
 }
 
 /******************************************************************************
