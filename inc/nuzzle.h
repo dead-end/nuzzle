@@ -26,7 +26,8 @@
 #define INC_NUZZLE_H_
 
 /******************************************************************************
- *
+ * The structure contains data that represent the status of the game. Currently
+ * this is only the end flag.
  *****************************************************************************/
 
 typedef struct s_status {
