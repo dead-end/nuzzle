@@ -227,13 +227,17 @@ void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
  * TODO: replace with menu / options
  *****************************************************************************/
 
-void info_area_set_msg(WINDOW *win, const char *msg) {
+void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status) {
 
 	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, msg) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_STATUS]);
 	}
 
-	colors_info_area_attr(win, CLR_NONE);
+	if (s_status_is_end(status)) {
+		colors_info_end_attr(win);
+	} else {
+		colors_info_area_attr(win, CLR_NONE);
+	}
 
 	mvwprintw(win, pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
 }

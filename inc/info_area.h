@@ -27,6 +27,7 @@
 
 #include "common.h"
 #include "colors.h"
+#include "nuzzle.h"
 
 void info_area_init(const int hs);
 
@@ -44,6 +45,6 @@ bool info_area_contains(const s_point *pixel);
 
 void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color);
 
-void info_area_set_msg(WINDOW *win, const char *msg);
+void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status);
 
 #endif /* INC_INFO_AREA_H_ */
