@@ -61,6 +61,7 @@ SRC_LIBS = \
 	$(SRC_DIR)/s_area.c \
 	$(SRC_DIR)/win_menu.c \
 	$(SRC_DIR)/nz_curses.c \
+	$(SRC_DIR)/fs_persist.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
