@@ -262,6 +262,8 @@ static void s_area_get_ul(const s_area *area, s_point *ul) {
  * 1 1 0
  * 1 0 0
  * 0 0 0
+ *
+ * ATTENTION: The dimension is updated, in this case to (2,2)
  *****************************************************************************/
 
 void s_area_normalize(s_area *area) {
@@ -275,35 +277,48 @@ void s_area_normalize(s_area *area) {
 	log_debug("ul: %d/%d -> 0/0", ul.row, ul.col);
 
 	//
-	// If the upper left corner is at the origin, there is nothing to do. The
-	// following loop would try to move the used area even if nothing would
-	// change.
+	// Step: 1
 	//
-	if (ul.row == 0 && ul.col == 0) {
-		return;
-	}
-
+	// At the first step, we want to move the used area to the upper left
+	// corner.
 	//
-	// Copy the used area to the origin: 0/0
-	//
-	for (int row = 0; row < area->dim.row; row++) {
-		for (int col = 0; col < area->dim.col; col++) {
+	if (ul.row != 0 || ul.col != 0) {
 
-			//
-			// Ensure that the target is part of the area
-			//
-			if (row + ul.row < area->dim.row && col + ul.col < area->dim.col) {
-				area->blocks[row][col] = area->blocks[row + ul.row][col + ul.col];
+		//
+		// Copy the used area to the origin: 0/0
+		//
+		for (int row = 0; row < area->dim.row; row++) {
+			for (int col = 0; col < area->dim.col; col++) {
 
-			}
-			//
-			// If the index is outside fill the blocks with NONE.
-			//
-			else {
-				area->blocks[row][col] = CLR_NONE;
+				//
+				// Ensure that the target is part of the area
+				//
+				if (row + ul.row < area->dim.row && col + ul.col < area->dim.col) {
+					area->blocks[row][col] = area->blocks[row + ul.row][col + ul.col];
+
+				}
+				//
+				// If the index is outside fill the blocks with NONE.
+				//
+				else {
+					area->blocks[row][col] = CLR_NONE;
+				}
 			}
 		}
 	}
+
+	//
+	// Step: 2
+	//
+	// At this step we want to remove the unused rows and columns at the end of
+	// the used area. This is done by updating the dimension of the used area.
+	// The requires that the dimension is set every time a block to drop is
+	// produced.
+	//
+	s_point lr;
+	s_area_get_lr(area, &lr);
+	s_point_set(&area->dim, lr.row + 1, lr.col + 1);
+	log_debug("new dim: %d/%d", area->dim.row, area->dim.col);
 }
 
 /******************************************************************************
@@ -319,10 +334,12 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
 	const int row_end = area->dim.row - drop_area->dim.row;
 	const int col_end = area->dim.col - drop_area->dim.col;
 
+	log_debug("Check from 0/0 to %d,%d", row_end, col_end);
+
 	s_point start;
 
-	for (start.row = 0; start.row < row_end; start.row++) {
-		for (start.col = 0; start.col < col_end; start.col++) {
+	for (start.row = 0; start.row <= row_end; start.row++) {
+		for (start.col = 0; start.col <= col_end; start.col++) {
 
 			//
 			// Check if the drop area can be dropped at this place.
@@ -337,25 +354,10 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
 }
 
 /******************************************************************************
- * The function checks whether the drop area is inside the given area. It is
- * possible that the last rows or columns of the drop area are empty. They have
- * to be ignored. Empty rows and columns at the beginning of the drop area are
- * removed by the normalize function.
+ * The function checks whether the drop area is inside the given area.
  *****************************************************************************/
 
-bool s_area_used_area_is_inside(const s_area *area, const s_area *drop_area) {
-
-#ifdef DEBUG
-	const int lr_area_row = area->pos.row + (area->dim.row - 1) * area->size.row;
-	const int lr_area_col = area->pos.col + (area->dim.col - 1) * area->size.col;
-
-	log_debug("Area: %d/%d %d/%d", area->pos.row, area->pos.col, lr_area_row, lr_area_col);
-
-	const int lr_drop_row = drop_area->pos.row + (drop_area->dim.row - 1) * drop_area->size.row;
-	const int lr_drop_col = drop_area->pos.col + (drop_area->dim.col - 1) * drop_area->size.col;
-
-	log_debug("Drop: %d/%d %d/%d", drop_area->pos.row, drop_area->pos.col, lr_drop_row, lr_drop_col);
-#endif
+bool s_area_is_area_inside(const s_area *area, const s_area *drop_area) {
 
 	//
 	// Upper left corner
@@ -367,14 +369,10 @@ bool s_area_used_area_is_inside(const s_area *area, const s_area *drop_area) {
 	//
 	// lower right corner index
 	//
-	s_point lr;
-	s_area_get_lr(drop_area, &lr);
+	const int lr_row = drop_area->pos.row + (drop_area->dim.row - 1) * drop_area->size.row;
+	const int lr_col = drop_area->pos.col + (drop_area->dim.col - 1) * drop_area->size.col;
 
-	//
-	// Lower right corner position
-	//
-	const int lr_row = drop_area->pos.row + lr.row * drop_area->size.row;
-	const int lr_col = drop_area->pos.col + lr.col * drop_area->size.col;
+	log_debug("Drop: %d/%d %d/%d", drop_area->pos.row, drop_area->pos.col, lr_row, lr_col);
 
 	if (!s_area_is_inside(area, lr_row, lr_col)) {
 		return false;

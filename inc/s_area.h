@@ -93,6 +93,6 @@ int s_area_remove_blocks(s_area *area, const s_point *idx, const s_area *drop_ar
 
 void s_area_normalize(s_area *area);
 
-bool s_area_used_area_is_inside(const s_area *area, const s_area *drop_area);
+bool s_area_is_area_inside(const s_area *area, const s_area *drop_area);
 
 #endif /* INC_S_AREA_H_ */
