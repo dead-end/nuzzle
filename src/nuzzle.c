@@ -97,7 +97,7 @@ static void init(s_status *status) {
 	//
 	colors_init();
 
-	info_area_init(0);
+	info_area_init();
 
 	game_init(status);
 }
