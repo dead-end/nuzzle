@@ -29,7 +29,7 @@
 #include "colors.h"
 #include "nuzzle.h"
 
-void info_area_init(const int hs);
+void info_area_init();
 
 void info_area_add_to_score(WINDOW *win, const int add_2_score);
 

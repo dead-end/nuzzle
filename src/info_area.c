@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <fs_persist.h>
 #include <ncurses.h>
 
 #include "info_area.h"
@@ -72,8 +73,12 @@ static s_point pos;
  * The function initializes the info area.
  *****************************************************************************/
 
-void info_area_init(const int hs) {
-	high_score = hs;
+void info_area_init() {
+
+	//
+	// Read the high score from the score file.
+	//
+	high_score = fs_read_score();
 
 	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle 0.1.0") >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_HEAD]);
@@ -93,10 +98,15 @@ void info_area_init(const int hs) {
 }
 
 /******************************************************************************
- * Print the score.
+ * The function prints the score and the high score. If the score changes, the
+ * high score may change.
  *****************************************************************************/
 
 static void info_area_print_score(WINDOW *win) {
+
+	if (snprintf(data[IDX_HIGH], COLS + 1, "high: %6d", high_score) >= COLS + 1) {
+		log_exit("Truncated: %s", data[IDX_HIGH]);
+	}
 
 	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_SCORE]);
@@ -113,6 +123,15 @@ static void info_area_print_score(WINDOW *win) {
 void info_area_add_to_score(WINDOW *win, const int add_2_score) {
 
 	cur_score += add_2_score;
+
+	//
+	// If the updated score is higher than the high score, we have to persist
+	// the the new score and have to update the high score.
+	//
+	if (cur_score > high_score) {
+		fs_write_score(cur_score);
+		high_score = cur_score;
+	}
 
 	info_area_print_score(win);
 }
