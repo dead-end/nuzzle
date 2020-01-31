@@ -57,6 +57,10 @@
 
 #define GAME_SIZE 11
 
+#define DROP_AREA_ROW 3
+
+#define DROP_AREA_COL 3
+
 /******************************************************************************
  * The structs for the game.
  *****************************************************************************/
@@ -251,6 +255,12 @@ static void s_area_copy(s_area *to, const s_area *from) {
 static void area_update(s_area *area) {
 
 	//
+	// The normalization (see below) may change the dimension, so it has to be
+	// set each time the drop area is filled.
+	//
+	s_point_set(&area->dim, DROP_AREA_ROW, DROP_AREA_COL);
+
+	//
 	// Fill the blocks with random colors.
 	//
 	colors_init_random(area->blocks, area->dim.row, area->dim.col);
@@ -368,7 +378,7 @@ static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *d
 	//
 	// Ensure that the used area is inside the game area.
 	//
-	if (!s_area_used_area_is_inside(game_area, adj_area)) {
+	if (!s_area_is_area_inside(game_area, adj_area)) {
 		return false;
 	}
 
@@ -442,9 +452,13 @@ void game_process_event_release(s_status *status, const int event_row, const int
 		area_update(&_drop_area);
 
 		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
-			//s_status_set_end(status);
-			log_debug_str("ENDDDDDDDDDDDDD");
+
+			//
+			// If there is no place to drop it, we finished.
+			//
+			s_status_set_end(status);
 			info_area_set_msg(_win_game, "END!", status);
+			log_debug_str("ENDDDDDDDDDDDDD");
 		}
 	}
 
