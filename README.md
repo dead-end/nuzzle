@@ -52,13 +52,7 @@ To uninstall nuzzle simply remove the installation directory and the directory w
 ```
 rm -rf nuzzle-0.1/
 
-
-```
-
-Nuzzle uses the following directory to store its data. You need to remove this directory:
-
-```
-
+$HOME/.nuzzle/
 ```
 
 # Dependencies
