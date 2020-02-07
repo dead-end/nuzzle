@@ -17,12 +17,6 @@ necessary to hold the button pressed while moving the blocks.
 -  If  more  than 4 adjacent blocks exist, then they are removed from the
 game. For each removed block you get one point for your score.
 
-Nuzzle uses the following directory to store its data:
-
-$HOME/.nuzzle/
-
-
-
 ![Example](res/nuzzle-example.gif)
 
 # Installation
@@ -66,3 +60,9 @@ Nuzzle uses ncursesw which is the wide character version of ncurses. To build th
 - libc6 (>=2.27)
 - libtinfo5 (>=6.1)
 - libncursesw5 (>=6.1)
+
+# Internals
+
+Nuzzle uses the following directory to store its data:
+
+$HOME/.nuzzle/
