@@ -1,0 +1,48 @@
+.\"-----------------------------------------------------------------------------
+.\" groff -man -Tascii man/ccsvv.1
+.\"
+.\" \fB .B Bold \fI .I Italic \fR Roman
+.\"-----------------------------------------------------------------------------
+.TH "NUZZLE" "6" "February 2020" "V 0.1" "Game"
+.\"-----------------------------------------------------------------------------
+.SH NAME
+nuzzle \- terminal based puzzle game
+.\"-----------------------------------------------------------------------------
+.SH SYNOPSIS
+.\"-----------------------------------------------------------------------------
+.B nuzzle
+.\"-----------------------------------------------------------------------------
+.SH DESCRIPTION
+.\"-----------------------------------------------------------------------------
+.PP
+Nuzzle is a terminal based puzzle game. It is implemented with ncurses and 
+requires color and mouse support. Playing is simple:
+.TP 
+\fB\-\fR Start the program and start a new game.
+.TP 
+\fB\-\fR Use ESC to enter the main menu during the game.
+.TP
+\fB\-\fR Click on the block of squares to pick them up.
+.TP
+\fB\-\fR Move the block to the desired position.
+.TP
+\fB\-\fR Click again to drop the block of squares at that position. It is not necessary to hold the button pressed while moving the blocks.
+.TP
+\fB\-\fR If more than 4 adjacent blocks exist, then they are removed from the game. For each removed block you get one point for your score.
+.\"-----------------------------------------------------------------------------
+.SH Files
+Nuzzle uses the following directory to store its data:
+.PP
+.nf
+.RS
+$HOME/.nuzzle/
+.\"-----------------------------------------------------------------------------
+.SH SEE ALSO
+nuzzle(6)
+.\"-----------------------------------------------------------------------------
+.SH BUGS
+No known bugs.
+.\"-----------------------------------------------------------------------------
+.SH AUTHOR
+Dead End
+
