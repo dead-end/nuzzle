@@ -80,7 +80,7 @@ void info_area_init() {
 	//
 	high_score = fs_read_score();
 
-	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle 0.1.0") >= COLS + 1) {
+	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle " VERSION) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_HEAD]);
 	}
 
