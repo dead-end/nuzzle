@@ -17,10 +17,6 @@ Nuzzle is a terminal based puzzle game. It is implemented with ncurses and requi
 
 ![Example](res/nuzzle-example.gif)
 
-The program uses the following directory to store its data:
-
-  $HOME/.nuzzle/
-
 # Installation
 
 To install nuzzle download the latest released sources:
@@ -62,3 +58,9 @@ Nuzzle uses ncursesw which is the wide character version of ncurses. To build th
 - libc6 (>=2.27)
 - libtinfo5 (>=6.1)
 - libncursesw5 (>=6.1)
+
+# Internals
+
+The program uses the following directory to store its data:
+
+  $HOME/.nuzzle/
