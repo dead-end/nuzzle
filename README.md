@@ -42,6 +42,16 @@ Now you can start the program with:
 ./nuzzle
 ```
 
+# Uninstall
+
+To uninstall nuzzle simply remove the installation directory and the directory which nuzzle uses for its data: 
+
+```
+rm -rf nuzzle-0.1/
+
+rm -rf $HOME/.nuzzle/
+```
+
 # Dependencies
 
 Nuzzle uses ncursesw which is the wide character version of ncurses. To build the nuzzle, the following list of dependencies is relevant for ubuntu 18.0.4:
