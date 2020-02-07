@@ -23,6 +23,7 @@ usage() {
 Usage: ${0} [help|usage|md]
   help  : Writes this message
   usage : Creates a c code snipet with a usage message
+  stdout: Outputs man page to stdout
   md    : Outputs man page as a md file. The result can be redirected:
 
           sh bin/man.sh md > man/README.md
@@ -34,6 +35,30 @@ EOF
   else
     exit 0
   fi
+}
+
+################################################################################
+# The function prints the relevant part of the man page and removes the leading
+# spaces.
+################################################################################
+
+man2stdout() {
+
+  #
+  # Get the man page with column size 83. Later we remove 3 leading spaces.
+  #
+  tmp=$(env COLUMNS=83 man --pager=cat ${manpage})
+
+  #
+  # Get the part between the NAME and the EXAMPLE section and remove all section
+  # headers.
+  #
+  tmp=$(echo "$tmp" | sed -n '/NAME/,/EXAMPLES/p' | grep -v '^[A-Z]')
+
+  #
+  # Remove some leading spaces.
+  #
+  echo "$tmp" | sed 's#^ *##'
 }
 
 ################################################################################
@@ -107,6 +132,9 @@ elif [ "${mode}" = "usage" ] ; then
 
 elif [ "${mode}" = "md" ] ; then
   man2md
+
+elif [ "${mode}" = "stdout" ] ; then
+  man2stdout
 
 else
   usage "Unknown mode: ${mode}"
