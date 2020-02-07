@@ -45,7 +45,7 @@ void game_print_new_area();
 
 void game_process_event_pressed(s_status *status, const int row, const int col);
 
-void game_process_event_release(s_status *status, const int row, const int col);
+void game_process_event_release(s_status *status);
 
 void game_do_center();
 

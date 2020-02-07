@@ -401,9 +401,7 @@ static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *d
  * drop area can be dropped, and if so, if the game ended.
  *****************************************************************************/
 
-void game_process_event_release(s_status *status, const int event_row, const int event_col) {
-
-	log_debug("Event pos: %d/%d", event_row, event_col);
+void game_process_event_release(s_status *status) {
 
 	//
 	// Maybe the drop area position has to be adjusted.

@@ -222,7 +222,7 @@ int main() {
 				// TODO: only if drop area is picked up.
 				game_process_event_pressed(&status, event.y, event.x);
 			} else {
-				game_process_event_release(&status, event.y, event.x);
+				game_process_event_release(&status);
 			}
 
 		} else {
