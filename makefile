@@ -123,6 +123,38 @@ clean:
 	rm -f $(SRC_DIR)/*.c~
 	rm -f $(INCLUDE_DIR)/*.h~
 	rm -f $(EXEC)
+	
+################################################################################
+# Goals to install and uninstall the executable.
+# --owner=root --group=root 
+################################################################################
+
+PREFIX = /usr/local
+
+BINDIR = $(PREFIX)/bin
+
+DOCDIR = $(PREFIX)/share/doc/$(EXEC)
+
+MANDIR = $(PREFIX)/share/man/man6
+
+MANPAGE = nuzzle.6
+
+.PHONY: install uninstall
+
+install: $(EXEC)
+	gzip -9n -c man/$(MANPAGE) > $(BUILD_DIR)/$(MANPAGE).gz
+	install -D --mode=644 $(BUILD_DIR)/$(MANPAGE).gz --target-directory=$(MANDIR)
+	install -D --mode=755 $(EXEC) --target-directory=$(BINDIR) --strip
+	install -D --mode=644 LICENSE $(DOCDIR)/copyright
+	gzip -9n -c changelog > $(BUILD_DIR)/changelog.gz
+	install -D --mode=644 $(BUILD_DIR)/changelog.gz $(DOCDIR)/changelog.gz
+
+uninstall:
+	rm -f $(DOCDIR)/copyright
+	rm -f $(DOCDIR)/changelog.gz
+	if [ -d "$(DOCDIR)" ]; then rmdir $(DOCDIR); fi
+	rm -f $(BINDIR)/$(EXEC)
+	rm -f $(MANDIR)/$(MANPAGE).gz
 
 ################################################################################
 # The goal prints a help message the the nuzzle specific options for the build.
@@ -135,6 +167,7 @@ help:
 	@echo ""
 	@echo "  make | make all              : Triggers the build of the executable."
 	@echo "  make clean                   : Removes executables and temporary files from the build."
+	@echo "  make intall | make uninstall : Installs / uninstalles nuzzle."
 	@echo "  make help                    : Prints this message."
 	@echo ""
 	@echo "Parameter:"
