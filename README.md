@@ -34,13 +34,13 @@ cd nuzzle-0.1/
 
 make
 
-chmod u+x nuzzle
+sudo make install
 ```
 
 Now you can start the program with:
 
 ```
-./nuzzle
+nuzzle
 ```
 
 # Uninstall
@@ -48,9 +48,7 @@ Now you can start the program with:
 To uninstall nuzzle simply remove the installation directory and the directory which nuzzle uses for its data: 
 
 ```
-rm -rf nuzzle-0.1/
-
-$HOME/.nuzzle/
+sudo make uninstall
 ```
 
 # Dependencies
