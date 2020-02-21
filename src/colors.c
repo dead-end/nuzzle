@@ -67,9 +67,9 @@
 //
 // Used by: attrset(COLOR_PAIR(area->blocks[block.row][block.col]));
 //
-#define CP_RED_BLACK 1
-#define CP_GREEN_BLACK 2
-#define CP_BLUE_BLACK 3
+#define CP_RED_BLACK    1
+#define CP_GREEN_BLACK  2
+#define CP_BLUE_BLACK   3
 #define CP_YELLOW_BLACK 4
 
 //
