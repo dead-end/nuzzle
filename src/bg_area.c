@@ -32,9 +32,9 @@
  * color and wide character.
  *****************************************************************************/
 
-void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color, const wchar_t chr) {
+void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block fg_color, const wchar_t chr) {
 
-	colors_bg_attr(win, color);
+	colors_bg_attr(win, fg_color);
 
 	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
 }
