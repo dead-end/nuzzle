@@ -31,7 +31,7 @@
  * The type of a block, which is the color.
  *****************************************************************************/
 
-typedef char t_block;
+typedef short t_block;
 
 /******************************************************************************
  * Functions and macros
