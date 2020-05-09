@@ -154,20 +154,20 @@ static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_
  * area is deleted.
  *****************************************************************************/
 
-static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *area_pos, const s_point *area_size, const t_block color, const wchar_t chr) {
+static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *area_pos, const s_point *area_size, const t_block fg_color, const wchar_t chr) {
 	s_point pixel;
 
 	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
 		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
 
 			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
-				game_area_print_pixel(win, game_area, &pixel, color);
+				game_area_print_pixel(win, game_area, &pixel, fg_color);
 
 			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(win, &pixel, color);
+				info_area_print_pixel(win, &pixel, fg_color);
 
 			} else {
-				bg_area_print_pixel(win, &pixel, color, chr);
+				bg_area_print_pixel(win, &pixel, fg_color, chr);
 			}
 		}
 	}
