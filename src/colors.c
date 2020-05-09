@@ -124,29 +124,10 @@ static void colors_init_color(const short color, const short red, const short gr
 }
 
 /******************************************************************************
- * The function initializes the colors and color pairs. It ensures that the
- * terminal supports colors.
+ * initialize colors and color pairs.
  *****************************************************************************/
 
-void colors_init() {
-
-	//
-	// Ensure that the terminal is ok.
-	//
-	if (!has_colors()) {
-		log_exit_str("Terminal does not support colors!");
-	}
-
-	if (!can_change_color()) {
-		log_exit_str("Terminal does not support color changes!");
-	}
-
-	//
-	// Start the color.
-	//
-	if (start_color() != OK) {
-		log_exit_str("Unable to init colors!");
-	}
+static void colors_init_colors() {
 
 	//
 	// Initialize colors.
@@ -202,6 +183,34 @@ void colors_init() {
 	colors_init_pair(CP_YEL_GRE, FG_YEL, BG_GRE);
 	colors_init_pair(CP_YEL_BLU, FG_YEL, BG_BLU);
 	colors_init_pair(CP_YEL_YEL, FG_YEL, BG_YEL);
+}
+
+/******************************************************************************
+ * The function initializes the colors and color pairs. It ensures that the
+ * terminal supports colors.
+ *****************************************************************************/
+
+void colors_init() {
+
+	//
+	// Ensure that the terminal is ok.
+	//
+	if (!has_colors()) {
+		log_exit_str("Terminal does not support colors!");
+	}
+
+	if (!can_change_color()) {
+		log_exit_str("Terminal does not support color changes!");
+	}
+
+	//
+	// Start the color.
+	//
+	if (start_color() != OK) {
+		log_exit_str("Unable to init colors!");
+	}
+
+	colors_init_colors();
 }
 
 /******************************************************************************
