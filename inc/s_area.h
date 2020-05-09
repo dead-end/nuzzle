@@ -35,7 +35,10 @@
 typedef struct s_area {
 
 	//
-	// The 2-dimensional array with the block colors.
+	// The 2-dimensional array with the block colors. The colors are defined
+	// with the definitions:
+	//
+	// CLR_NONE, CLR_RED, CLR_GREEN, CLR_BLUE, CLR_YELLOW
 	//
 	t_block **blocks;
 
