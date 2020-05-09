@@ -218,6 +218,8 @@ void colors_init() {
  * that the center block has a color.
  *****************************************************************************/
 
+#define colors_get_color() (rand() % 4) + 1
+
 void colors_init_random(t_block **blocks, const int rows, const int cols) {
 
 	//

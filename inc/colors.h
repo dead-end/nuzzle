@@ -43,8 +43,6 @@
  * Functions and macros
  *****************************************************************************/
 
-#define colors_get_color() (rand() % 4) + 1
-
 #define colors_is_even(r,c) ((r) % 2) == ((c) % 2)
 
 void colors_init();
