@@ -30,7 +30,8 @@
 #include "blocks.h"
 
 /******************************************************************************
- * Definitions of the colors. The type should be t_block.
+ * The definition of color indices. They are used as an index for an array with
+ * color pairs.
  *****************************************************************************/
 
 #define CLR_NONE       0
