@@ -33,11 +33,15 @@
  * Definitions of the colors. The type should be t_block.
  *****************************************************************************/
 
-#define CLR_NONE   0
-#define CLR_RED    1
-#define CLR_GREEN  2
-#define CLR_BLUE   3
-#define CLR_YELLOW 4
+#define CLR_NONE       0
+
+#define CLR_RED        1
+#define CLR_GREEN      2
+#define CLR_BLUE       3
+#define CLR_YELLOW     4
+
+#define CLR_GREY_DARK  5
+#define CLR_GREY_LIGHT 6
 
 /******************************************************************************
  * Functions and macros
