@@ -32,9 +32,17 @@
  * color and wide character.
  *****************************************************************************/
 
-void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block fg_color, const wchar_t chr) {
+void bg_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_color, const wchar_t chr) {
 
-	colors_bg_attr(win, fg_color);
+	if (chr != BLOCK_EMPTY) {
+		log_exit("not empty: %s", boolstr(chr == BLOCK_FULL));
+	}
+
+	//
+	// The foreground color is the default (black) and the background color is
+	// the color of the drop area (which might be CLR_NONE).
+	//
+	wattrset(win, COLOR_PAIR(color_pair_get(CLR_NONE, da_color)));
 
 	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
 }
