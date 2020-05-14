@@ -181,7 +181,7 @@ void info_area_print(WINDOW *win) {
 
 	log_debug("row: %d col: %d", pos.row, pos.col);
 
-	colors_info_area_attr(win, CLR_NONE);
+	colors_normal_set_attr(win, CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
 		mvwprintw(win, pos.row + i, pos.col, data[i]);
@@ -234,7 +234,7 @@ void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
 	log_debug("pixel: %d/%d '%c'", pixel->row, pixel->col, data[row][col]);
 #endif
 
-	colors_info_area_attr(win, color);
+	colors_normal_set_attr(win, color);
 
 	mvwprintw(win, pixel->row, pixel->col, "%c", data[row][col]);
 }
@@ -253,9 +253,9 @@ void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status) {
 	}
 
 	if (s_status_is_end(status)) {
-		colors_info_end_attr(win);
+		colors_normal_end_attr(win);
 	} else {
-		colors_info_area_attr(win, CLR_NONE);
+		colors_normal_set_attr(win, CLR_NONE);
 	}
 
 	mvwprintw(win, pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
