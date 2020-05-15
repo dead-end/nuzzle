@@ -36,12 +36,12 @@
 
 #define CLR_NONE       0
 
-#define CLR_RED        1
-#define CLR_GREEN      2
+#define CLR_RED_       1
+#define CLR_GREE       2
 #define CLR_BLUE       3
-#define CLR_YELLOW     4
+#define CLR_YELL       4
 
-#define CLR_GREY_DARK  5
+#define CLR_GREY_DARK_ 5
 #define CLR_GREY_LIGHT 6
 
 /******************************************************************************
@@ -54,14 +54,12 @@ void colors_init();
 
 void colors_init_random(t_block **blocks, const int rows, const int cols);
 
-void colors_info_area_attr(WINDOW *win, const t_block bg_color);
+void colors_normal_set_attr(WINDOW *win, const t_block da_color);
 
-void colors_info_end_attr(WINDOW *win);
+void colors_normal_end_attr(WINDOW *win);
 
-void colors_set_game_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even);
+void colors_chess_set_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even);
 
-void colors_bg_attr(WINDOW *win, const t_block color);
-
-wchar_t colors_get_char(const t_block fg_color, const t_block bg_color);
+wchar_t colors_chess_get_char(const t_block fg_color, const t_block bg_color);
 
 #endif /* INC_COLORS_H_ */
