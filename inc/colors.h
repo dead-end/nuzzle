@@ -58,8 +58,6 @@ void colors_normal_set_attr(WINDOW *win, const t_block da_color);
 
 void colors_normal_end_attr(WINDOW *win);
 
-void colors_chess_set_attr(WINDOW *win, const t_block fg_color, const t_block bg_color, const bool even);
-
-wchar_t colors_chess_get_char(const t_block fg_color, const t_block bg_color);
+wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const bool even);
 
 #endif /* INC_COLORS_H_ */

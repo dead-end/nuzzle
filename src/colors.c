@@ -342,51 +342,57 @@ void colors_normal_end_attr(WINDOW *win) {
 }
 
 /******************************************************************************
- * The function sets the color pair for a chess pattern area. It is called with
- * two colors, the game area and the drop area color. If both are CLR_NONE then
- * the chess pattern is visible.
+ * The function sets the color pair for a chess pattern area and returns the
+ * corresponding character. It is called with the game area and the drop area
+ * color index and a flag indicating whether the block is odd or even.
  *****************************************************************************/
 
-void colors_chess_set_attr(WINDOW *win, const t_block ga_color, const t_block da_color, const bool even) {
+wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const bool even) {
 	int color_pair;
-
-	//
-	// If foreground and background have no color, we use the default
-	// background, which is a chess pattern.
-	//
-	if (ga_color == CLR_NONE && da_color == CLR_NONE) {
-		color_pair = color_pair_get(CLR_NONE, even ? CLR_GREY_LIGHT : CLR_GREY_DARK_);
-
-	} else {
-		color_pair = color_pair_get(ga_color, da_color);
-	}
-
-	log_debug("fg: %d bg: %d pair: %d", da_color, ga_color, color_pair);
-
-	wattrset(win, COLOR_PAIR(color_pair));
-}
-
-/******************************************************************************
- * The function determines the character to display for a chess pattern area.
- * It may have a foreground or a background block or both.
- *****************************************************************************/
-
-wchar_t colors_chess_get_char(const t_block ga_color, const t_block da_color) {
 	wchar_t chr;
 
-	if (ga_color != CLR_NONE) {
+	if (ga_color == CLR_NONE) {
 
-		if (da_color != CLR_NONE) {
-			chr = BLOCK_BOTH;
+		//
+		// Both are empty
+		//
+		if (da_color == CLR_NONE) {
+			chr = BLOCK_EMPTY;
+			color_pair = color_pair_get(CLR_NONE, even ? CLR_GREY_LIGHT : CLR_GREY_DARK_);
 
-		} else {
-			chr = BLOCK_FULL;
+		}
+
+		//
+		// The drop area has a color and the drop area is displayed as a
+		// background color.
+		//
+		else {
+			chr = BLOCK_EMPTY;
+			color_pair = color_pair_get(ga_color, da_color);
 		}
 	} else {
-		chr = BLOCK_EMPTY;
+
+		//
+		// The foreground is set, so we need a full character.
+		//
+		if (da_color == CLR_NONE) {
+			chr = BLOCK_FULL;
+			color_pair = color_pair_get(ga_color, da_color);
+
+		}
+
+		//
+		// Both colors are set, so we need a transparent character.
+		//
+		else {
+			chr = BLOCK_BOTH;
+			color_pair = color_pair_get(ga_color, da_color);
+		}
 	}
 
-	log_debug("color fg: %d bg: %d char '%lc", ga_color, da_color, chr);
+	log_debug("fg: %d bg: %d pair: %d char '%lc", da_color, ga_color, color_pair, chr);
+
+	wattrset(win, COLOR_PAIR(color_pair));
 
 	return chr;
 }
