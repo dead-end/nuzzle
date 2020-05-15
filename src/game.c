@@ -94,11 +94,13 @@ static s_point _offset;
 static WINDOW *_win_game = NULL;
 
 /******************************************************************************
- * The function prints the game area with no foreground color. This can be used
- * as an initialization.
+ * The function prints the game area with no drop area. This can be used as an
+ * initialization.
  *****************************************************************************/
 
 static void game_area_print(WINDOW *win, const s_area *game_area) {
+	wchar_t chr;
+	t_block ga_color;
 
 	//
 	// Iterate through the blocks of the game area.
@@ -106,22 +108,29 @@ static void game_area_print(WINDOW *win, const s_area *game_area) {
 	for (int row = 0; row < game_area->dim.row; row++) {
 		for (int col = 0; col < game_area->dim.col; col++) {
 
-			colors_set_game_attr(win, CLR_NONE, game_area->blocks[row][col], colors_is_even(row, col));
+			ga_color = game_area->blocks[row][col];
 
-			s_area_print_block(win, game_area, row, col, BLOCK_EMPTY);
+			//
+			// Set the color pair and get the character to display.
+			//
+			chr = colors_chess_attr_char(win, ga_color, CLR_NONE, colors_is_even(row, col));
+
+			//
+			// Print the block with a given color and character.
+			//
+			s_area_print_block(win, game_area, row, col, chr);
 		}
 	}
 }
 
 /******************************************************************************
- * The function prints a pixel with a given foreground color. The pixel is
- * inside the game area. We compute the background color and the corresponding
- * character.
+ * The function prints a pixel with a given drop area color. The pixel is
+ * inside the game area.
  *****************************************************************************/
 
-static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_point *pixel, const t_block fg_color) {
+static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_point *pixel, const t_block da_color) {
 
-	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, fg_color);
+	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, da_color);
 
 	//
 	// Get the background color of the pixel. We need the corresponding game
@@ -129,18 +138,12 @@ static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_
 	//
 	s_point block_idx;
 	s_area_get_block(game_area, pixel, &block_idx);
-	const t_block bg_color = game_area->blocks[block_idx.row][block_idx.col];
+	const t_block ga_color = game_area->blocks[block_idx.row][block_idx.col];
 
 	//
-	// Set the color attribute for the foreground and background color.
+	// Set the color pair and get the character to display.
 	//
-	colors_set_game_attr(win, fg_color, bg_color, colors_is_even(block_idx.row, block_idx.col));
-
-	//
-	// Get the character to be printed. This can be a space, a block or
-	// transparent block character.
-	//
-	const wchar_t chr = colors_get_char(fg_color, bg_color);
+	const wchar_t chr = colors_chess_attr_char(win, ga_color, da_color, colors_is_even(block_idx.row, block_idx.col));
 
 	//
 	// Print the character at the position.
@@ -149,25 +152,30 @@ static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_
 }
 
 /******************************************************************************
- * The function prints an area with a foreground character and color. If the
- * character is an empty block and the color is none, the foreground of the
- * area is deleted.
+ * The function prints a block of a drop area at a given position, with a given
+ * color. The block may overlap areas (game_area, info_area, background area).
  *****************************************************************************/
 
-static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *area_pos, const s_point *area_size, const t_block fg_color, const wchar_t chr) {
+static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *drop_area_pos, const s_point *drop_area_size, const t_block da_color) {
 	s_point pixel;
 
-	for (pixel.row = area_pos->row; pixel.row < area_pos->row + area_size->row; pixel.row++) {
-		for (pixel.col = area_pos->col; pixel.col < area_pos->col + area_size->col; pixel.col++) {
+	//
+	// Process the pixels of the block.
+	//
+	for (pixel.row = drop_area_pos->row; pixel.row < drop_area_pos->row + drop_area_size->row; pixel.row++) {
+		for (pixel.col = drop_area_pos->col; pixel.col < drop_area_pos->col + drop_area_size->col; pixel.col++) {
 
+			//
+			// Check the position of each block pixel.
+			//
 			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
-				game_area_print_pixel(win, game_area, &pixel, fg_color);
+				game_area_print_pixel(win, game_area, &pixel, da_color);
 
 			} else if (info_area_contains(&pixel)) {
-				info_area_print_pixel(win, &pixel, fg_color);
+				info_area_print_pixel(win, &pixel, da_color);
 
 			} else {
-				bg_area_print_pixel(win, &pixel, fg_color, chr);
+				bg_area_print_pixel(win, &pixel, da_color);
 			}
 		}
 	}
@@ -199,10 +207,10 @@ static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const
 			drop_area_ul.col = block_upper_left(drop_area->pos.col, drop_area->size.col, col);
 
 			if (do_print) {
-				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[row][col], BLOCK_FULL);
+				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[row][col]);
 
 			} else {
-				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, CLR_NONE, BLOCK_EMPTY);
+				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, CLR_NONE);
 			}
 		}
 	}
@@ -236,7 +244,7 @@ static bool do_adjust(const s_area *game_area, const s_area *drop_area, s_area *
 /******************************************************************************
  * The function copies one area to an other. The blocks are shared.
  *****************************************************************************/
-
+//TODO: move to s_area.c
 static void s_area_copy(s_area *to, const s_area *from) {
 
 	to->blocks = from->blocks;
