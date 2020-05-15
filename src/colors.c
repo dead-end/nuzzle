@@ -358,7 +358,7 @@ void colors_chess_set_attr(WINDOW *win, const t_block ga_color, const t_block da
 		color_pair = color_pair_get(CLR_NONE, even ? CLR_GREY_LIGHT : CLR_GREY_DARK_);
 
 	} else {
-		color_pair = color_pair_get(da_color, ga_color);
+		color_pair = color_pair_get(ga_color, da_color);
 	}
 
 	log_debug("fg: %d bg: %d pair: %d", da_color, ga_color, color_pair);
