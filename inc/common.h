@@ -103,7 +103,7 @@ typedef struct s_point {
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-#define boolstr(b) (b) ? "true" : "false"
+#define bool_str(b) (b) ? "true" : "false"
 
 #define center(t,w) (((t) - (w)) / 2)
 
