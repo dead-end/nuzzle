@@ -25,6 +25,8 @@
 #ifndef INC_S_AREA_H_
 #define INC_S_AREA_H_
 
+#include <ncurses.h>
+
 #include "blocks.h"
 #include "common.h"
 
@@ -66,6 +68,8 @@ typedef struct s_area {
 void s_area_copy(s_area *to, const s_area *from);
 
 s_point s_area_get_size(const s_area *area);
+
+s_point s_area_get_lr(const s_area *area);
 
 bool s_area_is_inside(const s_area *area, const int row, const int col);
 
