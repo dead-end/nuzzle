@@ -191,10 +191,11 @@ void s_area_free(s_area *area) {
 }
 
 /******************************************************************************
- * The function computes the lower right corner of the used area.
+ * The function computes the effective lower right corner of the used area. An
+ * area may contain rows / cols of blocks that are completely empty.
  *****************************************************************************/
 
-static void s_area_get_lr(const s_area *area, s_point *lr) {
+static void s_area_get_eff_lr(const s_area *area, s_point *lr) {
 
 	//
 	// Initialize the lower right corner with a minimal, none valid value.
@@ -225,10 +226,11 @@ static void s_area_get_lr(const s_area *area, s_point *lr) {
 }
 
 /******************************************************************************
- * The function computes the upper left corner of the used area.
+ * The function computes the effective upper left corner of the used area. An
+ * area may contain rows / cols of blocks that are completely empty.
  *****************************************************************************/
 
-static void s_area_get_ul(const s_area *area, s_point *ul) {
+static void s_area_get_eff_ul(const s_area *area, s_point *ul) {
 
 	//
 	// Initialize the upper left corner with a maximal, none valid value.
@@ -285,7 +287,7 @@ void s_area_normalize(s_area *area) {
 	// Get the upper left corner of the used area.
 	//
 	s_point ul;
-	s_area_get_ul(area, &ul);
+	s_area_get_eff_ul(area, &ul);
 
 	log_debug("ul: %d/%d -> 0/0", ul.row, ul.col);
 
@@ -329,7 +331,7 @@ void s_area_normalize(s_area *area) {
 	// produced.
 	//
 	s_point lr;
-	s_area_get_lr(area, &lr);
+	s_area_get_eff_lr(area, &lr);
 	s_point_set(&area->dim, lr.row + 1, lr.col + 1);
 	log_debug("new dim: %d/%d", area->dim.row, area->dim.col);
 }
