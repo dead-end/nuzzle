@@ -139,10 +139,70 @@ bool s_area_is_area_inside(const s_area *outer_area, const s_area *inner_area) {
 /******************************************************************************
  * The function checks if the current pixel is aligned with the s_area. This
  * does not mean that the pixel is inside the s_area.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 bool s_area_is_aligned(const s_area *area, const int pos_row, const int pos_col) {
 	return (pos_row - area->pos.row) % area->size.row == 0 && (pos_col - area->pos.col) % area->size.col == 0;
+}
+
+/******************************************************************************
+ * The function aligns a point to the blocks of an area. It is assumed that the
+ * point is inside the area, so the point is inside one of the blocks of the
+ * area. The point is shifted to the upper left corner of the block where it is
+ * inside. Before:
+ *
+ * aaaaAAAAaaaaAAAA (area)
+ *       P          (point)
+ *
+ * After:
+ *
+ * aaaaAAAAaaaaAAAA (area)
+ *     p            (point)
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+bool s_area_align_point(const s_area *area, s_point *point) {
+	int diff;
+	bool changed = false;
+
+#ifdef DEBUG
+
+	//
+	// Check the precondition in debug mode
+	//
+	if (!s_area_is_inside(area, point->row, point->col)) {
+		log_exit("Point: %d/%d is outside the area", point->row, point->col);
+	}
+#endif
+
+	//
+	// Align the row
+	//
+	diff = (point->row - area->pos.row) % area->size.row;
+
+	if (diff != 0) {
+		point->row -= diff;
+		changed = true;
+	}
+
+	//
+	// Align the col
+	//
+	diff = (point->col - area->pos.col) % area->size.col;
+
+	if (diff != 0) {
+		point->col -= diff;
+		changed = true;
+	}
+
+	//
+	// The function returns true if the point changes, so a drawing is
+	// necessary.
+	//
+	return changed;
 }
 
 /******************************************************************************

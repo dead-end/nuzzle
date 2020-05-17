@@ -174,6 +174,69 @@ static void test_s_area_is_area_inside() {
 }
 
 /******************************************************************************
+ * The function checks the s_area_is_aligned() function.
+ *
+ * 0123456
+ * 1AAAbbb
+ * 2AAAbbb
+ * 3AAAbbb
+ * 4cccDDD
+ * 5cccDDD
+ * 6cccDDD
+ *****************************************************************************/
+
+static void test_s_area_is_aligned() {
+	s_area area;
+	bool result;
+
+	s_point_set(&area.dim, 2, 2);
+	s_point_set(&area.size, 3, 3);
+	s_point_set(&area.pos, 1, 1);
+
+	result = s_area_is_aligned(&area, 4, 1);
+	ut_check_bool(result, true, "4, 1");
+
+	result = s_area_is_aligned(&area, 1, 4);
+	ut_check_bool(result, true, "1, 4");
+
+	result = s_area_is_aligned(&area, 5, 5);
+	ut_check_bool(result, false, "5, 5");
+
+	result = s_area_is_aligned(&area, 1, 5);
+	ut_check_bool(result, false, "1, 5");
+}
+
+/******************************************************************************
+ * The function checks the test_s_area_align_point() function. It uses the
+ * previous definition of the area.
+ *****************************************************************************/
+
+static void test_s_area_align_point() {
+	s_area area;
+	s_point point;
+	bool result;
+
+	s_point_set(&area.dim, 2, 2);
+	s_point_set(&area.size, 3, 3);
+	s_point_set(&area.pos, 1, 1);
+
+	s_point_set(&point, 1, 1);
+	result = s_area_align_point(&area, &point);
+	ut_check_bool(result, false, "1, 1");
+	ut_check_s_point(&point, &(s_point ) { 1, 1 }, "1, 1");
+
+	s_point_set(&point, 2, 3);
+	result = s_area_align_point(&area, &point);
+	ut_check_bool(result, true, "2,3");
+	ut_check_s_point(&point, &(s_point ) { 1, 1 }, "2, 3");
+
+	s_point_set(&point, 6, 5);
+	result = s_area_align_point(&area, &point);
+	ut_check_bool(result, true, "6, 5");
+	ut_check_s_point(&point, &(s_point ) { 4, 4 }, "6, 5");
+}
+
+/******************************************************************************
  * The function is the a wrapper, that triggers the internal unit tests.
  *****************************************************************************/
 
@@ -188,5 +251,9 @@ void ut_s_area_exec() {
 	test_s_area_is_inside();
 
 	test_s_area_is_area_inside();
+
+	test_s_area_is_aligned();
+
+	test_s_area_align_point();
 }
 
