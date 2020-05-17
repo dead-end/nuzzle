@@ -28,6 +28,19 @@
 #include "colors.h"
 
 /******************************************************************************
+ * The function copies one area to an other. The blocks are shared.
+ *****************************************************************************/
+
+void s_area_copy(s_area *to, const s_area *from) {
+
+	to->blocks = from->blocks;
+
+	s_point_copy(&to->dim, &from->dim);
+	s_point_copy(&to->pos, &from->pos);
+	s_point_copy(&to->size, &from->size);
+}
+
+/******************************************************************************
  * The function returns a struct with the total size of the area.
  *****************************************************************************/
 

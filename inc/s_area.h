@@ -63,6 +63,8 @@ typedef struct s_area {
  * The functions for the s_area.
  *****************************************************************************/
 
+void s_area_copy(s_area *to, const s_area *from);
+
 s_point s_area_get_size(const s_area *area);
 
 bool s_area_is_inside(const s_area *area, const int row, const int col);
