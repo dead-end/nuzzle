@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-#include <ncurses.h>
-
 #include "s_area.h"
 #include "colors.h"
 
 /******************************************************************************
  * The function copies one area to an other. The blocks are shared.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 void s_area_copy(s_area *to, const s_area *from) {
@@ -42,6 +42,8 @@ void s_area_copy(s_area *to, const s_area *from) {
 
 /******************************************************************************
  * The function returns a struct with the total size of the area.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 s_point s_area_get_size(const s_area *area) {
@@ -50,7 +52,24 @@ s_point s_area_get_size(const s_area *area) {
 	result.row = area->dim.row * area->size.row;
 	result.col = area->dim.col * area->size.col;
 
-	log_debug("size: %d/%d", result.row, result.col);
+	log_debug("Size: %d/%d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
+ * The function returns a struct with the lower right corner of the area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+s_point s_area_get_lr(const s_area *area) {
+	s_point result;
+
+	result.row = area->pos.row + area->dim.row * area->size.row - 1;
+	result.col = area->pos.col + area->dim.col * area->size.col - 1;
+
+	log_debug("Lower right: %d/%d", result.row, result.col);
 
 	return result;
 }
@@ -60,6 +79,8 @@ s_point s_area_get_size(const s_area *area) {
  * area, which is a two-dimensional array of blocks. The position of the area
  * is the upper left corner. The size is the number of pixels (characters) of
  * a block.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 bool s_area_is_inside(const s_area *area, const int row, const int col) {
@@ -73,24 +94,55 @@ bool s_area_is_inside(const s_area *area, const int row, const int col) {
 		result = false;
 	}
 
-	//
-	// 0123456789
-	// 000111222
-	// dim * size = 3 * 3 = 9
-	//
-	const int lr_row = area->pos.row + area->dim.row * area->size.row;
-	const int lr_col = area->pos.col + area->dim.col * area->size.col;
+	const s_point lower_right = s_area_get_lr(area);
 
 	//
 	// lower right corner
 	//
-	if (row >= lr_row || col >= lr_col) {
+	if (row > lower_right.row || col > lower_right.col) {
 		result = false;
 	}
 
-	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", row, col, area->pos.row, area->pos.col, lr_row, lr_col, boolstr(result));
+	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", row, col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
 
 	return result;
+}
+
+/******************************************************************************
+ * The function checks whether the drop area is inside the given area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+bool s_area_is_area_inside(const s_area *outer_area, const s_area *inner_area) {
+
+	//
+	// Compare the positions of the two areas.
+	//
+	if (inner_area->pos.row < outer_area->pos.row || inner_area->pos.col < outer_area->pos.col) {
+		return false;
+	}
+
+	//
+	// Compare the lower right of the two areas.
+	//
+	const s_point outer_lr = s_area_get_lr(outer_area);
+	const s_point inner_lr = s_area_get_lr(inner_area);
+
+	if (inner_lr.row > outer_lr.row || inner_lr.col > outer_lr.col) {
+		return false;
+	}
+
+	return true;
+}
+
+/******************************************************************************
+ * The function checks if the current pixel is aligned with the s_area. This
+ * does not mean that the pixel is inside the s_area.
+ *****************************************************************************/
+
+bool s_area_is_aligned(const s_area *area, const int pos_row, const int pos_col) {
+	return (pos_row - area->pos.row) % area->size.row == 0 && (pos_col - area->pos.col) % area->size.col == 0;
 }
 
 /******************************************************************************
@@ -124,15 +176,6 @@ void s_area_set_blocks(const s_area *area, const t_block value) {
 			area->blocks[row][col] = value;
 		}
 	}
-}
-
-/******************************************************************************
- * The function checks if the current pixel is aligned with the s_area. This
- * does not mean that the pixel is inside the s_area.
- *****************************************************************************/
-
-bool s_area_is_aligned(const s_area *area, const int pos_row, const int pos_col) {
-	return (pos_row - area->pos.row) % area->size.row == 0 && (pos_col - area->pos.col) % area->size.col == 0;
 }
 
 /******************************************************************************
@@ -366,34 +409,6 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
 	}
 
 	return false;
-}
-
-/******************************************************************************
- * The function checks whether the drop area is inside the given area.
- *****************************************************************************/
-
-bool s_area_is_area_inside(const s_area *area, const s_area *drop_area) {
-
-	//
-	// Upper left corner
-	//
-	if (!s_area_is_inside(area, drop_area->pos.row, drop_area->pos.col)) {
-		return false;
-	}
-
-	//
-	// lower right corner index
-	//
-	const int lr_row = drop_area->pos.row + (drop_area->dim.row - 1) * drop_area->size.row;
-	const int lr_col = drop_area->pos.col + (drop_area->dim.col - 1) * drop_area->size.col;
-
-	log_debug("Drop: %d/%d %d/%d", drop_area->pos.row, drop_area->pos.col, lr_row, lr_col);
-
-	if (!s_area_is_inside(area, lr_row, lr_col)) {
-		return false;
-	}
-
-	return true;
 }
 
 /******************************************************************************

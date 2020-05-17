@@ -73,11 +73,13 @@ s_point s_area_get_lr(const s_area *area);
 
 bool s_area_is_inside(const s_area *area, const int row, const int col);
 
+bool s_area_is_area_inside(const s_area *area, const s_area *drop_area);
+
+bool s_area_is_aligned(const s_area *area, const int row, const int col);
+
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block);
 
 void s_area_set_blocks(const s_area *area, const t_block value);
-
-bool s_area_is_aligned(const s_area *area, const int row, const int col);
 
 bool s_area_same_pos(const s_area *area, const int row, const int col);
 
@@ -101,7 +103,5 @@ bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, cons
 int s_area_remove_blocks(s_area *area, const s_point *idx, const s_area *drop_area, t_block **marks);
 
 void s_area_normalize(s_area *area);
-
-bool s_area_is_area_inside(const s_area *area, const s_area *drop_area);
 
 #endif /* INC_S_AREA_H_ */
