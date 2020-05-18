@@ -25,21 +25,4 @@
 #ifndef INC_NUZZLE_H_
 #define INC_NUZZLE_H_
 
-/******************************************************************************
- * The structure contains data that represent the status of the game. Currently
- * this is only the end flag.
- *****************************************************************************/
-
-typedef struct s_status {
-
-	bool end;
-
-} s_status;
-
-#define s_status_set_end(s) (s)->end = true
-
-#define s_status_is_end(s) ((s)->end)
-
-#define s_status_init(s) (s)->end = false
-
 #endif /* INC_NUZZLE_H_ */
