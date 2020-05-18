@@ -234,6 +234,73 @@ s_point s_area_get_max_inner_pos(const s_area *outer_area, const s_area *inner_a
 }
 
 /******************************************************************************
+ * The function is called with an outer area and an inner area, inside the
+ * outer area. The inner area should be move inside the outer area.
+ *
+ * The function does not use the position of the inner area. It is expected
+ * that the point is the current position of the inner area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, s_point *point, const s_point *diff) {
+	bool result = false;
+
+#ifdef DEBUG
+
+	//
+	// Moving the inner area inside the outer area, the sizes have to be the same.
+	//
+	if (!s_point_same(&outer_area->size, &inner_area->size)) {
+		log_exit_str("Sizes differ!");
+	}
+
+	//
+	// The inner area has to be inside the outer area.
+	//
+	if (!s_area_is_area_inside(outer_area, inner_area)) {
+		log_exit_str("Inner area is not inside the outer area!");
+	}
+
+	//
+	// The inner and outer areas have to be aligned.
+	//
+	if (!s_area_is_aligned(outer_area, inner_area->pos.row, inner_area->pos.col)) {
+		log_exit_str("Inner area is not aligned with the outer area!");
+	}
+#endif
+
+	//
+	// Get the maximal position of the inner area inside the outer area.
+	//
+	const s_point max_pos = s_area_get_max_inner_pos(outer_area, inner_area);
+
+	//
+	// Process the row
+	//
+	if (diff->row != 0) {
+		const int row = point->row + diff->row * outer_area->size.row;
+		if (row >= outer_area->pos.row && row <= max_pos.row) {
+			point->row = row;
+			result = true;
+		}
+	}
+
+	//
+	// Process the column
+	//
+	if (diff->col != 0) {
+		const int col = point->col + diff->col * outer_area->size.col;
+		if (col >= outer_area->pos.col && col <= max_pos.col) {
+			point->col = col;
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+/******************************************************************************
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
 

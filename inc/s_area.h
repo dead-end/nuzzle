@@ -81,6 +81,8 @@ bool s_area_align_point(const s_area *area, s_point *point);
 
 s_point s_area_get_max_inner_pos(const s_area *outer_area, const s_area *inner_area);
 
+bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, s_point *point, const s_point *diff);
+
 void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block);
 
 void s_area_set_blocks(const s_area *area, const t_block value);

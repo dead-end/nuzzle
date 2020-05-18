@@ -264,6 +264,79 @@ static void test_s_area_get_max_inner_pos() {
 }
 
 /******************************************************************************
+ * The function check the test_s_area_get_max_inner_pos() function.
+ *
+ * 012345678
+ * 1xx--xx--
+ * 2xx--xx--
+ * 3--xx--xx
+ * 4--xx--xx
+ * 5xx--xx--
+ * 6xx--xx--
+ * 7--xx--xx
+ * 8--xx--xx
+ *****************************************************************************/
+
+static void test_s_area_move_inner_area() {
+	s_area outer, inner;
+	bool result;
+	s_point point;
+
+	s_point_set(&outer.dim, 4, 4);
+	s_point_set(&outer.size, 2, 2);
+	s_point_set(&outer.pos, 1, 1);
+
+	s_point_set(&inner.dim, 2, 2);
+	s_point_set(&inner.size, 2, 2);
+
+	//
+	// Movements that fail
+	//
+	s_point_set(&point, 3, 5);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, 1 });
+	ut_check_bool(result, false, "right - false");
+	ut_check_s_point(&point, &(s_point ) { 3, 5 }, "right - false");
+
+	s_point_set(&point, 5, 1);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 1, 0 });
+	ut_check_bool(result, false, "down - false");
+	ut_check_s_point(&point, &(s_point ) { 5, 1 }, "down - false");
+
+	s_point_set(&point, 3, 1);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, -1 });
+	ut_check_bool(result, false, "left - false");
+	ut_check_s_point(&point, &(s_point ) { 3, 1 }, "left - false");
+
+	s_point_set(&point, 1, 5);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { -1, 0 });
+	ut_check_bool(result, false, "up - false");
+	ut_check_s_point(&point, &(s_point ) { 1, 5 }, "up - false");
+
+	//
+	// Movements that work
+	//
+	s_point_set(&point, 1, 1);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, 1 });
+	ut_check_bool(result, true, "right - true");
+	ut_check_s_point(&point, &(s_point ) { 1, 3 }, "right - true");
+
+	s_point_set(&point, 3, 1);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 1, 0 });
+	ut_check_bool(result, true, "down - true");
+	ut_check_s_point(&point, &(s_point ) { 5, 1 }, "down - true");
+
+	s_point_set(&point, 3, 3);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, -1 });
+	ut_check_bool(result, true, "left - true");
+	ut_check_s_point(&point, &(s_point ) { 3, 1 }, "left - true");
+
+	s_point_set(&point, 5, 3);
+	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { -1, 0 });
+	ut_check_bool(result, true, "up - true");
+	ut_check_s_point(&point, &(s_point ) { 3, 3 }, "up - true");
+}
+
+/******************************************************************************
  * The function is the a wrapper, that triggers the internal unit tests.
  *****************************************************************************/
 
@@ -284,5 +357,7 @@ void ut_s_area_exec() {
 	test_s_area_align_point();
 
 	test_s_area_get_max_inner_pos();
+
+	test_s_area_move_inner_area();
 }
 
