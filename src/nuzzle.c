@@ -126,8 +126,6 @@ int main() {
 
 	log_debug_str("Starting nuzzle...");
 
-	bool pressed = false;
-
 	init(&status);
 
 	show_start_menu();
@@ -196,8 +194,6 @@ int main() {
 
 				game_do_center();
 
-				pressed = false;
-
 			}
 
 			//
@@ -214,20 +210,57 @@ int main() {
 				log_exit_str("Unable to get mouse event!");
 			}
 
-			if (event.bstate & BUTTON1_PRESSED) {
-				pressed = !pressed;
-			}
+			log_debug("Button: %d", c);
 
-			if (pressed) {
-				// TODO: only if drop area is picked up.
-				game_process_event_pressed(&status, event.y, event.x);
+			if ((event.bstate & BUTTON2_RELEASED) || (event.bstate & BUTTON3_RELEASED)) {
+				game_process_event_home(&status);
+
 			} else {
-				game_process_event_release(&status);
+
+				if (event.bstate & BUTTON1_PRESSED) {
+					status.pick_up_toggle = !status.pick_up_toggle;
+				}
+
+				if (status.pick_up_toggle) {
+					// TODO: only if drop area is picked up.
+					game_process_event_pressed(&status, event.y, event.x);
+				} else {
+					game_process_event_release(&status);
+				}
 			}
 
 		} else {
-			log_debug("Pressed key %d (%s)", c, keyname(c));
-			continue;
+
+			switch (c) {
+
+			case KEY_UP:
+				game_process_event_keyboard(&status, -1, 0);
+				break;
+
+			case KEY_DOWN:
+				game_process_event_keyboard(&status, 1, 0);
+				break;
+
+			case KEY_LEFT:
+				game_process_event_keyboard(&status, 0, -1);
+				break;
+
+			case KEY_RIGHT:
+				game_process_event_keyboard(&status, 0, 1);
+				break;
+
+			case '\t':
+				game_process_event_toggle(&status);
+				break;
+
+			case 10:
+				game_process_event_release(&status);
+				break;
+
+			default:
+				log_debug("Pressed key %d (%s)", c, keyname(c));
+				continue;
+			}
 		}
 
 		//
