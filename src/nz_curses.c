@@ -88,7 +88,7 @@ void nzc_init_mouse() {
 	//
 	// Register mouse events (which do not have a propper error handling)
 	//
-	mousemask(BUTTON1_RELEASED | BUTTON1_CLICKED | BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
+	mousemask(BUTTON1_PRESSED | BUTTON2_RELEASED | BUTTON3_RELEASED | REPORT_MOUSE_POSITION, NULL);
 
 	printf("\033[?1003h\n");
 
