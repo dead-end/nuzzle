@@ -26,6 +26,7 @@
 #define INC_GAME_H_
 
 #include "common.h"
+#include "s_status.h"
 
 void game_init(s_status *status);
 
@@ -52,5 +53,11 @@ void game_do_center();
 void game_reset(s_status *status);
 
 void game_win_refresh();
+
+void game_process_event_home(s_status *status);
+
+void game_process_event_keyboard(s_status *status, const int diff_row, const int diff_col);
+
+void game_process_event_toggle(s_status *status);
 
 #endif /* INC_GAME_H_ */
