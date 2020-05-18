@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-#include <fs_persist.h>
 #include <ncurses.h>
 
 #include "info_area.h"
+#include "fs_persist.h"
 
 /******************************************************************************
  * Define the output data.

@@ -28,6 +28,7 @@
 #include "common.h"
 #include "colors.h"
 #include "nuzzle.h"
+#include "s_status.h"
 
 void info_area_init();
 
