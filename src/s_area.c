@@ -206,6 +206,34 @@ bool s_area_align_point(const s_area *area, s_point *point) {
 }
 
 /******************************************************************************
+ * The function is called with an inner and an out area. We want to compute the
+ * max position of the inner area, where the inner area is completely inside
+ * the outer area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+s_point s_area_get_max_inner_pos(const s_area *outer_area, const s_area *inner_area) {
+
+	//
+	// Get the lower right point of the outer area
+	//
+	const s_point outer_lr = s_area_get_lr(outer_area);
+
+	//
+	// Get the size of the inner area
+	//
+	const s_point inner_size = s_area_get_size(inner_area);
+
+	//
+	// The max position it the difference of both values.
+	//
+	const s_point result = { outer_lr.row - inner_size.row + 1, outer_lr.col - inner_size.col + 1 };
+
+	return result;
+}
+
+/******************************************************************************
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
 

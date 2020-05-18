@@ -237,6 +237,33 @@ static void test_s_area_align_point() {
 }
 
 /******************************************************************************
+ * The function check the test_s_area_get_max_inner_pos() function. The outer
+ * area has capital letters and the inner area has lower letters:
+ *
+ * 0123456
+ * 1AABBCC
+ * 2AABBCC
+ * 3AAaabb
+ * 4DDaabb
+ * 5DDccdd
+ * 6DDccdd
+ *****************************************************************************/
+
+static void test_s_area_get_max_inner_pos() {
+	s_area outer, inner;
+
+	s_point_set(&outer.dim, 2, 3);
+	s_point_set(&outer.size, 3, 2);
+	s_point_set(&outer.pos, 1, 1);
+
+	s_point_set(&inner.dim, 2, 2);
+	s_point_set(&inner.size, 2, 2);
+
+	const s_point point = s_area_get_max_inner_pos(&outer, &inner);
+	ut_check_s_point(&point, &(s_point ) { 3, 3 }, "max inner pos");
+}
+
+/******************************************************************************
  * The function is the a wrapper, that triggers the internal unit tests.
  *****************************************************************************/
 
@@ -255,5 +282,7 @@ void ut_s_area_exec() {
 	test_s_area_is_aligned();
 
 	test_s_area_align_point();
+
+	test_s_area_get_max_inner_pos();
 }
 
