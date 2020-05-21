@@ -444,7 +444,7 @@ void game_process_event_release(s_status *status) {
 		//
 		area_update(&_drop_area);
 
-		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area)) {
+		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, NULL)) {
 
 			//
 			// If there is no place to drop it, we finished.
@@ -734,17 +734,40 @@ void game_process_event_home(s_status *status) {
 }
 
 /******************************************************************************
+ * The function moves the drop area to the first possible position on the game
+ * area.
+ *****************************************************************************/
+
+static inline void game_mv_possible_pos(s_status *status) {
+	s_point idx;
+
+	//
+	// Get the index of the first position where the drop area can be dropped.
+	//
+	if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, &idx)) {
+		log_exit_str("Unexpected end!");
+	}
+
+	//
+	// Get the absolute upper left position of the index.
+	//
+	const s_point pos = s_area_get_ul(&_game_area, &idx);
+
+	game_process_event_pressed(status, pos.row, pos.col);
+}
+
+/******************************************************************************
  * The function processes a keyboard event. It translates the key to a position
  * of the drop area. It is possible that the drop area is not on the game area.
  *****************************************************************************/
 
 void game_process_event_keyboard(s_status *status, const int diff_row, const int diff_col) {
 
-	s_point event = { .row = _drop_area.pos.row, .col = _drop_area.pos.col };
-
-	log_debug("Drop area: %d/%d diff: %d/%d", event.row, event.col, diff_row, diff_col);
+	log_debug("Drop area: %d/%d diff: %d/%d", _drop_area.pos.row, _drop_area.pos.col, diff_row, diff_col);
 
 	if (s_area_is_area_inside(&_game_area, &_drop_area)) {
+
+		s_point event = { .row = _drop_area.pos.row, .col = _drop_area.pos.col };
 
 		//
 		// The alignment is only necessary if the control switches from mouse
@@ -764,12 +787,9 @@ void game_process_event_keyboard(s_status *status, const int diff_row, const int
 	} else {
 
 		//
-		// Move the drop area inside the game area and align its position.
+		// Move the drop area to the first possible position.
 		//
-		s_area_move_inside(&_game_area, &_drop_area, &event);
-		s_area_align_point(&_game_area, &event);
-
-		game_process_event_pressed(status, event.row, event.col);
+		game_mv_possible_pos(status);
 	}
 }
 
@@ -784,6 +804,6 @@ void game_process_event_toggle(s_status *status) {
 		game_process_event_home(status);
 
 	} else {
-		game_process_event_pressed(status, _game_area.pos.row, _game_area.pos.col);
+		game_mv_possible_pos(status);
 	}
 }
