@@ -479,14 +479,6 @@ void game_process_event_release(s_status *status) {
 
 void game_process_event_pressed(s_status *status, const int event_row, const int event_col) {
 
-	//
-	// Check if current game has ended
-	//
-	if (s_status_is_end(status)) {
-		log_debug_str("Ignoring event due to current game end!");
-		return;
-	}
-
 	log_debug("Event pos: %d/%d", event_row, event_col);
 
 	//
@@ -715,10 +707,9 @@ void game_win_refresh() {
 void game_process_event_home(s_status *status) {
 
 	//
-	// If the game ended or the drop area is already on the home position there
-	// is nothing to do.
+	// If the drop area is already on the home position there is nothing to do.
 	//
-	if (s_status_is_end(status) || !s_status_is_picked_up(status)) {
+	if (!s_status_is_picked_up(status)) {
 		return;
 	}
 

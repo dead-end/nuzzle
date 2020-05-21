@@ -204,6 +204,12 @@ int main() {
 			}
 
 		} else if (c == KEY_MOUSE) {
+
+			if (s_status_is_end(&status)) {
+				log_debug_str("Ignoring mouse event due to current game end!");
+				continue;
+			}
+
 			MEVENT event;
 
 			if (getmouse(&event) != OK) {
@@ -230,6 +236,11 @@ int main() {
 			}
 
 		} else {
+
+			if (s_status_is_end(&status)) {
+				log_debug_str("Ignoring key event due to current game end!");
+				continue;
+			}
 
 			switch (c) {
 
