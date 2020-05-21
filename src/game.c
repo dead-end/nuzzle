@@ -42,7 +42,11 @@
 
 #define DO_DELETE false
 
+#ifdef DEBUG
+#define USLEEP 800000
+#else
 #define USLEEP 200000
+#endif
 
 //#define USLEEP 2000000
 
@@ -704,61 +708,34 @@ void game_win_refresh() {
 	nzc_win_refresh(_win_game);
 }
 
-// -------------------------------------------------
-
 /******************************************************************************
- *
+ * The function moves the drop area to the home position.
  *****************************************************************************/
 
 void game_process_event_home(s_status *status) {
 
 	//
-	// Ignore events /
+	// If the game ended or the drop area is already on the home position there
+	// is nothing to do.
 	//
 	if (s_status_is_end(status) || !s_status_is_picked_up(status)) {
 		return;
 	}
 
+	//
+	// Delete the drop area from the old position.
+	//
 	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
 
+	//
+	// Update the drop area position and print the result.
+	//
 	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, status);
 }
 
 /******************************************************************************
- *
- *****************************************************************************/
-
-void s_area_move_inside(const s_area *outer_area, const s_area *inner_area, s_point *pos) {
-
-	const s_point max_pos = s_area_get_max_inner_pos(outer_area, inner_area);
-
-	log_debug("pos: %d/%d", pos->row, pos->col);
-
-	//
-	//
-	//
-	if (inner_area->pos.row < outer_area->pos.row) {
-		pos->row = outer_area->pos.row;
-
-	} else if (inner_area->pos.row >= max_pos.row) {
-		pos->row = max_pos.row;
-	}
-
-	//
-	//
-	//
-	if (inner_area->pos.col < outer_area->pos.col) {
-		pos->col = outer_area->pos.col;
-
-	} else if (inner_area->pos.col >= max_pos.col) {
-		pos->col = max_pos.col;
-	}
-
-	log_debug("pos: %d/%d", pos->row, pos->col);
-}
-
-/******************************************************************************
- *
+ * The function processes a keyboard event. It translates the key to a position
+ * of the drop area. It is possible that the drop area is not on the game area.
  *****************************************************************************/
 
 void game_process_event_keyboard(s_status *status, const int diff_row, const int diff_col) {
@@ -797,7 +774,8 @@ void game_process_event_keyboard(s_status *status, const int diff_row, const int
 }
 
 /******************************************************************************
- *
+ * The function switches the position of the drop area from and to the home
+ * location.
  *****************************************************************************/
 
 void game_process_event_toggle(s_status *status) {
