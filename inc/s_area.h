@@ -71,6 +71,8 @@ s_point s_area_get_size(const s_area *area);
 
 s_point s_area_get_lr(const s_area *area);
 
+s_point s_area_get_ul(const s_area *area, const s_point *idx);
+
 bool s_area_is_inside(const s_area *area, const int row, const int col);
 
 bool s_area_is_area_inside(const s_area *area, const s_area *drop_area);
@@ -104,7 +106,7 @@ void s_area_free(s_area *area);
 
 void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, const int col, t_block color, int *num);
 
-bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area);
+bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx);
 
 bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, const bool do_drop);
 

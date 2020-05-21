@@ -84,6 +84,23 @@ static void tets_s_area_get_lr() {
 }
 
 /******************************************************************************
+ * The function checks the computation of the upper left point of the area,
+ * which should be the position plus the index times the size.
+ *****************************************************************************/
+
+static void test_s_area_get_ul() {
+	s_area area;
+
+	s_point_set(&area.dim, 2, 2);
+	s_point_set(&area.size, 3, 4);
+	s_point_set(&area.pos, 5, 6);
+
+	const s_point ul_corner = s_area_get_ul(&area, &(s_point ) { 1, 1 });
+
+	ut_check_s_point(&ul_corner, &(s_point ) { 8, 10 }, "checking upper left");
+}
+
+/******************************************************************************
  * The function checks the s_area_is_inside() function. We use the same values
  * from the last computations, so we know the lower right point is (8,14)
  *
@@ -382,6 +399,8 @@ void ut_s_area_exec() {
 	test_s_area_get_size();
 
 	tets_s_area_get_lr();
+
+	test_s_area_get_ul();
 
 	test_s_area_is_inside();
 

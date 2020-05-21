@@ -75,6 +75,24 @@ s_point s_area_get_lr(const s_area *area) {
 }
 
 /******************************************************************************
+ * The function returns the absolute position of the upper left corner of a
+ * block of the given area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+s_point s_area_get_ul(const s_area *area, const s_point *idx) {
+	s_point result;
+
+	result.row = area->pos.row + area->size.row * idx->row;
+	result.col = area->pos.col + area->size.col * idx->col;
+
+	log_debug("Upper left: %d/%d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
  * The function check whether a given pixel (terminal character) is inside an
  * area, which is a two-dimensional array of blocks. The position of the area
  * is the upper left corner. The size is the number of pixels (characters) of
@@ -304,6 +322,9 @@ bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, 
  * The function is called with an outer and an inner area. It moves the inner
  * area into the outer area. The new position is stored in the pos struct. It
  * is assumed that the inner area is outside the outer area.
+ *
+ * (Unit tested)
+ * TODO: currently not used
  *****************************************************************************/
 
 void s_area_move_inside(const s_area *outer_area, const s_area *inner_area, s_point *pos) {
@@ -581,10 +602,11 @@ void s_area_normalize(s_area *area) {
 
 /******************************************************************************
  * The function check whether the drop area can be dropped anywhere on the
- * other area.
+ * other area. If the index struct is not null, then the index of the first
+ * position is stored in the struct.
  *****************************************************************************/
 
-bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
+bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx) {
 
 	//
 	// Compute the end index to ensure that the drop area fits in the other.
@@ -603,6 +625,13 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area) {
 			// Check if the drop area can be dropped at this place.
 			//
 			if (s_area_drop(area, &start, drop_area, false)) {
+
+				//
+				// Store the index, if requested.
+				//
+				if (idx != NULL) {
+					s_point_copy(idx, &start);
+				}
 				return true;
 			}
 		}
