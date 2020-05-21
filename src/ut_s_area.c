@@ -337,6 +337,41 @@ static void test_s_area_move_inner_area() {
 }
 
 /******************************************************************************
+ * The function check the s_area_move_inside() function. The function assumes
+ * that the inner area is outside the outer area.
+ *
+ * 012345678
+ * 1xx--xx--
+ * 2xx--xx--
+ * 3--xx--xx
+ * 4--xx--xx
+ * 5xx--xx--
+ * 6xx--xx--
+ * 7--xx--xx
+ * 8--xx--xx
+ *****************************************************************************/
+
+static void test_s_area_move_inside() {
+	s_area outer, inner;
+	s_point point;
+
+	s_point_set(&outer.dim, 4, 4);
+	s_point_set(&outer.size, 2, 2);
+	s_point_set(&outer.pos, 1, 1);
+
+	s_point_set(&inner.dim, 2, 2);
+	s_point_set(&inner.size, 2, 2);
+
+	s_point_set(&inner.pos, 0, 0);
+	s_area_move_inside(&outer, &inner, &point);
+	ut_check_s_point(&point, &(s_point ) { 1, 1 }, "0,0 -> 1,1");
+
+	s_point_set(&inner.pos, 6, 6);
+	s_area_move_inside(&outer, &inner, &point);
+	ut_check_s_point(&point, &(s_point ) { 5, 5 }, "6,6 -> 5,5");
+}
+
+/******************************************************************************
  * The function is the a wrapper, that triggers the internal unit tests.
  *****************************************************************************/
 
@@ -359,5 +394,7 @@ void ut_s_area_exec() {
 	test_s_area_get_max_inner_pos();
 
 	test_s_area_move_inner_area();
+
+	test_s_area_move_inside();
 }
 
