@@ -30,7 +30,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 
 /******************************************************************************
  * Definition of the print_debug macro. It is only defined if the DEBUG flag is
