@@ -108,11 +108,57 @@ static void init(s_status *status) {
  *****************************************************************************/
 
 static void show_start_menu() {
+	log_debug_str("Showing start menu");
 
 	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
 	int idx = wm_process_menu(choices, 0, true);
 
 	if (idx == 1) {
+		exit(0);
+	}
+}
+
+/******************************************************************************
+ * The function shows the game menu. It allows to exit or to restart the game.
+ *****************************************************************************/
+
+static void show_game_menu(s_status *status) {
+	log_debug_str("Showing game menu");
+
+	//
+	// Delete the old content
+	//
+	clear();
+	refresh();
+
+	//
+	// Show the menu
+	//
+	const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
+	const int idx = wm_process_menu(choices, 0, false);
+
+	//
+	// IDX 0: continue
+	//
+	if (idx == 0 || idx == ESC_RETURN) {
+		game_do_center();
+
+	}
+
+	//
+	// IDX 1: new game
+	//
+	else if (idx == 1) {
+		game_reset(status);
+
+		game_do_center();
+
+	}
+
+	//
+	// IDX 2: end
+	//
+	else if (idx == 2) {
 		exit(0);
 	}
 }
@@ -164,44 +210,8 @@ int main() {
 			game_do_center();
 
 		} else if (c == KEY_ESC || c == 'm') {
-			log_debug_str("ESC");
 
-			//
-			// Delete the old content
-			//
-			clear();
-			refresh();
-
-			//
-			// Show the menu
-			//
-			const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
-			const int idx = wm_process_menu(choices, 0, false);
-
-			//
-			// IDX 0: continue
-			//
-			if (idx == 0 || idx == ESC_RETURN) {
-				game_do_center();
-
-			}
-
-			//
-			// IDX 1: new game
-			//
-			else if (idx == 1) {
-				game_reset(&status);
-
-				game_do_center();
-
-			}
-
-			//
-			// IDX 2: end
-			//
-			else if (idx == 2) {
-				exit(0);
-			}
+			show_game_menu(&status);
 
 		} else if (c == KEY_MOUSE) {
 
