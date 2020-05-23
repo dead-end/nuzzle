@@ -216,6 +216,8 @@ bool s_area_align_point(const s_area *area, s_point *point) {
 		changed = true;
 	}
 
+	log_debug("pos: %d/%d aligned: %d/%d, changed: %s",area->pos.row, area->pos.col, point->row,point->col, bool_str(changed));
+
 	//
 	// The function returns true if the point changes, so a drawing is
 	// necessary.
@@ -283,7 +285,7 @@ bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, 
 	//
 	// The inner and outer areas have to be aligned.
 	//
-	if (!s_area_is_aligned(outer_area, inner_area->pos.row, inner_area->pos.col)) {
+	if (!s_area_is_aligned(outer_area, point->row, point->col)) {
 		log_exit_str("Inner area is not aligned with the outer area!");
 	}
 #endif
