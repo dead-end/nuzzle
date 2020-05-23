@@ -164,6 +164,37 @@ static void show_game_menu(s_status *status) {
 }
 
 /******************************************************************************
+ * The function does the processing of the mouse event.
+ *****************************************************************************/
+
+static void process_mouse_event(s_status *status, const int c) {
+	MEVENT event;
+
+	if (getmouse(&event) != OK) {
+		log_exit_str("Unable to get mouse event!");
+	}
+
+	log_debug("Button: %d", c);
+
+	if ((event.bstate & BUTTON2_RELEASED) || (event.bstate & BUTTON3_RELEASED)) {
+		game_process_event_home(status);
+
+	} else {
+
+		if (event.bstate & BUTTON1_PRESSED) {
+			status->pick_up_toggle = !status->pick_up_toggle;
+		}
+
+		if (status->pick_up_toggle) {
+			// TODO: only if drop area is picked up.
+			game_process_event_pressed(status, event.y, event.x);
+		} else {
+			game_process_event_release(status);
+		}
+	}
+}
+
+/******************************************************************************
  * The main function.
  *****************************************************************************/
 
@@ -213,38 +244,6 @@ int main() {
 
 			show_game_menu(&status);
 
-		} else if (c == KEY_MOUSE) {
-
-			if (s_status_is_end(&status)) {
-				log_debug_str("Ignoring mouse event due to current game end!");
-				continue;
-			}
-
-			MEVENT event;
-
-			if (getmouse(&event) != OK) {
-				log_exit_str("Unable to get mouse event!");
-			}
-
-			log_debug("Button: %d", c);
-
-			if ((event.bstate & BUTTON2_RELEASED) || (event.bstate & BUTTON3_RELEASED)) {
-				game_process_event_home(&status);
-
-			} else {
-
-				if (event.bstate & BUTTON1_PRESSED) {
-					status.pick_up_toggle = !status.pick_up_toggle;
-				}
-
-				if (status.pick_up_toggle) {
-					// TODO: only if drop area is picked up.
-					game_process_event_pressed(&status, event.y, event.x);
-				} else {
-					game_process_event_release(&status);
-				}
-			}
-
 		} else {
 
 			if (s_status_is_end(&status)) {
@@ -253,6 +252,10 @@ int main() {
 			}
 
 			switch (c) {
+
+			case KEY_MOUSE:
+				process_mouse_event(&status, c);
+				break;
 
 			case KEY_UP:
 				game_process_event_keyboard(&status, -1, 0);
