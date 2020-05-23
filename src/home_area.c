@@ -24,16 +24,33 @@
 
 #include "home_area.h"
 
+/******************************************************************************
+ * Definitions for the home area.
+ *****************************************************************************/
+
 //
 // The home position (upper left corner) of the new blocks.
 //
-s_point _home;
+s_point _home_pos;
 
-#define DIM_ROW 3
-#define DIM_COL 3
+//
+// The dimension of the blocks of the home area
+//
+static s_point _home_dim;
 
-#define SIZE_ROW 2
-#define SIZE_COL 4
+//
+// The size of a block in the home area
+//
+static s_point _home_size;
+
+/******************************************************************************
+ * The function initializes the home area.
+ *****************************************************************************/
+
+void home_area_init() {
+	s_point_set(&_home_dim, 3, 3);
+	s_point_set(&_home_size, 2, 4);
+}
 
 /******************************************************************************
  * The function tries to center the drop area on the home area. In theory both
@@ -43,8 +60,8 @@ s_point _home;
 
 void home_area_center_pos(s_point *pos, const s_point *dim) {
 
-	pos->row = _home.row + (DIM_ROW - dim->row) / 2 * SIZE_ROW;
-	pos->col = _home.col + (DIM_COL - dim->col) / 2 * SIZE_COL;
+	pos->row = _home_pos.row + (_home_dim.row - dim->row) / 2 * _home_size.row;
+	pos->col = _home_pos.col + (_home_dim.col - dim->col) / 2 * _home_size.col;
 }
 
 /******************************************************************************
@@ -56,14 +73,14 @@ bool home_area_contains(const s_point *pixel) {
 	//
 	// Upper left corner
 	//
-	if (pixel->row < _home.row || pixel->col < _home.col) {
+	if (pixel->row < _home_pos.row || pixel->col < _home_pos.col) {
 		return false;
 	}
 
 	//
 	// Lower right corner
 	//
-	if (pixel->row >= _home.row + SIZE_ROW * DIM_ROW || pixel->col >= _home.col + SIZE_COL * DIM_COL) {
+	if (pixel->row >= _home_pos.row + _home_size.row * _home_dim.row || pixel->col >= _home_pos.col + _home_size.col * _home_dim.col) {
 		return false;
 	}
 
@@ -80,8 +97,8 @@ void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_c
 	// Compute the index of the "virtual" blocks. The home area has no blocks
 	// defined.
 	//
-	const int idx_row = (pixel->row - _home.row) / SIZE_ROW;
-	const int idx_col = (pixel->col - _home.col) / SIZE_COL;
+	const int idx_row = (pixel->row - _home_pos.row) / _home_size.row;
+	const int idx_col = (pixel->col - _home_pos.col) / _home_size.col;
 
 	//
 	// The foreground color is the default (black) and the background color is
@@ -100,14 +117,14 @@ void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_c
 void home_area_print(WINDOW *win) {
 	s_point pixel;
 
-	const int end_row = _home.row + SIZE_ROW * DIM_ROW;
-	const int end_col = _home.col + SIZE_COL * DIM_COL;
+	const int end_row = _home_pos.row + _home_size.row * _home_dim.row;
+	const int end_col = _home_pos.col + _home_size.col * _home_dim.col;
 
 	//
 	// Iterate over the absolute pixels of the home area.
 	//
-	for (pixel.row = _home.row; pixel.row < end_row; pixel.row++) {
-		for (pixel.col = _home.col; pixel.col < end_col; pixel.col++) {
+	for (pixel.row = _home_pos.row; pixel.row < end_row; pixel.row++) {
+		for (pixel.col = _home_pos.col; pixel.col < end_col; pixel.col++) {
 
 			//
 			// There is no color defined for the drop area.

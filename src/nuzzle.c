@@ -29,6 +29,7 @@
 #include "nuzzle.h"
 #include "nz_curses.h"
 #include "info_area.h"
+#include "home_area.h"
 #include "bg_area.h"
 #include "game.h"
 #include "win_menu.h"
@@ -98,6 +99,8 @@ static void init(s_status *status) {
 	colors_init();
 
 	info_area_init();
+
+	home_area_init();
 
 	game_init(status);
 }

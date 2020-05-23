@@ -33,11 +33,13 @@
 //
 // The home position (upper left corner) of the new blocks.
 //
-extern s_point _home;
+extern s_point _home_pos;
 
-#define home_area_set_pos(r,c) s_point_set(&_home, r, c)
+#define home_area_set_pos(r,c) s_point_set(&_home_pos, r, c)
 
 void home_area_center_pos(s_point *pos, const s_point *dim);
+
+void home_area_init();
 
 bool home_area_contains(const s_point *pixel);
 
