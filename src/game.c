@@ -31,6 +31,7 @@
 #include "nuzzle.h"
 #include "game.h"
 #include "info_area.h"
+#include "home_area.h"
 #include "bg_area.h"
 #include "blocks.h"
 #include "common.h"
@@ -84,11 +85,6 @@ static s_area _drop_area;
 // The 2-dimensional array with temporary data.
 //
 static t_block **_marks;
-
-//
-// The home position (upper left corner) of the new blocks.
-//
-static s_point _home;
 
 static WINDOW *_win_game = NULL;
 
@@ -172,6 +168,9 @@ static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_
 
 			} else if (info_area_contains(&pixel)) {
 				info_area_print_pixel(win, &pixel, da_color);
+
+			} else if (home_area_contains(&pixel)) {
+				home_area_print_pixel(win, &pixel, da_color);
 
 			} else {
 				bg_area_print_pixel(win, &pixel, da_color);
@@ -270,9 +269,9 @@ static void area_update(s_area *area) {
  * not deleted. This may be necessary to do upfront.
  *****************************************************************************/
 
-static void drop_area_move_home(WINDOW *win, s_area *game_area, s_area *drop_area, const s_point *home, s_status *status) {
+static void drop_area_move_home(WINDOW *win, s_area *game_area, s_area *drop_area, s_status *status) {
 
-	s_point_set(&drop_area->pos, home->row, home->col);
+	home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
 
 	s_status_release(status);
 
@@ -467,7 +466,7 @@ void game_process_event_release(s_status *status) {
 	// Move the current drop area to the home position or create a new drop
 	// position at the home position.
 	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, status);
+	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
 }
 
 /******************************************************************************
@@ -500,8 +499,7 @@ void game_process_event_pressed(s_status *status, const int event_row, const int
 		// If the event is inside the home area we compute the exact position.
 		//
 		if (s_area_is_inside(&_drop_area, event_row, event_col)) {
-
-			s_status_pickup(status, event_row - _home.row, event_col - _home.col);
+			s_status_pickup(status, event_row - _drop_area.pos.row, event_col - _drop_area.pos.col);
 		}
 
 		//
@@ -566,10 +564,10 @@ void game_do_center() {
 
 	s_point_set(&_game_area.pos, ul_row, ul_col);
 
-	s_point_set(&_home, ul_row + info_area_size.row + DELIM, ul_col + game_area_size.col + DELIM);
-	s_point_set(&_drop_area.pos, _home.row, _home.col);
+	home_area_set_pos(ul_row + info_area_size.row + DELIM, ul_col + game_area_size.col + DELIM);
+	home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
 
-	info_area_set_pos(ul_row, _home.col);
+	info_area_set_pos(ul_row, _drop_area.pos.col);
 
 	//
 	// Delete the old content.
@@ -580,6 +578,8 @@ void game_do_center() {
 	// Print the areas at the updated position.
 	//
 	game_area_print(_win_game, &_game_area);
+
+	home_area_print(_win_game);
 
 	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
 
@@ -668,7 +668,7 @@ void game_reset(s_status *status) {
 	//
 	// Move the drop area to the home position.
 	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, status);
+	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
 
 	//
 	// Reset the score
@@ -721,7 +721,7 @@ void game_process_event_home(s_status *status) {
 	//
 	// Update the drop area position and print the result.
 	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, &_home, status);
+	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
 }
 
 /******************************************************************************
