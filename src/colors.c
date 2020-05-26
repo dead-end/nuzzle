@@ -102,6 +102,17 @@ static void color_pairs_undef() {
  *****************************************************************************/
 
 static inline t_block color_pair_get(const short fg, const short bg) {
+
+#ifdef DEBUG
+
+	//
+	// Ensure that the color indices are in a valid range.
+	//
+	if (fg < 0 || fg >= NUM_COLORS || bg < 0 || bg >= NUM_COLORS) {
+		log_exit("Invalid color index: %d fg: %d bg: %d", NUM_COLORS, fg, bg);
+	}
+#endif
+
 	const t_block cp = _color_pairs[fg][bg];
 
 #ifdef DEBUG
