@@ -68,3 +68,16 @@ void blocks_set(t_block **blocks, const s_point *dim, const t_block value) {
 		}
 	}
 }
+
+/******************************************************************************
+ * The function copies from block array to an other.
+ *****************************************************************************/
+
+void blocks_copy(t_block **from, t_block **to, const s_point *dim) {
+
+	for (int row = 0; row < dim->row; row++) {
+		for (int col = 0; col < dim->col; col++) {
+			to[row][col] = from[row][col];
+		}
+	}
+}
