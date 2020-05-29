@@ -76,3 +76,18 @@ void s_status_pickup(s_status *status, const int offset_row, const int offset_co
 	status->pick_up_toggle = true;
 }
 
+/******************************************************************************
+ * In case of an keyboard event, we do not use the offset. The offset is used
+ * for mouse events and to indicate that an area was picked up.
+ *****************************************************************************/
+
+void s_status_keyboard_event(s_status *status) {
+
+	//
+	// Ensure that something was picked up. (offset >= 0 => picked up)
+	//
+	if (s_status_is_picked_up(status)) {
+		s_point_set(&status->offset, 0, 0);
+	}
+}
+

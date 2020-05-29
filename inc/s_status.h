@@ -71,4 +71,6 @@ void s_status_release(s_status *status);
 
 void s_status_pickup(s_status *status, const int offset_row, const int offset_col);
 
+void s_status_keyboard_event(s_status *status);
+
 #endif /* INC_S_STATUS_H_ */
