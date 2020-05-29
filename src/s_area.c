@@ -418,17 +418,21 @@ bool s_area_same_pos(const s_area *area, const int pos_row, const int pos_col) {
  * assumed that the color is already set.
  *****************************************************************************/
 
-void s_area_print_block(WINDOW *win, const s_area *area, const int row, const int col, const wchar_t ch) {
+void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, const wchar_t ch) {
 
-	const int ul_row = block_upper_left(area->pos.row, area->size.row, row);
-	const int ul_col = block_upper_left(area->pos.col, area->size.col, col);
+	//
+	// Get the upper left corner of the block with the given index.
+	//
+	const s_point ul = s_area_get_ul(area, idx);
 
-	const int lr_row = ul_row + area->size.row;
-	const int lr_col = ul_col + area->size.col;
+	//
+	// Get the lower right corner of the block with the given index.
+	//
+	const s_point lr = { ul.row + area->size.row, ul.col + area->size.col };
 
-	for (int r = ul_row; r < lr_row; r++) {
-		for (int c = ul_col; c < lr_col; c++) {
-			mvwprintw(win, r, c, "%lc", ch);
+	for (int row = ul.row; row < lr.row; row++) {
+		for (int col = ul.col; col < lr.col; col++) {
+			mvwprintw(win, row, col, "%lc", ch);
 		}
 	}
 }
@@ -439,6 +443,7 @@ void s_area_print_block(WINDOW *win, const s_area *area, const int row, const in
  *****************************************************************************/
 
 void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col) {
+	log_debug("Creating area with dim: %d/%d size: %d/%d", dim_row, dim_col, size_row, size_col);
 
 	s_point_set(&area->dim, dim_row, dim_col);
 
@@ -452,6 +457,7 @@ void s_area_create(s_area *area, const int dim_row, const int dim_col, const int
  *****************************************************************************/
 
 void s_area_free(s_area *area) {
+	log_debug_str("Freeing area.");
 
 	blocks_free(area->blocks, area->dim.row);
 }
@@ -496,7 +502,7 @@ static void s_area_get_eff_lr(const s_area *area, s_point *lr) {
  * area may contain rows / cols of blocks that are completely empty.
  *****************************************************************************/
 
-static void s_area_get_eff_ul(const s_area *area, s_point *ul) {
+void s_area_get_eff_ul(const s_area *area, s_point *ul) {
 
 	//
 	// Initialize the upper left corner with a maximal, none valid value.
@@ -627,6 +633,7 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx) {
 			// Check if the drop area can be dropped at this place.
 			//
 			if (s_area_drop(area, &start, drop_area, false)) {
+				log_debug("Can drop at index: %d/%d", start.row, start.col);
 
 				//
 				// Store the index, if requested.
@@ -825,4 +832,63 @@ int s_area_remove_blocks(s_area *area, const s_point *idx, const s_area *drop_ar
 	}
 
 	return total;
+}
+
+/******************************************************************************
+ * The function prints an empty area with a chess pattern. This can be used as
+ * an initialization.
+ *****************************************************************************/
+
+void s_area_print_chess(WINDOW *win, const s_area *area) {
+	wchar_t chr;
+	t_block ga_color;
+	s_point idx;
+
+	//
+	// Iterate through the blocks of the game area.
+	//
+	for (idx.row = 0; idx.row < area->dim.row; idx.row++) {
+		for (idx.col = 0; idx.col < area->dim.col; idx.col++) {
+
+			ga_color = area->blocks[idx.row][idx.col];
+
+			//
+			// Set the color pair and get the character to display.
+			//
+			chr = colors_chess_attr_char(win, ga_color, CLR_NONE, colors_is_even(idx.row, idx.col));
+
+			//
+			// Print the block with a given color and character.
+			//
+			s_area_print_block(win, area, &idx, chr);
+		}
+	}
+}
+
+/******************************************************************************
+ * The function prints a pixel with a given color. The background is a chess
+ * pattern.
+ *****************************************************************************/
+
+void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color) {
+
+	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, da_color);
+
+	//
+	// Get the background color of the pixel. We need the corresponding game
+	// block, which contains the color.
+	//
+	s_point block_idx;
+	s_area_get_block(area, pixel, &block_idx);
+	const t_block ga_color = area->blocks[block_idx.row][block_idx.col];
+
+	//
+	// Set the color pair and get the character to display.
+	//
+	const wchar_t chr = colors_chess_attr_char(win, ga_color, da_color, colors_is_even(block_idx.row, block_idx.col));
+
+	//
+	// Print the character at the position.
+	//
+	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
 }
