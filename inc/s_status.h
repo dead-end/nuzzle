@@ -27,9 +27,10 @@
 
 #include <stdbool.h>
 
+#include "common.h"
+
 /******************************************************************************
- * The structure contains data that represent the status of the game. Currently
- * this is only the end flag.
+ * The structure contains data that represent the status of the game.
  *****************************************************************************/
 
 typedef struct s_status {
@@ -39,13 +40,12 @@ typedef struct s_status {
 	//
 	bool end;
 
-	// TODO: check if necessary
-	bool pick_up_toggle;
-
 	//
 	// The offset is the difference between the position of a mouse event and
 	// the upper left corner of a block. For the printing we need the upper
 	// left corner.
+	//
+	// A value of OFFSET_NOT_SET indicates the the drop area is no picked up.
 	//
 	s_point offset;
 
@@ -72,5 +72,7 @@ void s_status_release(s_status *status);
 void s_status_pickup(s_status *status, const int offset_row, const int offset_col);
 
 void s_status_keyboard_event(s_status *status);
+
+void s_status_update_pos(s_status *status, s_point *pos, const int row, const int col);
 
 #endif /* INC_S_STATUS_H_ */

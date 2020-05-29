@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-#include "common.h"
 #include "s_status.h"
 
 /******************************************************************************
@@ -37,8 +36,6 @@ void s_status_init(s_status *status) {
 	s_point_set(&status->offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
 
 	status->end = false;
-
-	status->pick_up_toggle = false;
 }
 
 /******************************************************************************
@@ -48,8 +45,6 @@ void s_status_init(s_status *status) {
 void s_status_release(s_status *status) {
 
 	s_point_set(&status->offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
-
-	status->pick_up_toggle = false;
 }
 
 /******************************************************************************
@@ -72,8 +67,6 @@ void s_status_pickup(s_status *status, const int offset_row, const int offset_co
 	log_debug("Pickup drop area with offset %d/%d", offset_row, offset_col);
 
 	s_point_set(&status->offset, offset_row, offset_col);
-
-	status->pick_up_toggle = true;
 }
 
 /******************************************************************************
@@ -89,5 +82,25 @@ void s_status_keyboard_event(s_status *status) {
 	if (s_status_is_picked_up(status)) {
 		s_point_set(&status->offset, 0, 0);
 	}
+}
+
+/******************************************************************************
+ * The function updates the position of the drop area with the offset. The
+ * offset is only used with mouse events. It is required that the drop area is
+ * picked up.
+ *****************************************************************************/
+
+void s_status_update_pos(s_status *status, s_point *pos, const int row, const int col) {
+
+#ifdef DEBUG
+	if (!s_status_is_picked_up(status)) {
+		log_exit_str("Not picked up!");
+	}
+#endif
+
+	pos->row = row - status->offset.row;
+	pos->col = col - status->offset.col;
+
+	log_debug("pos: %d/%d offset: %d/%d", pos->row, pos->col, status->offset.row, status->offset.col);
 }
 
