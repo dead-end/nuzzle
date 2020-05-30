@@ -794,10 +794,23 @@ void game_event_toggle_pickup(s_status *status) {
 	s_status_keyboard_event(status);
 
 	if (s_status_is_picked_up(status)) {
+
+		s_point unused;
+
+		const bool found = home_area_next_unused(&unused);
+
 		game_process_event_undo_pickup(status);
 
+		if (found) {
+			game_process_do_pickup(status, &unused);
+		}
+
 	} else {
-		s_point unused = home_area_get_unused();
+		s_point unused;
+
+		if (!home_area_next_unused(&unused)) {
+			log_exit_str("No unused found!");
+		}
 
 		game_process_do_pickup(status, &unused);
 	}

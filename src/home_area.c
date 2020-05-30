@@ -470,20 +470,36 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 	home_area_reset();
 }
 
+// ------------------------------------
+
 /******************************************************************************
  *
  *****************************************************************************/
 
-s_point home_area_get_unused() {
+//s_point home_area_get_unused() {
+//
+//	for (int i = 0; i < _home_num; i++) {
+//
+//		if (!_home_area[i].droped) {
+//			return _home_area[i].area.pos;
+//		}
+//	}
+//
+//	log_exit_str("No unused home area found!");
+//}
+bool home_area_next_unused(s_point *pos) {
 
-	for (int i = 0; i < _home_num; i++) {
+	const int start = _pickup_idx == PICKUP_IDX_UNDEF ? 0 : _pickup_idx + 1;
+
+	for (int i = start; i < _home_num; i++) {
 
 		if (!_home_area[i].droped) {
-			return _home_area[i].area.pos;
+			s_point_copy(pos, &_home_area[i].area.pos);
+			return true;
 		}
 	}
 
-	log_exit_str("No unused home area found!");
+	return false;;
 }
 
 /******************************************************************************
