@@ -34,10 +34,10 @@
 #include "home_area.h"
 #include "bg_area.h"
 #include "blocks.h"
-#include "common.h"
 #include "s_area.h"
 #include "colors.h"
 #include "s_status.h"
+#include "common.h"
 
 #define DO_PRINT true
 
@@ -89,64 +89,6 @@ static t_block **_marks;
 static WINDOW *_win_game = NULL;
 
 /******************************************************************************
- * The function prints the game area with no drop area. This can be used as an
- * initialization.
- *****************************************************************************/
-
-static void game_area_print(WINDOW *win, const s_area *game_area) {
-	wchar_t chr;
-	t_block ga_color;
-
-	//
-	// Iterate through the blocks of the game area.
-	//
-	for (int row = 0; row < game_area->dim.row; row++) {
-		for (int col = 0; col < game_area->dim.col; col++) {
-
-			ga_color = game_area->blocks[row][col];
-
-			//
-			// Set the color pair and get the character to display.
-			//
-			chr = colors_chess_attr_char(win, ga_color, CLR_NONE, colors_is_even(row, col));
-
-			//
-			// Print the block with a given color and character.
-			//
-			s_area_print_block(win, game_area, row, col, chr);
-		}
-	}
-}
-
-/******************************************************************************
- * The function prints a pixel with a given drop area color. The pixel is
- * inside the game area.
- *****************************************************************************/
-
-static void game_area_print_pixel(WINDOW *win, const s_area *game_area, const s_point *pixel, const t_block da_color) {
-
-	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, da_color);
-
-	//
-	// Get the background color of the pixel. We need the corresponding game
-	// block, which contains the color.
-	//
-	s_point block_idx;
-	s_area_get_block(game_area, pixel, &block_idx);
-	const t_block ga_color = game_area->blocks[block_idx.row][block_idx.col];
-
-	//
-	// Set the color pair and get the character to display.
-	//
-	const wchar_t chr = colors_chess_attr_char(win, ga_color, da_color, colors_is_even(block_idx.row, block_idx.col));
-
-	//
-	// Print the character at the position.
-	//
-	mvwprintw(win, pixel->row, pixel->col, "%lc", chr);
-}
-
-/******************************************************************************
  * The function prints a block of a drop area at a given position, with a given
  * color. The block may overlap areas (game_area, info_area, background area).
  *****************************************************************************/
@@ -164,12 +106,12 @@ static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_
 			// Check the position of each block pixel.
 			//
 			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
-				game_area_print_pixel(win, game_area, &pixel, da_color);
+				s_area_print_chess_pixel(win, game_area, &pixel, da_color);
 
 			} else if (info_area_contains(&pixel)) {
 				info_area_print_pixel(win, &pixel, da_color);
 
-			} else if (home_area_contains(&pixel)) {
+			} else if (home_area_get_idx(&pixel) >= 0) {
 				home_area_print_pixel(win, &pixel, da_color);
 
 			} else {
@@ -186,14 +128,17 @@ static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_
 
 static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const s_area *drop_area, const bool do_print) {
 	s_point drop_area_ul;
+	s_point idx;
 
-	for (int row = 0; row < drop_area->dim.row; row++) {
-		for (int col = 0; col < drop_area->dim.col; col++) {
+	log_debug("drop area pos: %d/%d", drop_area->pos.row, drop_area->pos.col);
+
+	for (idx.row = 0; idx.row < drop_area->dim.row; idx.row++) {
+		for (idx.col = 0; idx.col < drop_area->dim.col; idx.col++) {
 
 			//
 			// If the drop area block is empty, there is nothing to do.
 			//
-			if (drop_area->blocks[row][col] == CLR_NONE) {
+			if (drop_area->blocks[idx.row][idx.col] == CLR_NONE) {
 				continue;
 			}
 
@@ -201,17 +146,18 @@ static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const
 			// Compute the upper left corner of the current block of the drop
 			// area.
 			//
-			drop_area_ul.row = block_upper_left(drop_area->pos.row, drop_area->size.row, row);
-			drop_area_ul.col = block_upper_left(drop_area->pos.col, drop_area->size.col, col);
+			drop_area_ul = s_area_get_ul(drop_area, &idx);
 
 			if (do_print) {
-				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[row][col]);
+				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[idx.row][idx.col]);
 
 			} else {
 				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, CLR_NONE);
 			}
 		}
 	}
+
+	log_debug_str("end");
 }
 
 /******************************************************************************
@@ -262,20 +208,6 @@ static void area_update(s_area *area) {
 	// Normalize the area.
 	//
 	s_area_normalize(area);
-}
-
-/******************************************************************************
- * The function moves the drop area to the home position. The old position is
- * not deleted. This may be necessary to do upfront.
- *****************************************************************************/
-
-static void drop_area_move_home(WINDOW *win, s_area *game_area, s_area *drop_area, s_status *status) {
-
-	home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
-
-	s_status_release(status);
-
-	drop_area_process_blocks(win, game_area, drop_area, DO_PRINT);
 }
 
 /******************************************************************************
@@ -395,7 +327,7 @@ static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *d
  * drop area can be dropped, and if so, if the game ended.
  *****************************************************************************/
 
-void game_process_event_release(s_status *status) {
+bool game_event_drop(s_status *status) {
 
 	//
 	// Maybe the drop area position has to be adjusted.
@@ -429,7 +361,7 @@ void game_process_event_release(s_status *status) {
 		const int num_removed = s_area_remove_blocks(&_game_area, &drop_point, &_drop_area, _marks);
 		if (num_removed >= 4) {
 			info_area_add_to_score(_win_game, num_removed);
-			game_area_print(_win_game, &_game_area);
+			s_area_print_chess(_win_game, &_game_area);
 		}
 
 		//
@@ -441,9 +373,17 @@ void game_process_event_release(s_status *status) {
 		//
 		// Fill the blocks with new, random colors.
 		//
-		area_update(&_drop_area);
+		//area_update(&_drop_area);
+		home_area_mark_drop();
+		// TODO: status => pickup
+		s_status_release(status);
+		if (home_area_refill(false)) {
+			home_area_print(_win_game);
+		}
 
-		if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, NULL)) {
+		// TODO: needs to be implemented in home_area
+		//if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, NULL)) {
+		if (!home_area_can_drop_anywhere(&_game_area)) {
 
 			//
 			// If there is no place to drop it, we finished.
@@ -452,81 +392,11 @@ void game_process_event_release(s_status *status) {
 			info_area_set_msg(_win_game, "END!", status);
 			log_debug_str("ENDDDDDDDDDDDDD");
 		}
+
+		return true;
 	}
 
-	//
-	// If the drop area was not dropped, we simply delete the drop area at the
-	// old position. It will be printed at the home position.
-	//
-	else {
-		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
-	}
-
-	//
-	// Move the current drop area to the home position or create a new drop
-	// position at the home position.
-	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
-}
-
-/******************************************************************************
- * The function processes a new "pressed" event for the drop area. If the
- * position changed the drop area on the old position is deleted and it is
- * printed at the new position. If the drop area is not picked up it will be
- * picked up.
- *****************************************************************************/
-
-void game_process_event_pressed(s_status *status, const int event_row, const int event_col) {
-
-	log_debug("Event pos: %d/%d", event_row, event_col);
-
-	//
-	// If the position did not changed, we do nothing.
-	//
-	if (s_area_same_pos(&_drop_area, event_row, event_col)) {
-		return;
-	}
-
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
-
-	//
-	// If the offset is negative, then the drop area was not picked up. In this
-	// case we do the pickup.
-	//
-	if (!s_status_is_picked_up(status)) {
-
-		//
-		// If the event is inside the home area we compute the exact position.
-		//
-		if (s_area_is_inside(&_drop_area, event_row, event_col)) {
-			s_status_pickup(status, event_row - _drop_area.pos.row, event_col - _drop_area.pos.col);
-		}
-
-		//
-		// If the event occurs outside the home area, we use the upper left
-		// corner.
-		//
-		else {
-
-			//
-			// Mark as picked up with offset 0/0
-			//
-			s_status_pickup(status, 0, 0);
-		}
-	}
-
-	//
-	// Compute the next position with the event and the offset.
-	//
-	_drop_area.pos.row = event_row - status->offset.row;
-	_drop_area.pos.col = event_col - status->offset.col;
-
-	log_debug("pos: %d/%d", _drop_area.pos.row, _drop_area.pos.col);
-
-	//
-	// Print the drop area at the new position.
-	//
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+	return false;
 }
 
 /******************************************************************************
@@ -537,7 +407,7 @@ void game_process_event_pressed(s_status *status, const int event_row, const int
 
 #define DELIM 4
 
-void game_do_center() {
+void game_do_center(const s_status *status) {
 
 	//
 	// Get the sizes of the different areas.
@@ -565,9 +435,9 @@ void game_do_center() {
 	s_point_set(&_game_area.pos, ul_row, ul_col);
 
 	home_area_set_pos(ul_row + info_area_size.row + DELIM, ul_col + game_area_size.col + DELIM);
-	home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
+	//home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
 
-	info_area_set_pos(ul_row, _drop_area.pos.col);
+	info_area_set_pos(ul_row, ul_col + game_area_size.col + DELIM);
 
 	//
 	// Delete the old content.
@@ -577,11 +447,14 @@ void game_do_center() {
 	//
 	// Print the areas at the updated position.
 	//
-	game_area_print(_win_game, &_game_area);
+	s_area_print_chess(_win_game, &_game_area);
 
 	home_area_print(_win_game);
 
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+	// TODO:
+	if (s_status_is_picked_up(status)) {
+		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+	}
 
 	info_area_print(_win_game);
 }
@@ -668,7 +541,9 @@ void game_reset(s_status *status) {
 	//
 	// Move the drop area to the home position.
 	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
+	//drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
+	home_area_reset();
+	//home_area_refill();
 
 	//
 	// Reset the score
@@ -700,18 +575,120 @@ void game_win_refresh() {
 	nzc_win_refresh(_win_game);
 }
 
+// ------------------------- events
+
 /******************************************************************************
- * The function moves the drop area to the home position.
+ * The function moves the drop area with a given event. It is required that the
+ * drop area is picked up.
  *****************************************************************************/
 
-void game_process_event_home(s_status *status) {
+void game_event_move(s_status *status, const s_point *event) {
+
+	log_debug("Event pos: %d/%d", event->row, event->col);
+
+#ifdef DEBUG
 
 	//
-	// If the drop area is already on the home position there is nothing to do.
+	// Ensure that the drop area is picked up.
 	//
 	if (!s_status_is_picked_up(status)) {
+		log_exit_str("Drop area not picked up!");
+	}
+#endif
+
+	//
+	// If the position did not changed, we do nothing.
+	//
+	if (s_area_same_pos(&_drop_area, event->row, event->col)) {
 		return;
 	}
+
+	//
+	// Delete the drop area at its old position.
+	//
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
+
+	//
+	// Set the new position of the drop area.
+	//
+	// TODO: maybe better: s_area_set_pos_event()
+	s_status_update_pos(status, &_drop_area.pos, event->row, event->col);
+
+	//
+	// Print the drop area at the new position.
+	//
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+}
+
+/******************************************************************************
+ * The function picks up the drop area. It is required that the drop area is
+ * not already picked up.
+ *****************************************************************************/
+
+void game_process_do_pickup(s_status *status, const s_point *event) {
+
+	log_debug("Event pos: %d/%d", event->row, event->col);
+
+#ifdef DEBUG
+
+	//
+	// Ensure that the drop area is not already picked up.
+	//
+	if (s_status_is_picked_up(status)) {
+		log_exit_str("Already picked up!");
+	}
+#endif
+
+	//
+	// If the event is outside the home areas, there is nothing to pick up.
+	//
+	if (home_area_get_idx(event) < 0) {
+		log_debug("Not picked up but event outside home area: %d/%d", event->row, event->col);
+		return;
+	}
+
+	//
+	// Mark the home area as picked up and print the empty home area.
+	//
+	home_area_pickup(&_drop_area, event);
+	home_area_print(_win_game);
+
+	//
+	// If the event is inside the home area we compute the exact position.
+	//
+	if (s_area_is_inside(&_drop_area, event->row, event->col)) {
+		s_status_pickup(status, event->row - _drop_area.pos.row, event->col - _drop_area.pos.col);
+	} else {
+		s_status_pickup(status, 0, 0);
+	}
+
+	//
+	// Set the new position of the drop area.
+	//
+	s_status_update_pos(status, &_drop_area.pos, event->row, event->col);
+
+	//
+	// Print the drop area at the new position.
+	//
+	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+}
+
+/******************************************************************************
+ * The function is called with a picked up area. The area is released and moved
+ * to its home position. It is required that the drop area is picked up.
+ *****************************************************************************/
+
+void game_process_event_undo_pickup(s_status *status) {
+
+#ifdef DEBUG
+
+	//
+	// Ensure that the drop area is not already picked up.
+	//
+	if (!s_status_is_picked_up(status)) {
+		log_exit_str("Not picked up!");
+	}
+#endif
 
 	//
 	// Delete the drop area from the old position.
@@ -719,9 +696,15 @@ void game_process_event_home(s_status *status) {
 	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
 
 	//
-	// Update the drop area position and print the result.
+	// Mark the status as not picked up
 	//
-	drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
+	s_status_release(status);
+
+	//
+	// Mark the home area as not picked up.
+	//
+	home_area_undo_pickup();
+	home_area_print(_win_game);
 }
 
 /******************************************************************************
@@ -744,7 +727,9 @@ static inline void game_mv_possible_pos(s_status *status) {
 	//
 	const s_point pos = s_area_get_ul(&_game_area, &idx);
 
-	game_process_event_pressed(status, pos.row, pos.col);
+	log_debug("Possible - idx: %d/%d - pos: %d/%d", idx.row, idx.col, pos.row, pos.col);
+
+	game_event_move(status, &pos);
 }
 
 /******************************************************************************
@@ -752,9 +737,21 @@ static inline void game_mv_possible_pos(s_status *status) {
  * of the drop area. It is possible that the drop area is not on the game area.
  *****************************************************************************/
 
-void game_process_event_keyboard(s_status *status, const int diff_row, const int diff_col) {
+void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff_col) {
 
 	log_debug("Drop area: %d/%d diff: %d/%d", _drop_area.pos.row, _drop_area.pos.col, diff_row, diff_col);
+
+	//
+	// We cannot move an area which is not picked up.
+	//
+	if (!s_status_is_picked_up(status)) {
+		return;
+	}
+
+	//
+	// Mark as keyboard event.
+	//
+	s_status_keyboard_event(status);
 
 	if (s_area_is_area_inside(&_game_area, &_drop_area)) {
 
@@ -772,7 +769,7 @@ void game_process_event_keyboard(s_status *status, const int diff_row, const int
 		const bool moved = s_area_move_inner_area(&_game_area, &_drop_area, &event, &(s_point ) { diff_row, diff_col });
 
 		if (aligned || moved) {
-			game_process_event_pressed(status, event.row, event.col);
+			game_event_move(status, &event);
 		}
 
 	} else {
@@ -789,12 +786,19 @@ void game_process_event_keyboard(s_status *status, const int diff_row, const int
  * location.
  *****************************************************************************/
 
-void game_process_event_toggle(s_status *status) {
+void game_event_toggle_pickup(s_status *status) {
+
+	//
+	// Mark as keyboard event.
+	//
+	s_status_keyboard_event(status);
 
 	if (s_status_is_picked_up(status)) {
-		game_process_event_home(status);
+		game_process_event_undo_pickup(status);
 
 	} else {
-		game_mv_possible_pos(status);
+		s_point unused = home_area_get_unused();
+
+		game_process_do_pickup(status, &unused);
 	}
 }

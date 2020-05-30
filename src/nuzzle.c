@@ -41,6 +41,8 @@
 
 static void exit_callback() {
 
+	home_area_free();
+
 	//
 	// Free the allocated memory.
 	//
@@ -100,7 +102,7 @@ static void init(s_status *status) {
 
 	info_area_init();
 
-	home_area_init();
+	home_area_create(2, &(s_point ) { 3, 3 }, &(s_point ) { 2, 4 }, colors_init_random);
 
 	game_init(status);
 }
@@ -144,7 +146,7 @@ static void show_game_menu(s_status *status) {
 	// IDX 0: continue
 	//
 	if (idx == 0 || idx == ESC_RETURN) {
-		game_do_center();
+		game_do_center(status);
 
 	}
 
@@ -154,7 +156,7 @@ static void show_game_menu(s_status *status) {
 	else if (idx == 1) {
 		game_reset(status);
 
-		game_do_center();
+		game_do_center(status);
 
 	}
 
@@ -180,19 +182,32 @@ static void process_mouse_event(s_status *status, const int c) {
 	log_debug("Button: %d", c);
 
 	if ((event.bstate & BUTTON2_RELEASED) || (event.bstate & BUTTON3_RELEASED)) {
-		game_process_event_home(status);
 
-	} else {
-
-		if (event.bstate & BUTTON1_PRESSED) {
-			status->pick_up_toggle = !status->pick_up_toggle;
+		if (s_status_is_picked_up(status)) {
+			game_process_event_undo_pickup(status);
 		}
 
-		if (status->pick_up_toggle) {
-			// TODO: only if drop area is picked up.
-			game_process_event_pressed(status, event.y, event.x);
+	} else {
+		const s_point event_point = { event.y, event.x };
+
+		if (event.bstate & BUTTON1_PRESSED) {
+
+			if (s_status_is_picked_up(status)) {
+
+				if (home_area_get_idx(&event_point) >= 0) {
+					game_process_event_undo_pickup(status);
+				} else {
+					game_event_drop(status);
+				}
+			} else {
+				game_process_do_pickup(status, &event_point);
+			}
+
 		} else {
-			game_process_event_release(status);
+
+			if (s_status_is_picked_up(status)) {
+				game_event_move(status, &event_point);
+			}
 		}
 	}
 }
@@ -215,7 +230,7 @@ int main() {
 	//
 	refresh();
 
-	game_do_center();
+	game_do_center(&status);
 
 	game_win_refresh();
 
@@ -241,7 +256,7 @@ int main() {
 			//
 			refresh();
 
-			game_do_center();
+			game_do_center(&status);
 
 		} else if (c == KEY_ESC || c == 'm') {
 
@@ -261,27 +276,27 @@ int main() {
 				break;
 
 			case KEY_UP:
-				game_process_event_keyboard(&status, -1, 0);
+				game_event_keyboard_mv(&status, -1, 0);
 				break;
 
 			case KEY_DOWN:
-				game_process_event_keyboard(&status, 1, 0);
+				game_event_keyboard_mv(&status, 1, 0);
 				break;
 
 			case KEY_LEFT:
-				game_process_event_keyboard(&status, 0, -1);
+				game_event_keyboard_mv(&status, 0, -1);
 				break;
 
 			case KEY_RIGHT:
-				game_process_event_keyboard(&status, 0, 1);
+				game_event_keyboard_mv(&status, 0, 1);
 				break;
 
 			case '\t':
-				game_process_event_toggle(&status);
+				game_event_toggle_pickup(&status);
 				break;
 
 			case 10:
-				game_process_event_release(&status);
+				game_event_drop(&status);
 				break;
 
 			default:

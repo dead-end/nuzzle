@@ -44,20 +44,24 @@ void game_print_game_area();
 
 void game_print_new_area();
 
-void game_process_event_pressed(s_status *status, const int row, const int col);
+void game_process_event_move_old(s_status *status, const int row, const int col);
 
-void game_process_event_release(s_status *status);
+bool game_event_drop(s_status *status);
 
-void game_do_center();
+void game_do_center(const s_status *status);
 
 void game_reset(s_status *status);
 
 void game_win_refresh();
 
-void game_process_event_home(s_status *status);
+void game_process_event_undo_pickup(s_status *status);
 
-void game_process_event_keyboard(s_status *status, const int diff_row, const int diff_col);
+void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff_col);
 
-void game_process_event_toggle(s_status *status);
+void game_event_toggle_pickup(s_status *status);
+
+void game_process_do_pickup(s_status *status, const s_point *event);
+
+void game_event_move(s_status *status, const s_point *event);
 
 #endif /* INC_GAME_H_ */

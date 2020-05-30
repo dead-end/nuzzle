@@ -473,6 +473,22 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 /******************************************************************************
  *
  *****************************************************************************/
+
+s_point home_area_get_unused() {
+
+	for (int i = 0; i < _home_num; i++) {
+
+		if (!_home_area[i].droped) {
+			return _home_area[i].area.pos;
+		}
+	}
+
+	log_exit_str("No unused home area found!");
+}
+
+/******************************************************************************
+ *
+ *****************************************************************************/
 // TODO: not correct
 void home_area_set_pos(const int row, const int col) {
 	log_debug_str("start");
