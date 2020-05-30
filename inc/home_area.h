@@ -29,22 +29,30 @@
 
 #include "common.h"
 #include "colors.h"
+#include "s_area.h"
 
-//
-// The home position (upper left corner) of the new blocks.
-//
-extern s_point _home_pos;
+int home_area_get_idx(const s_point *pixel);
 
-#define home_area_set_pos(r,c) s_point_set(&_home_pos, r, c)
+bool home_area_can_drop_anywhere(s_area *area);
 
-void home_area_center_pos(s_point *pos, const s_point *dim);
+void home_area_mark_drop();
 
-void home_area_init();
+bool home_area_refill(const bool force);
 
-bool home_area_contains(const s_point *pixel);
+void home_area_pickup(s_area *area, const s_point *pixel);
+
+void home_area_undo_pickup();
+
+void home_area_print(WINDOW *win);
 
 void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_color);
 
-void home_area_print(WINDOW *win);
+void home_area_reset();
+
+void home_area_create(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int));
+
+void home_area_free();
+
+void home_area_set_pos(const int row, const int col);
 
 #endif /* INC_HOME_AREA_H_ */
