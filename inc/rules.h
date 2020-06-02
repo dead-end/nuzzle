@@ -39,6 +39,8 @@
  * Function declarations.
  ******************************************************************************/
 
-int rules_mark_squares_lines(s_area *area, t_block **marks);
+int rules_remove_squares_lines(s_area *area, t_block **marks);
+
+int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim, t_block **marks);
 
 #endif /* INC_RULES_H_ */
