@@ -82,7 +82,7 @@ static void test_check_squares() {
 	//
 	// Remove the squares.
 	//
-	const int count = rules_mark_squares_lines(&area, marks);
+	const int count = rules_remove_squares_lines(&area, marks);
 
 	//
 	// Ensure that the result is as expected.
@@ -131,7 +131,7 @@ static void test_check_lines() {
 	//
 	// Remove the squares.
 	//
-	const int count = rules_mark_squares_lines(&area, marks);
+	const int count = rules_remove_squares_lines(&area, marks);
 
 	//
 	// Ensure that the result is as expected.
@@ -149,6 +149,72 @@ static void test_check_lines() {
 }
 
 /******************************************************************************
+ * The function checks the marking and removing of neighbors with the same
+ * color.
+ *
+ * YY----
+ * -Y----
+ * -YXxxx
+ * --x---
+ * --xxxx
+ * --x---
+ *****************************************************************************/
+
+static void test_check_neighbors() {
+
+	//
+	// Create and initialize the area
+	//
+	s_area area;
+	s_area_create(&area, DIM, DIM, SIZE, SIZE);
+	s_area_set_blocks(&area, 0);
+
+	area.blocks[0][0] = CLR_RED_;
+	area.blocks[0][1] = CLR_RED_;
+
+	area.blocks[1][1] = CLR_RED_;
+
+	area.blocks[2][1] = CLR_RED_;
+	area.blocks[2][2] = CLR_BLUE;
+	area.blocks[2][3] = CLR_BLUE;
+	area.blocks[2][4] = CLR_BLUE;
+	area.blocks[2][5] = CLR_BLUE;
+
+	area.blocks[3][2] = CLR_BLUE;
+
+	area.blocks[4][2] = CLR_BLUE;
+	area.blocks[4][3] = CLR_BLUE;
+	area.blocks[4][4] = CLR_BLUE;
+	area.blocks[4][5] = CLR_BLUE;
+
+	area.blocks[5][2] = CLR_BLUE;
+
+	//
+	// Create the array for the markers
+	//
+	t_block **marks = blocks_create(DIM, DIM);
+
+	//
+	// Remove the squares.
+	//
+	const int count = rules_remove_neighbors(&area, &(s_point ) { 0, 0 }, &(s_point ) { 3, 3 }, marks);
+
+	//
+	// Ensure that the result is as expected.
+	//
+	ut_check_int(count, 14, "removed");
+
+	check_empty(area.blocks, DIM, DIM);
+
+	//
+	// Free the allocated areas.
+	//
+	s_area_free(&area);
+
+	blocks_free(marks, DIM);
+}
+
+/******************************************************************************
  * The function is the a wrapper, that triggers the internal unit tests.
  *****************************************************************************/
 
@@ -157,4 +223,6 @@ void ut_rules_exec() {
 	test_check_squares();
 
 	test_check_lines();
+
+	test_check_neighbors();
 }
