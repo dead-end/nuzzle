@@ -25,6 +25,7 @@
 #include <stdlib.h>
 
 #include "ut_s_area.h"
+#include "ut_rules.h"
 
 /******************************************************************************
  * The main function delegates the call to the individual unit test functions.
@@ -33,6 +34,8 @@
 int main() {
 
 	ut_s_area_exec();
+
+	ut_rules_exec();
 
 	return EXIT_SUCCESS;
 }
