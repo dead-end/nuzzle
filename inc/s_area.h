@@ -101,27 +101,16 @@ void s_area_create(s_area *area, const int dim_row, const int dim_col, const int
 
 void s_area_free(s_area *area);
 
-// TODO: comment for the separation
-/******************************************************************************
- *
- *****************************************************************************/
+void s_area_get_eff_ul(const s_area *area, s_point *ul);
 
-void s_area_mark_neighbors(const s_area *area, t_block **marks, const int row, const int col, t_block color, int *num);
+void s_area_normalize(s_area *area);
 
 bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx);
 
 bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, const bool do_drop);
 
-int s_area_remove_blocks(s_area *area, const s_point *idx, const s_area *drop_area, t_block **marks);
-
-void s_area_normalize(s_area *area);
-
-// ----------------------------------------------------------------------------
-
 void s_area_print_chess(WINDOW *win, const s_area *area);
 
 void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color);
-
-void s_area_get_eff_ul(const s_area *area, s_point *ul);
 
 #endif /* INC_S_AREA_H_ */
