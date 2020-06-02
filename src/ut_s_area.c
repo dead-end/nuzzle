@@ -39,7 +39,7 @@ static void test_s_area_copy() {
 
 	from.blocks = NULL;
 
-	s_area_copy(&to, &from);
+	s_area_copy(&from, &to);
 
 	ut_check_s_point(&to.dim, &(s_point ) { 1, 2 }, "checking dim");
 	ut_check_s_point(&to.size, &(s_point ) { 3, 4 }, "checking size");
@@ -48,6 +48,55 @@ static void test_s_area_copy() {
 	if (to.blocks != NULL) {
 		log_exit_str("Block is not null!");
 	}
+}
+
+/******************************************************************************
+ * The function checks the s_area_copy_deep() function.
+ *****************************************************************************/
+
+static void test_s_area_copy_deep() {
+	s_area from, to;
+
+	//
+	// Create the areas.
+	//
+	s_area_create(&from, 1, 2, 3, 4);
+	s_area_create(&to, 1, 2, 3, 4);
+
+	//
+	// Initialize the source
+	//
+	s_point_set(&from.pos, 5, 6);
+
+	for (int i = 0; i < from.dim.row; i++) {
+		for (int j = 0; j < from.dim.col; j++) {
+			from.blocks[i][j] = 10 * i + j;
+		}
+	}
+
+	//
+	// Do the copying
+	//
+	s_area_copy_deep(&from, &to);
+
+	//
+	// Check the copy
+	//
+	ut_check_s_point(&to.dim, &(s_point ) { 1, 2 }, "checking dim");
+	ut_check_s_point(&to.size, &(s_point ) { 3, 4 }, "checking size");
+	ut_check_s_point(&to.pos, &(s_point ) { 5, 6 }, "checking pos");
+
+	for (int i = 0; i < to.dim.row; i++) {
+		for (int j = 0; j < to.dim.col; j++) {
+			ut_check_int(to.blocks[i][j], from.blocks[i][j], "block");
+		}
+	}
+
+	//
+	// Free the areas.
+	//
+	s_area_free(&from);
+	s_area_free(&to);
 }
 
 /******************************************************************************
@@ -395,6 +444,8 @@ static void test_s_area_move_inside() {
 void ut_s_area_exec() {
 
 	test_s_area_copy();
+
+	test_s_area_copy_deep();
 
 	test_s_area_get_size();
 

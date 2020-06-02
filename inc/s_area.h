@@ -65,7 +65,9 @@ typedef struct s_area {
  * The functions for the s_area.
  *****************************************************************************/
 
-void s_area_copy(s_area *to, const s_area *from);
+void s_area_copy(const s_area *from, s_area *to);
+
+void s_area_copy_deep(const s_area *from, s_area *to);
 
 s_point s_area_get_size(const s_area *area);
 

@@ -31,13 +31,32 @@
  * (Unit tested)
  *****************************************************************************/
 
-void s_area_copy(s_area *to, const s_area *from) {
+void s_area_copy(const s_area *from, s_area *to) {
 
 	to->blocks = from->blocks;
 
 	s_point_copy(&to->dim, &from->dim);
 	s_point_copy(&to->pos, &from->pos);
 	s_point_copy(&to->size, &from->size);
+}
+
+/******************************************************************************
+ * The function creates a deep copy of the given area.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+void s_area_copy_deep(const s_area *from, s_area *to) {
+
+	s_point_copy(&to->dim, &from->dim);
+	s_point_copy(&to->pos, &from->pos);
+	s_point_copy(&to->size, &from->size);
+
+	for (int i = 0; i < from->dim.row; i++) {
+		for (int j = 0; j < from->dim.col; j++) {
+			to->blocks[i][j] = from->blocks[i][j];
+		}
+	}
 }
 
 /******************************************************************************
@@ -216,7 +235,7 @@ bool s_area_align_point(const s_area *area, s_point *point) {
 		changed = true;
 	}
 
-	log_debug("pos: %d/%d aligned: %d/%d, changed: %s",area->pos.row, area->pos.col, point->row,point->col, bool_str(changed));
+	log_debug("pos: %d/%d aligned: %d/%d, changed: %s", area->pos.row, area->pos.col, point->row, point->col, bool_str(changed));
 
 	//
 	// The function returns true if the point changes, so a drawing is
