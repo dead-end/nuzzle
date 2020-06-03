@@ -24,6 +24,8 @@
 
 #include "common.h"
 
+#include <ctype.h>
+
 /******************************************************************************
  * The function allocates memory and terminates the program in case of an
  * error.
@@ -59,4 +61,17 @@ s_point strs_dim(const char *strs[]) {
 	}
 
 	return dim;
+}
+
+/******************************************************************************
+ * The function removes the tailing white spaces from a string.
+ *****************************************************************************/
+
+void trim_r(char *str) {
+
+	const size_t len = strlen(str);
+
+	for (int i = len - 1; i >= 0 && isspace(str[i]); i--) {
+		str[i] = '\0';
+	}
 }
