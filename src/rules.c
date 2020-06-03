@@ -270,7 +270,7 @@ int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim,
 	for (int row = 0; row < dim->row; row++) {
 		for (int col = 0; col < dim->col; col++) {
 
-			color = area->blocks[row][col];
+			color = area->blocks[idx->row + row][idx->col + col];
 
 			//
 			// If the current, dropped block of the area has no color, it
