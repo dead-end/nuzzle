@@ -53,8 +53,10 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 
 void home_area_free();
 
-bool home_area_next_unused(s_point *pos);
+s_point home_area_get_size(const bool horizontal, const s_point *delim);
 
-void home_area_set_pos(const int row, const int col);
+void home_area_layout(const s_point *pos, const bool horizontal, const s_point *delim);
+
+bool home_area_next_unused(s_point *pos);
 
 #endif /* INC_HOME_AREA_H_ */

@@ -161,6 +161,13 @@ int home_area_get_idx(const s_point *pixel) {
 bool home_area_can_drop_anywhere(s_area *area) {
 	bool result = false;
 
+	//
+	// Create an array and use the backup blocks. To to this, we need to ensure
+	// that nothing is picked up. In this case the blocks are not in used.
+	//
+	s_area norm_area;
+	norm_area.blocks = _blocks_bak;
+
 #ifdef DEBUG
 
 	//
@@ -180,10 +187,13 @@ bool home_area_can_drop_anywhere(s_area *area) {
 			continue;
 		}
 
+		s_area_copy_deep(&_home_area[i].area, &norm_area);
+		s_area_normalize(&norm_area);
+
 		//
 		// Check if the current home area can be dropped on the game area.
 		//
-		if (s_area_can_drop_anywhere(area, &_home_area[i].area, NULL)) {
+		if (s_area_can_drop_anywhere(area, &norm_area, NULL)) {
 			result = true;
 			break;
 		}
@@ -470,23 +480,56 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 	home_area_reset();
 }
 
+/******************************************************************************
+ * The function returns the size of the home area depending on the layout
+ * (horizontal / vertical).
+ *****************************************************************************/
+
+s_point home_area_get_size(const bool horizontal, const s_point *delim) {
+	s_point result;
+
+	if (horizontal) {
+		result.row = _home_area[0].area.dim.row * _home_area[0].area.size.row;
+		result.col = _home_num * (_home_area[0].area.dim.col * _home_area[0].area.size.col) + delim->col * (_home_num - 1);
+
+	} else {
+		result.row = _home_num * (_home_area[0].area.dim.row * _home_area[0].area.size.row) + delim->row * (_home_num - 1);
+		result.col = _home_area[0].area.dim.col * _home_area[0].area.size.col;
+
+	}
+
+	return result;
+}
+
+/******************************************************************************
+ * The function assigns a position to every one of the home areas, depending on
+ * the upper left position of all home areas and the layout.
+ *****************************************************************************/
+
+void home_area_layout(const s_point *pos, const bool horizontal, const s_point *delim) {
+
+	for (int i = 0; i < _home_num; i++) {
+
+		if (horizontal) {
+			_home_area[i].area.pos.row = pos->row;
+			_home_area[i].area.pos.col = pos->col + (_home_area[i].area.dim.col * _home_area[i].area.size.col) * i + delim->col * (i - 1);
+
+		} else {
+			_home_area[i].area.pos.row = pos->row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + delim->row * (i - 1);
+			_home_area[i].area.pos.col = pos->col;
+		}
+
+		log_debug("home area: %d pos: %d/%d", i, _home_area[i].area.pos.row, _home_area[i].area.pos.col);
+	}
+}
+
 // ------------------------------------
 
 /******************************************************************************
  *
  *****************************************************************************/
 
-//s_point home_area_get_unused() {
-//
-//	for (int i = 0; i < _home_num; i++) {
-//
-//		if (!_home_area[i].droped) {
-//			return _home_area[i].area.pos;
-//		}
-//	}
-//
-//	log_exit_str("No unused home area found!");
-//}
+//TODO: tab moving is not optimal
 bool home_area_next_unused(s_point *pos) {
 
 	const int start = _pickup_idx == PICKUP_IDX_UNDEF ? 0 : _pickup_idx + 1;
@@ -500,23 +543,4 @@ bool home_area_next_unused(s_point *pos) {
 	}
 
 	return false;;
-}
-
-/******************************************************************************
- *
- *****************************************************************************/
-// TODO: not correct
-void home_area_set_pos(const int row, const int col) {
-	log_debug_str("start");
-
-	int gap;
-
-	for (int i = 0; i < _home_num; i++) {
-		gap = i == 0 ? 0 : 2;
-
-		_home_area[i].area.pos.row = row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + gap;
-		_home_area[i].area.pos.col = col;
-	}
-
-	log_debug_str("end");
 }
