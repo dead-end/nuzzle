@@ -55,6 +55,7 @@ SRC_LIBS = \
 	$(SRC_DIR)/common.c \
 	$(SRC_DIR)/colors.c \
 	$(SRC_DIR)/info_area.c \
+	$(SRC_DIR)/home_area.c \
 	$(SRC_DIR)/bg_area.c \
 	$(SRC_DIR)/game.c \
 	$(SRC_DIR)/blocks.c \
@@ -62,9 +63,12 @@ SRC_LIBS = \
 	$(SRC_DIR)/win_menu.c \
 	$(SRC_DIR)/nz_curses.c \
 	$(SRC_DIR)/fs_persist.c \
+	$(SRC_DIR)/s_shapes.c \
 	$(SRC_DIR)/s_status.c \
+	$(SRC_DIR)/rules.c \
 	$(SRC_DIR)/ut_utils.c \
 	$(SRC_DIR)/ut_s_area.c \
+	$(SRC_DIR)/ut_rules.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
