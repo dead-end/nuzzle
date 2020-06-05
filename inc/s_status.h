@@ -29,6 +29,10 @@
 
 #include "common.h"
 
+# define STATUS_GAME_4_COLORS 0
+
+# define STATUS_GAME_SQUARES_LINES 1
+
 /******************************************************************************
  * The structure contains data that represent the status of the game.
  *****************************************************************************/
@@ -48,6 +52,8 @@ typedef struct s_status {
 	// A value of OFFSET_NOT_SET indicates the the drop area is no picked up.
 	//
 	s_point offset;
+
+	int game;
 
 } s_status;
 
