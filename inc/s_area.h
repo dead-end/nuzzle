@@ -29,6 +29,7 @@
 
 #include "blocks.h"
 #include "common.h"
+#include "colors.h"
 
 /******************************************************************************
  * The definition of the area struct.
@@ -109,8 +110,8 @@ bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx);
 
 bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, const bool do_drop);
 
-void s_area_print_chess(WINDOW *win, const s_area *area);
+void s_area_print_chess(WINDOW *win, const s_area *area, const e_chess_type chess_type);
 
-void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color);
+void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color, const e_chess_type chess_type);
 
 #endif /* INC_S_AREA_H_ */

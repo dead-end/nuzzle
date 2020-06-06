@@ -716,7 +716,7 @@ bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, cons
  * an initialization.
  *****************************************************************************/
 
-void s_area_print_chess(WINDOW *win, const s_area *area) {
+void s_area_print_chess(WINDOW *win, const s_area *area, const e_chess_type chess_type) {
 	wchar_t chr;
 	t_block ga_color;
 	s_point idx;
@@ -732,7 +732,7 @@ void s_area_print_chess(WINDOW *win, const s_area *area) {
 			//
 			// Set the color pair and get the character to display.
 			//
-			chr = colors_chess_attr_char(win, ga_color, CLR_NONE, colors_is_even(idx.row, idx.col));
+			chr = colors_chess_attr_char(win, ga_color, CLR_NONE, &idx, chess_type);
 
 			//
 			// Print the block with a given color and character.
@@ -747,7 +747,7 @@ void s_area_print_chess(WINDOW *win, const s_area *area) {
  * pattern.
  *****************************************************************************/
 
-void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color) {
+void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pixel, const t_block da_color, const e_chess_type chess_type) {
 
 	log_debug("pixel: %d/%d, fg-color: %d", pixel->row, pixel->col, da_color);
 
@@ -762,7 +762,7 @@ void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pi
 	//
 	// Set the color pair and get the character to display.
 	//
-	const wchar_t chr = colors_chess_attr_char(win, ga_color, da_color, colors_is_even(block_idx.row, block_idx.col));
+	const wchar_t chr = colors_chess_attr_char(win, ga_color, da_color, &block_idx, chess_type);
 
 	//
 	// Print the character at the position.
