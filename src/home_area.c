@@ -376,13 +376,15 @@ void home_area_undo_pickup() {
  * The function prints all home areas.
  *****************************************************************************/
 
+#define home_area_chess_color(i) ((i) % 2 == 0 ? CHESS_SIMPLE_DARK : CHESS_SIMPLE_LIGHT)
+
 void home_area_print(WINDOW *win) {
 
 	for (int i = 0; i < _home_num; i++) {
 
 		log_debug("Processing home area: %d", i);
 
-		s_area_print_chess(win, &_home_area[i].area);
+		s_area_print_chess(win, &_home_area[i].area, home_area_chess_color(i));
 	}
 }
 
@@ -410,7 +412,7 @@ void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_c
 	//
 	// Print the pixel with a chess pattern as a background.
 	//
-	s_area_print_chess_pixel(win, &_home_area[idx].area, pixel, da_color);
+	s_area_print_chess_pixel(win, &_home_area[idx].area, pixel, da_color, home_area_chess_color(idx));
 }
 
 /******************************************************************************
