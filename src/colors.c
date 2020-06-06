@@ -32,7 +32,8 @@
  * COLOR_BLACK is used.
  *****************************************************************************/
 
-#define BG_L_G 17
+#define BG_L_G 16
+#define BG_M_G 17
 #define BG_D_G 18
 
 #define FG_RED 19
@@ -74,10 +75,10 @@
 // The number of colors for the foreground and the background:
 //
 // - none / black
-// - 2 x grey
+// - 3 x grey
 // - 4 colors
 //
-#define NUM_COLORS 7
+#define NUM_COLORS 8
 
 static t_block _color_pairs[NUM_COLORS][NUM_COLORS];
 
@@ -161,7 +162,8 @@ static void colors_alloc() {
 	// Chess pattern colors
 	//
 	colors_init_color(BG_L_G, 250, 250, 250);
-	colors_init_color(BG_D_G, 230, 230, 230);
+	colors_init_color(BG_M_G, 200, 200, 200);
+	colors_init_color(BG_D_G, 150, 150, 150);
 
 	//
 	// Red
@@ -206,6 +208,7 @@ static void color_pairs_alloc() {
 	// Initialize color pairs for the chess pattern.
 	//
 	_color_pairs[CLR_NONE][CLR_GREY_LIGHT] = colors_init_pair(color_pair++, BG_L_G, BG_L_G);
+	_color_pairs[CLR_NONE][CLR_GREY_MID__] = colors_init_pair(color_pair++, BG_M_G, BG_M_G);
 	_color_pairs[CLR_NONE][CLR_GREY_DARK_] = colors_init_pair(color_pair++, BG_D_G, BG_D_G);
 
 	//
@@ -353,12 +356,49 @@ void colors_normal_end_attr(WINDOW *win) {
 }
 
 /******************************************************************************
+ * The function returns the background chess pattern color for a given index.
+ *****************************************************************************/
+
+static short colors_chess_get_color(const s_point *idx, const e_chess_type chess_type) {
+
+	//
+	// Simple chess pattern with 2 dark colors
+	//
+	if (chess_type == CHESS_SIMPLE_DARK) {
+		return colors_is_even(idx->row, idx->col) ? CLR_GREY_MID__ : CLR_GREY_DARK_;
+	}
+
+	//
+	// Simple chess pattern with 2 light colors
+	//
+	if (chess_type == CHESS_SIMPLE_LIGHT) {
+		return colors_is_even(idx->row, idx->col) ? CLR_GREY_LIGHT : CLR_GREY_MID__;
+	}
+
+	//
+	// Double chess pattern. The even blocks have the middle color.
+	//
+	if (colors_is_even(idx->row, idx->col)) {
+		return CLR_GREY_MID__;
+	}
+
+	//
+	// Toggle the odd blocks.
+	//
+	if (colors_is_even((idx->row / 3), (idx->col / 3))) {
+		return CLR_GREY_LIGHT;
+	}
+
+	return CLR_GREY_DARK_;
+}
+
+/******************************************************************************
  * The function sets the color pair for a chess pattern area and returns the
  * corresponding character. It is called with the game area and the drop area
  * color index and a flag indicating whether the block is odd or even.
  *****************************************************************************/
 
-wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const bool even) {
+wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const s_point *idx, const e_chess_type chess_type) {
 	int color_pair;
 	wchar_t chr;
 
@@ -369,8 +409,7 @@ wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_bloc
 		//
 		if (da_color == CLR_NONE) {
 			chr = BLOCK_EMPTY;
-			color_pair = color_pair_get(CLR_NONE, even ? CLR_GREY_LIGHT : CLR_GREY_DARK_);
-
+			color_pair = color_pair_get(CLR_NONE, colors_chess_get_color(idx, chess_type));
 		}
 
 		//

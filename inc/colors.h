@@ -42,7 +42,30 @@
 #define CLR_YELL       4
 
 #define CLR_GREY_DARK_ 5
-#define CLR_GREY_LIGHT 6
+#define CLR_GREY_MID__ 6
+#define CLR_GREY_LIGHT 7
+
+/******************************************************************************
+ * The enum defines the different forms of chess pattern.
+ *****************************************************************************/
+
+typedef enum e_chess_type {
+
+	//
+	// Simple chess pattern with two light colors
+	//
+	CHESS_SIMPLE_LIGHT,
+
+		//
+		// Simple chess pattern with two dark colors
+		//
+		CHESS_SIMPLE_DARK,
+
+		//
+		// Double chess pattern with three colors
+		//
+		CHESS_CHESS
+} e_chess_type;
 
 /******************************************************************************
  * Functions and macros
@@ -58,6 +81,6 @@ void colors_normal_set_attr(WINDOW *win, const t_block da_color);
 
 void colors_normal_end_attr(WINDOW *win);
 
-wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const bool even);
+wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const s_point *idx, const e_chess_type chess_type);
 
 #endif /* INC_COLORS_H_ */
