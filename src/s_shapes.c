@@ -286,7 +286,7 @@ void s_shapes_init_random(t_block **blocks, const int rows, const int cols) {
 	//
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
-			blocks[i][j] = shape->blocks[i][j] == SHAPE_DEF ? CLR_BLUE : CLR_NONE;
+			blocks[i][j] = shape->blocks[i][j] == SHAPE_DEF ? CLR_MK_N : CLR_NONE;
 		}
 	}
 }
