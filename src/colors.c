@@ -48,6 +48,10 @@
 #define FG_YEL 25
 #define BG_YEL 26
 
+#define MK_DRK 27
+#define MK_MID 28
+#define MK_LIG 29
+
 /******************************************************************************
  * The definition of the color constants.
  *****************************************************************************/
@@ -56,6 +60,8 @@
 #define CORR 100
 #define LIGH 600
 #define DARK 300
+
+#define MID_ 700
 
 /******************************************************************************
  * The color pairs are stored in a 2 dimensional array. The indices are the
@@ -77,8 +83,9 @@
 // - none / black
 // - 3 x grey
 // - 4 colors
+// - 3 marker
 //
-#define NUM_COLORS 8
+#define NUM_COLORS 11
 
 static t_block _color_pairs[NUM_COLORS][NUM_COLORS];
 
@@ -168,26 +175,33 @@ static void colors_alloc() {
 	//
 	// Red
 	//
-	colors_init_color(BG_RED, FULL, DARK, DARK);
-	colors_init_color(FG_RED, FULL, LIGH, LIGH);
+	colors_init_color(FG_RED, FULL, DARK, DARK);
+	colors_init_color(BG_RED, FULL, LIGH, LIGH);
 
 	//
 	// Green
 	//
-	colors_init_color(BG_GRE, DARK, FULL - CORR - CORR, DARK);
-	colors_init_color(FG_GRE, LIGH, FULL, LIGH);
+	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK);
+	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
 
 	//
 	// Blue
 	//
-	colors_init_color(BG_BLU, DARK, DARK, FULL);
-	colors_init_color(FG_BLU, LIGH, LIGH, FULL);
+	colors_init_color(FG_BLU, DARK, DARK, FULL);
+	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
 
 	//
 	// Yellow
 	//
-	colors_init_color(BG_YEL, FULL - CORR, FULL - CORR, DARK);
-	colors_init_color(FG_YEL, FULL, FULL, LIGH);
+	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK);
+	colors_init_color(BG_YEL, FULL, FULL, LIGH);
+
+	//
+	// Marker
+	//
+	colors_init_color(MK_DRK, 500, 0, 300);
+	colors_init_color(MK_MID, 800, 100, 500);
+	colors_init_color(MK_LIG, 999, 200, 700);
 }
 
 /******************************************************************************
@@ -246,6 +260,17 @@ static void color_pairs_alloc() {
 	_color_pairs[CLR_YELL][CLR_GREE] = colors_init_pair(color_pair++, FG_YEL, BG_GRE);
 	_color_pairs[CLR_YELL][CLR_BLUE] = colors_init_pair(color_pair++, FG_YEL, BG_BLU);
 	_color_pairs[CLR_YELL][CLR_YELL] = colors_init_pair(color_pair++, FG_YEL, BG_YEL);
+
+	//
+	// Initialize the color pairs for marker / double chess combinations.
+	//
+	_color_pairs[CLR_NONE][CLR_MK_N] = colors_init_pair(color_pair++, COLOR_BLACK, MK_DRK);
+
+	_color_pairs[CLR_MK_L][CLR_NONE] = colors_init_pair(color_pair++, MK_LIG, COLOR_BLACK);
+	_color_pairs[CLR_MK_N][CLR_NONE] = colors_init_pair(color_pair++, MK_MID, COLOR_BLACK);
+
+	_color_pairs[CLR_MK_L][CLR_MK_N] = colors_init_pair(color_pair++, MK_LIG, MK_DRK);
+	_color_pairs[CLR_MK_N][CLR_MK_N] = colors_init_pair(color_pair++, MK_MID, MK_DRK);
 }
 
 /******************************************************************************

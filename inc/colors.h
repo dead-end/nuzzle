@@ -34,16 +34,19 @@
  * color pairs.
  *****************************************************************************/
 
-#define CLR_NONE       0
+#define CLR_NONE        0
 
-#define CLR_RED_       1
-#define CLR_GREE       2
-#define CLR_BLUE       3
-#define CLR_YELL       4
+#define CLR_RED_        1
+#define CLR_GREE        2
+#define CLR_BLUE        3
+#define CLR_YELL        4
 
-#define CLR_GREY_DARK_ 5
-#define CLR_GREY_MID__ 6
-#define CLR_GREY_LIGHT 7
+#define CLR_GREY_DARK_  5
+#define CLR_GREY_MID__  6
+#define CLR_GREY_LIGHT  7
+
+#define CLR_MK_L        8
+#define CLR_MK_N        9
 
 /******************************************************************************
  * The enum defines the different forms of chess pattern.
@@ -64,7 +67,7 @@ typedef enum e_chess_type {
 		//
 		// Double chess pattern with three colors
 		//
-		CHESS_CHESS
+		CHESS_DOUBLE
 } e_chess_type;
 
 /******************************************************************************
