@@ -130,6 +130,8 @@ WINDOW* nzc_win_create_fully() {
 
 void nzc_win_del(WINDOW *win) {
 
+	log_debug("Delete window (is null: %s)", bool_str(win == NULL));
+
 	//
 	// Ensure that the window is initialized.
 	//
