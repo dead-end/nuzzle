@@ -27,7 +27,10 @@
 #include <errno.h>
 #include <s_game_cfg.h>
 
-#include "common.h"
+//
+// We need e_chess_type
+//
+#include "colors.h"
 
 /*******************************************************************************
  * Declaration of an array for game configurations.
@@ -127,35 +130,11 @@ static int cfg_get_type(const char *line) {
 }
 
 /*******************************************************************************
- * The function is called with a key value pair ("key=value") and it is assumed
+ * The macro is called with a key value pair ("key=value") and it is assumed
  * that the value is an integer. It returns the value as an int.
  ******************************************************************************/
 
-static int cfg_get_int(char *line) {
-	char *tmp;
-
-	const char *value = cfg_get_value(line);
-
-	errno = 0;
-
-	const int result = (int) strtol(value, &tmp, 10);
-
-	//
-	// Check for overflows.
-	//
-	if (errno != 0) {
-		log_exit("Unable to convert: %s - %s", value, strerror(errno));
-	}
-
-	//
-	// Ensure that the whole value was converted.
-	//
-	if (*tmp != '\0') {
-		log_exit("Unable to convert: %s - %s", value, tmp);
-	}
-
-	return result;
-}
+#define cfg_get_int(l) str_2_int(cfg_get_value(l))
 
 /*******************************************************************************
  * The function prints a game config structure.
@@ -326,6 +305,19 @@ void s_game_cfg_read(const char *path) {
 
 			} else if (starts_with(line, CFG_GAME_TYPE)) {
 				game->type = cfg_get_type(line);
+
+				switch (game->type) {
+				case TYPE_4_COLORS:
+					game->chess_type = CHESS_SIMPLE_LIGHT;
+					break;
+
+				case TYPE_SQUARES_LINES:
+					game->chess_type = CHESS_DOUBLE;
+					break;
+
+				default:
+					log_debug("Unknown type: %d", game->type);
+				}
 
 			} else if (starts_with(line, CFG_GAME_TYPE_DATA)) {
 				cfg_get_str(game->data, line, SIZE_DATA);
