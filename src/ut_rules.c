@@ -27,8 +27,12 @@
 #include "rules.h"
 #include "colors.h"
 
-#define DIM 6
-#define SIZE 1
+//
+// test_check_lines() requires that row == col
+//
+static const s_point _dim = { 6, 6 };
+
+static const s_point _size = { 1, 1 };
 
 /******************************************************************************
  * The function ensures that the blocks of the array are all not set.
@@ -53,13 +57,13 @@ static void test_check_squares() {
 	// Create and initialize the area
 	//
 	s_area area;
-	s_area_create(&area, DIM, DIM, SIZE, SIZE);
+	s_area_create(&area, &_dim, &_size);
 	s_area_set_blocks(&area, 0);
 
 	//
 	// Create the array for the markers
 	//
-	t_block **marks = blocks_create(DIM, DIM);
+	t_block **marks = blocks_create(_dim.row, _dim.col);
 
 	//
 	// Set square at 0/0
@@ -89,14 +93,14 @@ static void test_check_squares() {
 	//
 	ut_check_int(count, 18, "removed");
 
-	check_empty(area.blocks, DIM, DIM);
+	check_empty(area.blocks, _dim.row, _dim.col);
 
 	//
 	// Free the allocated area.
 	//
 	s_area_free(&area);
 
-	blocks_free(marks, DIM);
+	blocks_free(marks, _dim.row);
 }
 
 /******************************************************************************
@@ -110,18 +114,25 @@ static void test_check_lines() {
 	// Create and initialize the area
 	//
 	s_area area;
-	s_area_create(&area, DIM, DIM, SIZE, SIZE);
+	s_area_create(&area, &_dim, &_size);
 	s_area_set_blocks(&area, 0);
 
 	//
 	// Create the array for the markers
 	//
-	t_block **marks = blocks_create(DIM, DIM);
+	t_block **marks = blocks_create(_dim.row, _dim.col);
 
 	//
-	// Set a horizontal and vertical line
+	// For this test a symmetric dim is required.
 	//
-	for (int i = 0; i < DIM; i++) {
+	if (_dim.row != _dim.col) {
+		log_exit("Area dim is not symetric: %d/%d", _dim.row, _dim.col);
+	}
+
+	//
+	// Set a horizontal and vertical line.
+	//
+	for (int i = 0; i < _dim.row; i++) {
 
 		area.blocks[1][i] = RULES_MARKER;
 
@@ -138,14 +149,14 @@ static void test_check_lines() {
 	//
 	ut_check_int(count, 11, "removed");
 
-	check_empty(area.blocks, DIM, DIM);
+	check_empty(area.blocks, _dim.row, _dim.col);
 
 	//
 	// Free the allocated area.
 	//
 	s_area_free(&area);
 
-	blocks_free(marks, DIM);
+	blocks_free(marks, _dim.row);
 }
 
 /******************************************************************************
@@ -166,7 +177,7 @@ static void test_check_neighbors() {
 	// Create and initialize the area
 	//
 	s_area area;
-	s_area_create(&area, DIM, DIM, SIZE, SIZE);
+	s_area_create(&area, &_dim, &_size);
 	s_area_set_blocks(&area, 0);
 
 	area.blocks[0][0] = CLR_RED_;
@@ -192,7 +203,7 @@ static void test_check_neighbors() {
 	//
 	// Create the array for the markers
 	//
-	t_block **marks = blocks_create(DIM, DIM);
+	t_block **marks = blocks_create(_dim.row, _dim.col);
 
 	//
 	// Remove the squares.
@@ -204,14 +215,14 @@ static void test_check_neighbors() {
 	//
 	ut_check_int(count, 14, "removed");
 
-	check_empty(area.blocks, DIM, DIM);
+	check_empty(area.blocks, _dim.row, _dim.col);
 
 	//
 	// Free the allocated areas.
 	//
 	s_area_free(&area);
 
-	blocks_free(marks, DIM);
+	blocks_free(marks, _dim.row);
 }
 
 /******************************************************************************
