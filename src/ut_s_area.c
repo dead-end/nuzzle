@@ -60,8 +60,8 @@ static void test_s_area_copy_deep() {
 	//
 	// Create the areas.
 	//
-	s_area_create(&from, 1, 2, 3, 4);
-	s_area_create(&to, 1, 2, 3, 4);
+	s_area_create(&from, &(s_point ) { 1, 2 }, &(s_point ) { 3, 4 });
+	s_area_create(&to, &(s_point ) { 1, 2 }, &(s_point ) { 3, 4 });
 
 	//
 	// Initialize the source
