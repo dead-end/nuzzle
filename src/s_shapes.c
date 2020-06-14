@@ -167,6 +167,8 @@ void s_shapes_read(const char *path) {
 	int idx = -1;
 	_num_shapes = 0;
 
+	log_debug("Reading shapes from file: %s", path);
+
 	//
 	// Open the score file.
 	//
