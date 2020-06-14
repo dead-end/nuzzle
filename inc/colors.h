@@ -78,6 +78,8 @@ typedef enum e_chess_type {
 
 void colors_init();
 
+void colors_setup_init_random(const char *data);
+
 void colors_init_random(t_block **blocks, const int rows, const int cols);
 
 void colors_normal_set_attr(WINDOW *win, const t_block da_color);

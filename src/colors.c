@@ -315,6 +315,23 @@ void colors_init() {
 }
 
 /******************************************************************************
+ * The function initializes the _random value, which will be configured in the
+ * game cfg file.
+ *****************************************************************************/
+
+static int _random;
+
+void colors_setup_init_random(const char *data) {
+	_random = str_2_int(data);
+
+	if (_random < 1 || _random > 100) {
+		log_exit("Random value is invalid: %d (allowed: 1 - 100)", _random);
+	}
+
+	log_debug("Random: %d", _random);
+}
+
+/******************************************************************************
  * The function fills a block array with random colors. The function ensures
  * that the center block has a color.
  *****************************************************************************/
@@ -349,8 +366,7 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
 			//
 			// First check if a block should get a color.
 			//
-			//if (rand() % 100 < 80) {
-			if (rand() % 100 < 75) {
+			if (rand() % 100 < _random) {
 				blocks[row][col] = CLR_NONE;
 
 			} else {
