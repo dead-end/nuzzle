@@ -77,7 +77,7 @@ s_point s_area_get_size(const s_area *area) {
 }
 
 /******************************************************************************
- * The function returns a struct with the lower right corner of the area.
+ * The function returns a structure with the lower right corner of the area.
  *
  * (Unit tested)
  *****************************************************************************/
@@ -341,10 +341,11 @@ bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, 
 
 /******************************************************************************
  * The function is called with an outer and an inner area. It moves the inner
- * area into the outer area. The new position is stored in the pos struct. It
- * is assumed that the inner area is outside the outer area.
+ * area into the outer area. The new position is stored in the pos structure.
+ * It is assumed that the inner area is outside the outer area.
  *
  * (Unit tested)
+ *
  * TODO: currently not used
  *****************************************************************************/
 
@@ -433,40 +434,16 @@ bool s_area_same_pos(const s_area *area, const int pos_row, const int pos_col) {
 }
 
 /******************************************************************************
- * The function print a block of a s_area, with a given character. It is
- * assumed that the color is already set.
+ * The functions creates a s_area structure, by setting the values and
+ * allocating the blocks.
  *****************************************************************************/
 
-void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, const wchar_t ch) {
+void s_area_create(s_area *area, const s_point *dim, const s_point *size) {
+	log_debug("Creating area with dim: %d/%d size: %d/%d", dim->row, dim->col, size->row, size->col);
 
-	//
-	// Get the upper left corner of the block with the given index.
-	//
-	const s_point ul = s_area_get_ul(area, idx);
+	s_point_set(&area->dim, dim->row, dim->col);
 
-	//
-	// Get the lower right corner of the block with the given index.
-	//
-	const s_point lr = { ul.row + area->size.row, ul.col + area->size.col };
-
-	for (int row = ul.row; row < lr.row; row++) {
-		for (int col = ul.col; col < lr.col; col++) {
-			mvwprintw(win, row, col, "%lc", ch);
-		}
-	}
-}
-
-/******************************************************************************
- * The functions creates a s_area struct, by setting the values and allocating
- * the blocks.
- *****************************************************************************/
-
-void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col) {
-	log_debug("Creating area with dim: %d/%d size: %d/%d", dim_row, dim_col, size_row, size_col);
-
-	s_point_set(&area->dim, dim_row, dim_col);
-
-	s_point_set(&area->size, size_row, size_col);
+	s_point_set(&area->size, size->row, size->col);
 
 	area->blocks = blocks_create(area->dim.row, area->dim.col);
 }
@@ -629,8 +606,8 @@ void s_area_normalize(s_area *area) {
 
 /******************************************************************************
  * The function check whether the drop area can be dropped anywhere on the
- * other area. If the index struct is not null, then the index of the first
- * position is stored in the struct.
+ * other area. If the index structure is not null, then the index of the first
+ * position is stored in the structure.
  *****************************************************************************/
 
 bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx) {
@@ -712,6 +689,53 @@ bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, cons
 }
 
 /******************************************************************************
+ * The function print a block of a s_area, with a given character. It is
+ * assumed that the color is already set.
+ *****************************************************************************/
+
+void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, const wchar_t ch) {
+
+	//
+	// Get the upper left corner of the block with the given index.
+	//
+	const s_point ul = s_area_get_ul(area, idx);
+
+	//
+	// Get the lower right corner of the block with the given index.
+	//
+	const s_point lr = { ul.row + area->size.row, ul.col + area->size.col };
+
+	for (int row = ul.row; row < lr.row; row++) {
+		for (int col = ul.col; col < lr.col; col++) {
+			mvwprintw(win, row, col, "%lc", ch);
+		}
+	}
+}
+
+/******************************************************************************
+ * The function computes the color of the game area depending on the chess
+ * pattern type.
+ *****************************************************************************/
+
+// TODO: check if this should be part of the colors_chess_attr_char() function
+static t_block get_ga_color(const s_area *area, const s_point *idx, const e_chess_type chess_type) {
+
+	//
+	// We need the primary color of the game area.
+	//
+	const t_block ga_color = area->blocks[idx->row][idx->col];
+
+	//
+	// We check if a modification is necessary.
+	//
+	if (chess_type == CHESS_DOUBLE && ga_color != CLR_NONE && colors_is_even((idx->row / 3), (idx->col / 3))) {
+		return CLR_MK_L;
+	}
+
+	return ga_color;
+}
+
+/******************************************************************************
  * The function prints an empty area with a chess pattern. This can be used as
  * an initialization.
  *****************************************************************************/
@@ -727,7 +751,11 @@ void s_area_print_chess(WINDOW *win, const s_area *area, const e_chess_type ches
 	for (idx.row = 0; idx.row < area->dim.row; idx.row++) {
 		for (idx.col = 0; idx.col < area->dim.col; idx.col++) {
 
-			ga_color = area->blocks[idx.row][idx.col];
+			//
+			// Get the color of the game area depending on the chess pattern
+			// type.
+			//
+			ga_color = get_ga_color(area, &idx, chess_type);
 
 			//
 			// Set the color pair and get the character to display.
@@ -757,7 +785,11 @@ void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pi
 	//
 	s_point block_idx;
 	s_area_get_block(area, pixel, &block_idx);
-	const t_block ga_color = area->blocks[block_idx.row][block_idx.col];
+
+	//
+	// Get the color of the game area depending on the chess pattern type.
+	//
+	const t_block ga_color = get_ga_color(area, &block_idx, chess_type);
 
 	//
 	// Set the color pair and get the character to display.

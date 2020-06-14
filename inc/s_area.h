@@ -96,9 +96,7 @@ void s_area_set_blocks(const s_area *area, const t_block value);
 
 bool s_area_same_pos(const s_area *area, const int row, const int col);
 
-void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, const wchar_t ch);
-
-void s_area_create(s_area *area, const int dim_row, const int dim_col, const int size_row, const int size_col);
+void s_area_create(s_area *area, const s_point *dim, const s_point *size);
 
 void s_area_free(s_area *area);
 
@@ -109,6 +107,8 @@ void s_area_normalize(s_area *area);
 bool s_area_can_drop_anywhere(s_area *area, s_area *drop_area, s_point *idx);
 
 bool s_area_drop(s_area *area, const s_point *idx, const s_area *drop_area, const bool do_drop);
+
+void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, const wchar_t ch);
 
 void s_area_print_chess(WINDOW *win, const s_area *area, const e_chess_type chess_type);
 
