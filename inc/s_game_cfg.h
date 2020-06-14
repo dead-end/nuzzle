@@ -25,6 +25,7 @@
 #ifndef INC_S_GAME_CFG_H_
 #define INC_S_GAME_CFG_H_
 
+#include "colors.h"
 #include "common.h"
 
 /******************************************************************************
@@ -57,13 +58,19 @@ typedef struct s_game_cfg {
 	// TODO: not used
 	int id;
 
-	// TODO: status
+	//
+	// An parameter with the type of the game.
+	//
 	int type;
 
-	// TODO: not used
+	//
+	// A container for game specific data (file names, probability,...)
+	//
 	char data[SIZE_DATA];
 
-	// TODO: center
+	//
+	// A string containing the title of the game.
+	//
 	char title[SIZE_TITLE];
 
 	//
@@ -80,6 +87,11 @@ typedef struct s_game_cfg {
 	// The number of home areas.
 	//
 	int home_num;
+
+	//
+	// An enum with the different chess types for the background of the areas.
+	//
+	e_chess_type chess_type;
 
 } s_game_cfg;
 
