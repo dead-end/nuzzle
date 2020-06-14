@@ -373,18 +373,34 @@ void home_area_undo_pickup() {
 }
 
 /******************************************************************************
+ * The function returns the chess type for a home area. If the chess type of
+ * the game is CHESS_DOUBLE, then the chess type of the home areas is toggling.
+ *****************************************************************************/
+
+static short home_area_get_chess_type(const s_status *status, const int home_area_idx) {
+
+	//
+	// On CHESS_DOUBLE even home areas have a CHESS_SIMPLE_DARK and odd have a
+	// CHESS_SIMPLE_LIGHT chess pattern.
+	//
+	if (status->game_cfg->chess_type == CHESS_DOUBLE) {
+		return home_area_idx % 2 == 0 ? CHESS_SIMPLE_DARK : CHESS_SIMPLE_LIGHT;
+	}
+
+	return status->game_cfg->chess_type;
+}
+
+/******************************************************************************
  * The function prints all home areas.
  *****************************************************************************/
 
-#define home_area_chess_color(i) ((i) % 2 == 0 ? CHESS_SIMPLE_DARK : CHESS_SIMPLE_LIGHT)
-
-void home_area_print(WINDOW *win) {
+void home_area_print(WINDOW *win, const s_status *status) {
 
 	for (int i = 0; i < _home_num; i++) {
 
 		log_debug("Processing home area: %d", i);
 
-		s_area_print_chess(win, &_home_area[i].area, home_area_chess_color(i));
+		s_area_print_chess(win, &_home_area[i].area, home_area_get_chess_type(status, i));
 	}
 }
 
@@ -393,7 +409,7 @@ void home_area_print(WINDOW *win) {
  * the home areas.
  *****************************************************************************/
 
-void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_color) {
+void home_area_print_pixel(WINDOW *win, const s_status *status, const s_point *pixel, const t_block da_color) {
 
 	//
 	// Get the index of the affected home area.
@@ -412,7 +428,7 @@ void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_c
 	//
 	// Print the pixel with a chess pattern as a background.
 	//
-	s_area_print_chess_pixel(win, &_home_area[idx].area, pixel, da_color, home_area_chess_color(idx));
+	s_area_print_chess_pixel(win, &_home_area[idx].area, pixel, da_color, home_area_get_chess_type(status, idx));
 }
 
 /******************************************************************************
@@ -461,7 +477,7 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 	for (int i = 0; i < _home_num; i++) {
 		log_debug("Creating area: %d", i);
 
-		s_area_create(&_home_area[i].area, dim->row, dim->col, size->row, size->col);
+		s_area_create(&_home_area[i].area, dim, size);
 	}
 
 	//

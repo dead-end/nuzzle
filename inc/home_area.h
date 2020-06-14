@@ -27,9 +27,8 @@
 
 #include <ncurses.h>
 
-#include "common.h"
-#include "colors.h"
 #include "s_area.h"
+#include "s_status.h"
 
 int home_area_get_idx(const s_point *pixel);
 
@@ -43,9 +42,9 @@ void home_area_pickup(s_area *area, const s_point *pixel);
 
 void home_area_undo_pickup();
 
-void home_area_print(WINDOW *win);
+void home_area_print(WINDOW *win, const s_status *status);
 
-void home_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block da_color);
+void home_area_print_pixel(WINDOW *win, const s_status *status, const s_point *pixel, const t_block da_color);
 
 void home_area_reset();
 
