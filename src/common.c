@@ -25,6 +25,7 @@
 #include "common.h"
 
 #include <ctype.h>
+#include <errno.h>
 
 /******************************************************************************
  * The function allocates memory and terminates the program in case of an
@@ -74,4 +75,32 @@ void trim_r(char *str) {
 	for (int i = len - 1; i >= 0 && isspace(str[i]); i--) {
 		str[i] = '\0';
 	}
+}
+
+/******************************************************************************
+ * The function converts a sting to an integer value.
+ *****************************************************************************/
+
+int str_2_int(const char *str) {
+	char *tmp;
+
+	errno = 0;
+
+	const int result = (int) strtol(str, &tmp, 10);
+
+	//
+	// Check for overflows.
+	//
+	if (errno != 0) {
+		log_exit("Unable to convert: %s - %s", str, strerror(errno));
+	}
+
+	//
+	// Ensure that the whole value was converted.
+	//
+	if (*tmp != '\0') {
+		log_exit("Unable to convert: %s - %s", str, tmp);
+	}
+
+	return result;
 }

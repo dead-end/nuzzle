@@ -115,4 +115,6 @@ s_point strs_dim(const char *strs[]);
 
 void trim_r(char *str);
 
+int str_2_int(const char *str);
+
 #endif /* INC_COMMON_H_ */
