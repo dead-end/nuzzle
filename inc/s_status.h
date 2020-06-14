@@ -25,13 +25,7 @@
 #ifndef INC_S_STATUS_H_
 #define INC_S_STATUS_H_
 
-#include <stdbool.h>
-
-#include "common.h"
-
-# define STATUS_GAME_4_COLORS 0
-
-# define STATUS_GAME_SQUARES_LINES 1
+#include "s_game_cfg.h"
 
 /******************************************************************************
  * The structure contains data that represent the status of the game.
@@ -53,7 +47,10 @@ typedef struct s_status {
 	//
 	s_point offset;
 
-	int game;
+	//
+	// The configurations of the current game.
+	//
+	const s_game_cfg *game_cfg;
 
 } s_status;
 
