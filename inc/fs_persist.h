@@ -25,8 +25,12 @@
 #ifndef INC_FS_PERSIST_H_
 #define INC_FS_PERSIST_H_
 
-int fs_read_score();
+#include "s_status.h"
 
-void fs_write_score(const int score);
+void fs_ensure_nuzzle_dir();
+
+int fs_read_score(const s_status *status);
+
+void fs_write_score(const s_status *status, const int score);
 
 #endif /* INC_FS_PERSIST_H_ */

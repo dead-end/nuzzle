@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-#include "common.h"
-
 #include <linux/limits.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -32,16 +30,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "s_status.h"
+
 /*******************************************************************************
  * The definitions of the nuzzle directories and files.
  ******************************************************************************/
 
 #define NUZZLE_DIR ".nuzzle"
 
-#define NUZZLE_SCORE ".nuzzle/score"
-
 /*******************************************************************************
- * Two defines for a flag makes it more readable.
+ * Two definitions for a flag makes it more readable.
  ******************************************************************************/
 
 #define CHECK_FILE true
@@ -49,7 +47,7 @@
 #define CHECK_DIR false
 
 /*******************************************************************************
- * The function check whether a system file entry exists or not. The entry can
+ * The function checks whether a system file entry exists or not. The entry can
  * be a file (true) or a directory (false).
  ******************************************************************************/
 
@@ -91,18 +89,50 @@ static bool fs_entry_exists(const char *path, const bool reg_file) {
 }
 
 /******************************************************************************
- * The function is called with a relative path. It creates an absolute path
- * with the home directory of the user as a prefix.
+ * The function checks if the nuzzle directory exists. If not, it will be
+ * created.
  *****************************************************************************/
 
-static void get_home_path(char *path, const int buf_len, const char *rel_path) {
+void fs_ensure_nuzzle_dir() {
+
+	//
+	// Get the home directory.
+	//
 	const char *homedir;
 
 	if ((homedir = getenv("HOME")) == NULL) {
 		log_exit_str("Home directory not found!");
 	}
 
-	if (snprintf(path, buf_len, "%s/%s", homedir, rel_path) >= buf_len) {
+	//
+	// Get the nuzzle directory.
+	//
+	char path[PATH_MAX];
+
+	if (snprintf(path, PATH_MAX, "%s/%s", homedir, NUZZLE_DIR) >= PATH_MAX) {
+		log_exit_str("Path is too long!");
+	}
+
+	//
+	// If the directory does not exist, we create it.
+	//
+	if (!fs_entry_exists(path, CHECK_DIR) && mkdir(path, S_IRWXU | S_IRWXG) == -1) {
+		log_exit("Unable to create directory: %s - %s", path, strerror(errno));
+	}
+}
+
+/******************************************************************************
+ * The function creates the filename for of the score file.
+ *****************************************************************************/
+
+static void get_score_file(const s_status *status, char *path, const int buf_len) {
+	const char *homedir;
+
+	if ((homedir = getenv("HOME")) == NULL) {
+		log_exit_str("Home directory not found!");
+	}
+
+	if (snprintf(path, buf_len, "%s/%s/score-id-%d", homedir, NUZZLE_DIR, status->game_cfg->id) >= buf_len) {
 		log_exit_str("Path is too long!");
 	}
 }
@@ -112,13 +142,13 @@ static void get_home_path(char *path, const int buf_len, const char *rel_path) {
  * exist, the method returns 0.
  ******************************************************************************/
 
-int fs_read_score() {
+int fs_read_score(const s_status *status) {
 	char path[PATH_MAX];
 
 	//
 	// Get the score file path.
 	//
-	get_home_path(path, PATH_MAX, NUZZLE_SCORE);
+	get_score_file(status, path, PATH_MAX);
 
 	//
 	// If the score file does not exist, we return 0.
@@ -158,25 +188,18 @@ int fs_read_score() {
  * which contains the score file does not exist, it will be created.
  ******************************************************************************/
 
-void fs_write_score(const int score) {
+void fs_write_score(const s_status *status, const int score) {
 	char path[PATH_MAX];
 
 	//
-	// Get the absolute path of the nuzzle directory.
+	// Ensure that the nuzzle directory exists.
 	//
-	get_home_path(path, PATH_MAX, NUZZLE_DIR);
-
-	//
-	// If the directory does not exist, we create it.
-	//
-	if (!fs_entry_exists(path, CHECK_DIR) && mkdir(path, S_IRWXU | S_IRWXG) == -1) {
-		log_exit("Unable to create directory: %s - %s", path, strerror(errno));
-	}
+	fs_ensure_nuzzle_dir();
 
 	//
 	// Get the absolute path of the score file.
 	//
-	get_home_path(path, PATH_MAX, NUZZLE_SCORE);
+	get_score_file(status, path, PATH_MAX);
 
 	//
 	// Open the score file.
