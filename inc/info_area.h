@@ -32,7 +32,7 @@
 
 void info_area_init();
 
-void info_area_add_to_score(WINDOW *win, const int add_2_score);
+void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score);
 
 void info_area_reset_score(WINDOW *win);
 

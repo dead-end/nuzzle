@@ -73,12 +73,12 @@ static s_point pos;
  * The function initializes the info area.
  *****************************************************************************/
 
-void info_area_init() {
+void info_area_init(const s_status *status) {
 
 	//
 	// Read the high score from the score file.
 	//
-	high_score = fs_read_score();
+	high_score = fs_read_score(status);
 
 	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle " VERSION) >= COLS + 1) {
 		log_exit("Truncated: %s", data[IDX_HEAD]);
@@ -120,7 +120,7 @@ static void info_area_print_score(WINDOW *win) {
  * updated info area has to be reprinted.
  *****************************************************************************/
 
-void info_area_add_to_score(WINDOW *win, const int add_2_score) {
+void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score) {
 
 	cur_score += add_2_score;
 
@@ -129,7 +129,7 @@ void info_area_add_to_score(WINDOW *win, const int add_2_score) {
 	// the the new score and have to update the high score.
 	//
 	if (cur_score > high_score) {
-		fs_write_score(cur_score);
+		fs_write_score(status, cur_score);
 		high_score = cur_score;
 	}
 
