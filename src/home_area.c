@@ -503,15 +503,15 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
  * (horizontal / vertical).
  *****************************************************************************/
 
-s_point home_area_get_size(const bool horizontal, const s_point *delim) {
+s_point home_area_get_size(const bool horizontal) {
 	s_point result;
 
 	if (horizontal) {
 		result.row = _home_area[0].area.dim.row * _home_area[0].area.size.row;
-		result.col = _home_num * (_home_area[0].area.dim.col * _home_area[0].area.size.col) + delim->col * (_home_num - 1);
+		result.col = _home_num * (_home_area[0].area.dim.col * _home_area[0].area.size.col) + _home_area[0].area.size.col * (_home_num - 1);
 
 	} else {
-		result.row = _home_num * (_home_area[0].area.dim.row * _home_area[0].area.size.row) + delim->row * (_home_num - 1);
+		result.row = _home_num * (_home_area[0].area.dim.row * _home_area[0].area.size.row) + _home_area[0].area.size.row * (_home_num - 1);
 		result.col = _home_area[0].area.dim.col * _home_area[0].area.size.col;
 
 	}
@@ -524,16 +524,16 @@ s_point home_area_get_size(const bool horizontal, const s_point *delim) {
  * the upper left position of all home areas and the layout.
  *****************************************************************************/
 
-void home_area_layout(const s_point *pos, const bool horizontal, const s_point *delim) {
+void home_area_layout(const s_point *pos, const bool horizontal) {
 
 	for (int i = 0; i < _home_num; i++) {
 
 		if (horizontal) {
 			_home_area[i].area.pos.row = pos->row;
-			_home_area[i].area.pos.col = pos->col + (_home_area[i].area.dim.col * _home_area[i].area.size.col) * i + delim->col * (i);
+			_home_area[i].area.pos.col = pos->col + (_home_area[i].area.dim.col * _home_area[i].area.size.col) * i + _home_area[i].area.size.col * i;
 
 		} else {
-			_home_area[i].area.pos.row = pos->row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + delim->row * (i);
+			_home_area[i].area.pos.row = pos->row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + _home_area[i].area.size.row * i;
 			_home_area[i].area.pos.col = pos->col;
 		}
 
