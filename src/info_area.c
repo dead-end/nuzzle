@@ -28,49 +28,53 @@
 #include "fs_persist.h"
 
 /******************************************************************************
- * Define the output data.
+ * Define of the array with the strings. The string array's have a fixed size.
+ * The string itself can be shorter.
  *****************************************************************************/
 
 //
-// The info area has 4 rows with each 12 columns.
+// The info area has 5 rows. The size of a string array is the maximal size of
+// the title of the game.
 //
-#define ROWS 4
+#define ROWS 5
 
-#define COLS 12
+#define COLS SIZE_TITLE
 
 //
-// We have an array that represents the rows and columns (including the
-// terminating \0 character)
+// We have an array that represents the rows and columns.
 //
-static char data[ROWS][COLS + 1];
+static char _data[ROWS][COLS];
 
 //
 // The index defines the index for the informations.
 //
 #define IDX_HEAD 0
 
-#define IDX_HIGH 1
+#define IDX_TITLE 1
 
-#define IDX_SCORE 2
+#define IDX_HIGH 2
 
-#define IDX_STATUS 3
+#define IDX_SCORE 3
+
+#define IDX_STATUS 4
 
 /******************************************************************************
  * The variables contain the score informations.
  *****************************************************************************/
 
-static int high_score = 0;
+static int _high_score = 0;
 
-static int cur_score = 0;
+static int _cur_score = 0;
 
 /******************************************************************************
  * The struct contains the absolute position of the info area.
  *****************************************************************************/
 
-static s_point pos;
+static s_point _pos;
 
 /******************************************************************************
- * The function initializes the info area.
+ * The function initializes the info area. It is called each time a new game is
+ * started (not only when the application is started).
  *****************************************************************************/
 
 void info_area_init(const s_status *status) {
@@ -78,23 +82,34 @@ void info_area_init(const s_status *status) {
 	//
 	// Read the high score from the score file.
 	//
-	high_score = fs_read_score(status);
+	_high_score = fs_read_score(status);
 
-	if (snprintf(data[IDX_HEAD], COLS + 1, "Nuzzle " VERSION) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_HEAD]);
+	_cur_score = 0;
+
+	//
+	// Initialize the data array with '\0'.
+	//
+	memset(_data, '\0', sizeof(_data));
+
+	if (snprintf(_data[IDX_HEAD], COLS, "Nuzzle " VERSION) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_HEAD]);
 	}
 
-	if (snprintf(data[IDX_HIGH], COLS + 1, "high: %6d", high_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_HIGH]);
+	if (snprintf(_data[IDX_TITLE], COLS, "%s", status->game_cfg->title) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_TITLE]);
 	}
 
-	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_SCORE]);
+	if (snprintf(_data[IDX_HIGH], COLS, "high: %6d", _high_score) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_HIGH]);
 	}
 
-	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, " ") >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_STATUS]);
+	if (snprintf(_data[IDX_SCORE], COLS, "now:  %6d", _cur_score) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_SCORE]);
 	}
+
+	//
+	// IDX_STATUS has no value => nothing to do.
+	//
 }
 
 /******************************************************************************
@@ -104,12 +119,12 @@ void info_area_init(const s_status *status) {
 
 static void info_area_print_score(WINDOW *win) {
 
-	if (snprintf(data[IDX_HIGH], COLS + 1, "high: %6d", high_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_HIGH]);
+	if (snprintf(_data[IDX_HIGH], COLS, "high: %6d", _high_score) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_HIGH]);
 	}
 
-	if (snprintf(data[IDX_SCORE], COLS + 1, "now:  %6d", cur_score) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_SCORE]);
+	if (snprintf(_data[IDX_SCORE], COLS, "now:  %6d", _cur_score) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_SCORE]);
 	}
 
 	info_area_print(win);
@@ -122,40 +137,53 @@ static void info_area_print_score(WINDOW *win) {
 
 void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score) {
 
-	cur_score += add_2_score;
+	_cur_score += add_2_score;
 
 	//
 	// If the updated score is higher than the high score, we have to persist
 	// the the new score and have to update the high score.
 	//
-	if (cur_score > high_score) {
-		fs_write_score(status, cur_score);
-		high_score = cur_score;
+	if (_cur_score > _high_score) {
+		fs_write_score(status, _cur_score);
+		_high_score = _cur_score;
 	}
 
 	info_area_print_score(win);
 }
 
 /******************************************************************************
- * The function resets the score to 0..
- *****************************************************************************/
-
-void info_area_reset_score(WINDOW *win) {
-
-	cur_score = 0;
-
-	info_area_print_score(win);
-}
-
-/******************************************************************************
- * The function returns a struct with the total size of the info area.
+ * The function returns a struct with the effective size of the info area.
  *****************************************************************************/
 
 s_point info_area_get_size() {
 	s_point result;
 
+	//
+	// The number of rows is fixed.
+	//
 	result.row = ROWS;
-	result.col = COLS;
+
+	//
+	// We compute the maximal string length inside the array of strings.
+	//
+	result.col = 0;
+
+	for (int i = 0; i < ROWS; i++) {
+
+		//
+		// Get the string length of the row.
+		//
+		const int len = strlen(_data[i]);
+
+		//
+		// If the length is higher than the current maximal length, we have to
+		// update it.
+		//
+		if (len > result.col) {
+			result.col = len;
+			log_debug("len %d str: %s", len, _data[i]);
+		}
+	}
 
 	log_debug("size row: %d col: %d", result.row, result.col);
 
@@ -169,8 +197,8 @@ s_point info_area_get_size() {
 
 void info_area_set_pos(const int row, const int col) {
 
-	pos.row = row;
-	pos.col = col;
+	_pos.row = row;
+	_pos.col = col;
 }
 
 /******************************************************************************
@@ -179,18 +207,18 @@ void info_area_set_pos(const int row, const int col) {
 
 void info_area_print(WINDOW *win) {
 
-	log_debug("row: %d col: %d", pos.row, pos.col);
+	log_debug("row: %d col: %d", _pos.row, _pos.col);
 
 	colors_normal_set_attr(win, CLR_NONE);
 
 	for (int i = 0; i < ROWS; i++) {
-		mvwprintw(win, pos.row + i, pos.col, data[i]);
+		mvwprintw(win, _pos.row + i, _pos.col, _data[i]);
 	}
 }
 
 /******************************************************************************
  * The function checks whether a pixel (terminal character) is inside the info
- * area.
+ * area. The function uses the maximal area not the currently used.
  *****************************************************************************/
 
 bool info_area_contains(const s_point *pixel) {
@@ -198,14 +226,14 @@ bool info_area_contains(const s_point *pixel) {
 	//
 	// Upper left corner
 	//
-	if (pixel->row < pos.row || pixel->col < pos.col) {
+	if (pixel->row < _pos.row || pixel->col < _pos.col) {
 		return false;
 	}
 
 	//
-	// Lower right corner
+	// Lower right corner (The columns have a terminating '\0')
 	//
-	if (pixel->row >= pos.row + ROWS || pixel->col >= pos.col + COLS) {
+	if (pixel->row >= _pos.row + ROWS || pixel->col >= _pos.col + COLS - 1) {
 		return false;
 	}
 
@@ -217,26 +245,16 @@ bool info_area_contains(const s_point *pixel) {
  * pixel is inside the info area.
  *****************************************************************************/
 
-void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
+void info_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color) {
 
-	const int row = pixel->row - pos.row;
-	const int col = pixel->col - pos.col;
+	const int row = pixel->row - _pos.row;
+	const int col = pixel->col - _pos.col;
 
-#ifdef DEBUG
-
-	//
-	// Ensure that the data is not null (which should not be the case.
-	//
-	if (data[row][col] == '\0') {
-		log_exit("Data is null at: %d/%d", row, col);
-	}
-
-	log_debug("pixel: %d/%d '%c'", pixel->row, pixel->col, data[row][col]);
-#endif
+	const char c = _data[row][col] == '\0' ? ' ' : _data[row][col];
 
 	colors_normal_set_attr(win, color);
 
-	mvwprintw(win, pixel->row, pixel->col, "%c", data[row][col]);
+	mvwprintw(win, pixel->row, pixel->col, "%c", c);
 }
 
 /******************************************************************************
@@ -247,16 +265,20 @@ void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color) {
  *****************************************************************************/
 
 void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status) {
-
-	if (snprintf(data[IDX_STATUS], COLS + 1, "%*s", COLS, msg) >= COLS + 1) {
-		log_exit("Truncated: %s", data[IDX_STATUS]);
-	}
+	const char *fmt;
 
 	if (s_status_is_end(status)) {
 		colors_normal_end_attr(win);
+		fmt = "** %s **";
+
 	} else {
 		colors_normal_set_attr(win, CLR_NONE);
+		fmt = "%s";
 	}
 
-	mvwprintw(win, pos.row + IDX_STATUS, pos.col, data[IDX_STATUS]);
+	if (snprintf(_data[IDX_STATUS], COLS, fmt, msg) >= COLS) {
+		log_exit("Truncated: %s", _data[IDX_STATUS]);
+	}
+
+	mvwprintw(win, _pos.row + IDX_STATUS, _pos.col, _data[IDX_STATUS]);
 }

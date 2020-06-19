@@ -34,8 +34,6 @@ void info_area_init();
 
 void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score);
 
-void info_area_reset_score(WINDOW *win);
-
 void info_area_set_pos(const int row, const int col);
 
 s_point info_area_get_size();
@@ -44,7 +42,7 @@ void info_area_print();
 
 bool info_area_contains(const s_point *pixel);
 
-void info_area_print_pixel(WINDOW *win, const s_point *pixel, t_block color);
+void info_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color);
 
 void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status);
 
