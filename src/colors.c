@@ -58,6 +58,7 @@
 
 #define FULL 999
 #define CORR 100
+#define COHA  50
 #define LIGH 600
 #define DARK 300
 
@@ -175,13 +176,13 @@ static void colors_alloc() {
 	//
 	// Red
 	//
-	colors_init_color(FG_RED, FULL, DARK, DARK);
+	colors_init_color(FG_RED, FULL, DARK - COHA, DARK - COHA);
 	colors_init_color(BG_RED, FULL, LIGH, LIGH);
 
 	//
 	// Green
 	//
-	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK);
+	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK - CORR);
 	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
 
 	//
@@ -193,7 +194,7 @@ static void colors_alloc() {
 	//
 	// Yellow
 	//
-	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK);
+	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK - CORR);
 	colors_init_color(BG_YEL, FULL, FULL, LIGH);
 
 	//
