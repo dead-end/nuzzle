@@ -530,10 +530,10 @@ void home_area_layout(const s_point *pos, const bool horizontal, const s_point *
 
 		if (horizontal) {
 			_home_area[i].area.pos.row = pos->row;
-			_home_area[i].area.pos.col = pos->col + (_home_area[i].area.dim.col * _home_area[i].area.size.col) * i + delim->col * (i - 1);
+			_home_area[i].area.pos.col = pos->col + (_home_area[i].area.dim.col * _home_area[i].area.size.col) * i + delim->col * (i);
 
 		} else {
-			_home_area[i].area.pos.row = pos->row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + delim->row * (i - 1);
+			_home_area[i].area.pos.row = pos->row + (_home_area[i].area.dim.row * _home_area[i].area.size.row) * i + delim->row * (i);
 			_home_area[i].area.pos.col = pos->col;
 		}
 
