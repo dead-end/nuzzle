@@ -34,7 +34,7 @@
  * Definition of a fixed size array with shape structures.
  ******************************************************************************/
 
-#define SHAPES_MAX 64
+#define SHAPES_MAX 256
 
 static s_shape _shapes[SHAPES_MAX];
 
@@ -227,7 +227,7 @@ void s_shapes_read(const char *path) {
 			// Ensure that there is at least one shape unused.
 			//
 			if (_num_shapes >= SHAPES_MAX) {
-				log_debug_str("Too many shapes!");
+				log_exit("Too many shapes - max: %d", SHAPES_MAX);
 			}
 
 			//
