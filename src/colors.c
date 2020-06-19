@@ -166,6 +166,8 @@ static void colors_init_color(const short color, const short red, const short gr
 
 static void colors_alloc() {
 
+	// TODO: use constants for the colors or not.
+
 	//
 	// Chess pattern colors
 	//
