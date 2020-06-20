@@ -185,6 +185,20 @@ static void rule_reset_marks(const s_area *area, t_block **marks) {
 }
 
 /******************************************************************************
+ * The function applies rules to the area. Horizontal and vertical lines are
+ * removed. The function returns the number of blacks that are removed.
+ *****************************************************************************/
+
+int rules_remove_lines(s_area *area, t_block **marks) {
+
+	rule_reset_marks(area, marks);
+
+	rules_mark_lines(area, marks);
+
+	return rules_remove_marked(area, marks);
+}
+
+/******************************************************************************
  * The function applies rules to the area. 3x3 squares and horizontal and
  * vertical lines are removed. The function returns the number of blacks that
  * are removed.
@@ -255,7 +269,8 @@ static void rules_mark_neighbors(const s_area *area, t_block **marks, const int 
  * game area should disappear. If more than 4 blocks with the same color are
  * neighbors, they should be removed.
  *
- * The function returns the number of removed blocks.
+ * The function returns the number of removed blocks. If the total number is
+ * less than 4, then nothing will be removed, so we return 0.
  *****************************************************************************/
 
 int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim, t_block **marks) {
@@ -301,5 +316,8 @@ int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim,
 		}
 	}
 
-	return total;
+	//
+	// Return a positive number only if something was removed.
+	//
+	return total >= 4 ? total : 0;
 }
