@@ -31,16 +31,28 @@
  * Definitions for the rules.
  ******************************************************************************/
 
+//
+// The dimension of a square on the game area for the squares-lines rules.
+//
 #define RULES_SQUARE_DIM 3
 
+//
+// Constant to mark blocks of the area.
+//
 #define RULES_MARKER 1
 
 /*******************************************************************************
  * Function declarations.
  ******************************************************************************/
 
-int rules_remove_squares_lines(s_area *area, t_block **marks);
+void rules_create_game(const s_area *area);
 
-int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim, t_block **marks);
+void rules_free_game(const s_area *area);
+
+int rules_remove_lines(const s_area *area);
+
+int rules_remove_squares_lines(const s_area *area);
+
+int rules_remove_neighbors(const s_area *area);
 
 #endif /* INC_RULES_H_ */

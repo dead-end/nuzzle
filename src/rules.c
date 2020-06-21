@@ -25,6 +25,35 @@
 #include "colors.h"
 #include "rules.h"
 
+//
+// The 2-dimensional array with temporary data.
+//
+static t_block **_marks;
+
+/******************************************************************************
+ * The function creates an area which is used for markings. This has to be
+ * called every time a new game is started.
+ *****************************************************************************/
+
+void rules_create_game(const s_area *area) {
+
+	log_debug_str("Creating blocks.");
+
+	_marks = blocks_create(area->dim.row, area->dim.col);
+}
+
+/******************************************************************************
+ * The function frees an area which is used for markings. This has to be
+ * called every time a new game ended.
+ *****************************************************************************/
+
+void rules_free_game(const s_area *area) {
+
+	log_debug_str("Freeing blocks.");
+
+	blocks_free(_marks, area->dim.row);
+}
+
 /******************************************************************************
  * The function marks horizontal and vertical lines.
  *****************************************************************************/
@@ -130,7 +159,7 @@ static void rules_mark_square(const s_area *area, t_block **marks, const int sta
  * completely set.
  *****************************************************************************/
 
-static void rules_mark_squares(s_area *area, t_block **marks) {
+static void rules_mark_squares(const s_area *area, t_block **marks) {
 
 	for (int row = 0; row < area->dim.row; row = row + RULES_SQUARE_DIM) {
 		for (int col = 0; col < area->dim.col; col = col + RULES_SQUARE_DIM) {
@@ -145,7 +174,7 @@ static void rules_mark_squares(s_area *area, t_block **marks) {
  * array and returns the number of blocks that were removed.
  *****************************************************************************/
 
-static int rules_remove_marked(s_area *area, t_block **marks) {
+static int rules_remove_marked(const s_area *area, t_block **marks) {
 	int count = 0;
 
 	for (int row = 0; row < area->dim.row; row++) {
@@ -189,13 +218,13 @@ static void rule_reset_marks(const s_area *area, t_block **marks) {
  * removed. The function returns the number of blacks that are removed.
  *****************************************************************************/
 
-int rules_remove_lines(s_area *area, t_block **marks) {
+int rules_remove_lines(const s_area *area) {
 
-	rule_reset_marks(area, marks);
+	rule_reset_marks(area, _marks);
 
-	rules_mark_lines(area, marks);
+	rules_mark_lines(area, _marks);
 
-	return rules_remove_marked(area, marks);
+	return rules_remove_marked(area, _marks);
 }
 
 /******************************************************************************
@@ -204,15 +233,15 @@ int rules_remove_lines(s_area *area, t_block **marks) {
  * are removed.
  *****************************************************************************/
 
-int rules_remove_squares_lines(s_area *area, t_block **marks) {
+int rules_remove_squares_lines(const s_area *area) {
 
-	rule_reset_marks(area, marks);
+	rule_reset_marks(area, _marks);
 
-	rules_mark_squares(area, marks);
+	rules_mark_squares(area, _marks);
 
-	rules_mark_lines(area, marks);
+	rules_mark_lines(area, _marks);
 
-	return rules_remove_marked(area, marks);
+	return rules_remove_marked(area, _marks);
 }
 
 /******************************************************************************
@@ -272,8 +301,8 @@ static void rules_mark_neighbors(const s_area *area, t_block **marks, const int 
  * The function returns the number of removed blocks. If the total number is
  * less than 4, then nothing will be removed, so we return 0.
  *****************************************************************************/
-
-int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim, t_block **marks) {
+// TODO: mark already visited
+int rules_remove_neighbors(const s_area *area) {
 	int total = 0;
 	int num;
 
@@ -282,10 +311,10 @@ int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim,
 	//
 	// Iterate over the blocks of the drop area.
 	//
-	for (int row = 0; row < dim->row; row++) {
-		for (int col = 0; col < dim->col; col++) {
+	for (int row = 0; row < area->dim.row; row++) {
+		for (int col = 0; col < area->dim.col; col++) {
 
-			color = area->blocks[idx->row + row][idx->col + col];
+			color = area->blocks[row][col];
 
 			//
 			// If the current, dropped block of the area has no color, it
@@ -301,8 +330,8 @@ int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim,
 			// neighbors with the same color.
 			//
 			num = 0;
-			rule_reset_marks(area, marks);
-			rules_mark_neighbors(area, marks, idx->row + row, idx->col + col, color, &num);
+			rule_reset_marks(area, _marks);
+			rules_mark_neighbors(area, _marks, row, col, color, &num);
 			log_debug("num: %d", num);
 
 			//
@@ -310,7 +339,7 @@ int rules_remove_neighbors(s_area *area, const s_point *idx, const s_point *dim,
 			// 4, we have to remove the marks from the game area.
 			//
 			if (num >= 4) {
-				rules_remove_marked(area, marks);
+				rules_remove_marked(area, _marks);
 				total += num;
 			}
 		}
