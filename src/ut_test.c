@@ -23,7 +23,7 @@
  */
 
 #include <stdlib.h>
-
+#include <mcheck.h>
 #include "ut_s_area.h"
 #include "ut_rules.h"
 
@@ -33,9 +33,22 @@
 
 int main() {
 
+#ifdef DEBUG
+
+	//
+	// # export MALLOC_TRACE=/tmp/out.trace
+	// # ./ut_test 2>/tmp /out && mtrace ./ut_test /tmp/out.trace
+	//
+	mtrace();
+#endif
+
 	ut_s_area_exec();
 
 	ut_rules_exec();
+
+#ifdef DEBUG
+	muntrace();
+#endif
 
 	return EXIT_SUCCESS;
 }
