@@ -61,11 +61,6 @@ static void test_check_squares() {
 	s_area_set_blocks(&area, 0);
 
 	//
-	// Create the array for the markers
-	//
-	t_block **marks = blocks_create(_dim.row, _dim.col);
-
-	//
 	// Set square at 0/0
 	//
 	for (int i = 0; i < RULES_SQUARE_DIM; i++) {
@@ -84,9 +79,11 @@ static void test_check_squares() {
 	}
 
 	//
-	// Remove the squares.
+	//  Create the rules and remove the lines.
 	//
-	const int count = rules_remove_squares_lines(&area, marks);
+	rules_create_game(&area);
+
+	const int count = rules_remove_squares_lines(&area);
 
 	//
 	// Ensure that the result is as expected.
@@ -98,9 +95,9 @@ static void test_check_squares() {
 	//
 	// Free the allocated area.
 	//
-	s_area_free(&area);
+	rules_free_game(&area);
 
-	blocks_free(marks, _dim.row);
+	s_area_free(&area);
 }
 
 /******************************************************************************
@@ -116,11 +113,6 @@ static void test_check_lines() {
 	s_area area;
 	s_area_create(&area, &_dim, &_size);
 	s_area_set_blocks(&area, 0);
-
-	//
-	// Create the array for the markers
-	//
-	t_block **marks = blocks_create(_dim.row, _dim.col);
 
 	//
 	// For this test a symmetric dim is required.
@@ -140,9 +132,11 @@ static void test_check_lines() {
 	}
 
 	//
-	// Remove the squares.
+	//  Create the rules and remove the squares.
 	//
-	const int count = rules_remove_squares_lines(&area, marks);
+	rules_create_game(&area);
+
+	const int count = rules_remove_squares_lines(&area);
 
 	//
 	// Ensure that the result is as expected.
@@ -154,9 +148,9 @@ static void test_check_lines() {
 	//
 	// Free the allocated area.
 	//
-	s_area_free(&area);
+	rules_free_game(&area);
 
-	blocks_free(marks, _dim.row);
+	s_area_free(&area);
 }
 
 /******************************************************************************
@@ -201,14 +195,11 @@ static void test_check_neighbors() {
 	area.blocks[5][2] = CLR_BLUE;
 
 	//
-	// Create the array for the markers
+	// Create the rules and remove the neighbors.
 	//
-	t_block **marks = blocks_create(_dim.row, _dim.col);
+	rules_create_game(&area);
 
-	//
-	// Remove the squares.
-	//
-	const int count = rules_remove_neighbors(&area, &(s_point ) { 0, 0 }, &(s_point ) { 3, 3 }, marks);
+	const int count = rules_remove_neighbors(&area);
 
 	//
 	// Ensure that the result is as expected.
@@ -220,9 +211,9 @@ static void test_check_neighbors() {
 	//
 	// Free the allocated areas.
 	//
-	s_area_free(&area);
+	rules_free_game(&area);
 
-	blocks_free(marks, _dim.row);
+	s_area_free(&area);
 }
 
 /******************************************************************************
