@@ -74,7 +74,7 @@ static int _pickup_idx;
  * use the drop area as a backup.
  *****************************************************************************/
 
-static t_block **_blocks_bak;
+static t_block **_blocks;
 
 static s_point _blocks_dim;
 
@@ -166,7 +166,7 @@ bool home_area_can_drop_anywhere(s_area *area) {
 	// that nothing is picked up. In this case the blocks are not in used.
 	//
 	s_area norm_area;
-	norm_area.blocks = _blocks_bak;
+	norm_area.blocks = _blocks;
 
 #ifdef DEBUG
 
@@ -335,7 +335,7 @@ void home_area_pickup(s_area *area, const s_point *pixel) {
 	// Create a backup of the home area. The drop area is normalized, so we
 	// cannot use it as a backup.
 	//
-	blocks_copy(home_area->blocks, _blocks_bak, &home_area->dim);
+	blocks_copy(home_area->blocks, _blocks, &home_area->dim);
 
 	//
 	// Delete the content of the picked up home area.
@@ -365,7 +365,7 @@ void home_area_undo_pickup() {
 	//
 	// Copy the backup to the home area.
 	//
-	blocks_copy(_blocks_bak, _home_area[_pickup_idx].area.blocks, &_home_area[_pickup_idx].area.dim);
+	blocks_copy(_blocks, _home_area[_pickup_idx].area.blocks, &_home_area[_pickup_idx].area.dim);
 
 	_pickup_idx = PICKUP_IDX_UNDEF;
 
@@ -444,23 +444,25 @@ void home_area_reset() {
 }
 
 /******************************************************************************
- * The function frees the home area.
+ * The function frees the home area. It has to called each time a game has
+ * ended.
  *****************************************************************************/
 
-void home_area_free() {
+void home_area_free_game() {
 
 	for (int i = 0; i < _home_num; i++) {
 		s_area_free(&_home_area[i].area);
 	}
 
-	blocks_free(_blocks_bak, _blocks_dim.row);
+	blocks_free(_blocks, _blocks_dim.row);
 }
 
 /******************************************************************************
- * The function creates the home areas.
+ * The function creates the home areas. It has to be called each time a game
+ * starts.
  *****************************************************************************/
 
-void home_area_create(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int)) {
+void home_area_create_game(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int)) {
 
 	//
 	// Ensure that the number of home areas is valid.
@@ -485,7 +487,7 @@ void home_area_create(const int num, const s_point *dim, const s_point *size, vo
 	//
 	s_point_set(&_blocks_dim, dim->row, dim->col);
 
-	_blocks_bak = blocks_create(_blocks_dim.row, _blocks_dim.col);
+	_blocks = blocks_create(_blocks_dim.row, _blocks_dim.col);
 
 	//
 	// Store the refilling function.

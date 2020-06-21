@@ -48,9 +48,9 @@ void home_area_print_pixel(WINDOW *win, const s_status *status, const s_point *p
 
 void home_area_reset();
 
-void home_area_create(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int));
+void home_area_create_game(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int));
 
-void home_area_free();
+void home_area_free_game();
 
 s_point home_area_get_size(const bool horizontal);
 
