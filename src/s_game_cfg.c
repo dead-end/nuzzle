@@ -27,10 +27,8 @@
 #include <errno.h>
 #include <s_game_cfg.h>
 
-//
-// We need e_chess_type
-//
 #include "colors.h"
+#include "s_shapes.h"
 
 /*******************************************************************************
  * Declaration of an array for game configurations.
@@ -58,11 +56,19 @@ s_game_cfg game_cfg[S_GAMES_CFG_MAX];
 
 #define CFG_GAME_DIM_COL "game.dim.col"
 
+#define CFG_GAME_SIZE_ROW "game.size.row"
+
+#define CFG_GAME_SIZE_COL "game.size.col"
+
 #define CFG_DROP_DIM_ROW "drop.dim.row"
 
 #define CFG_DROP_DIM_COL "drop.dim.col"
 
 #define CFG_HOME_NUM "home.num"
+
+#define CFG_HOME_SIZE_ROW "home.size.row"
+
+#define CFG_HOME_SIZE_COL "home.size.col"
 
 /*******************************************************************************
  * The macro checks if the string starts with a prefix.
@@ -118,11 +124,14 @@ static inline void cfg_get_str(char *to, const char *line, const size_t size) {
 static int cfg_get_type(const char *line) {
 	const char *value = cfg_get_value(line);
 
-	if (strcmp(TYPE_4_COLORS_STR, value) == 0) {
-		return TYPE_4_COLORS;
+	if (strcmp(TYPE_LINES_STR, value) == 0) {
+		return TYPE_LINES;
 
 	} else if (strcmp(TYPE_SQUARES_LINES_STR, value) == 0) {
 		return TYPE_SQUARES_LINES;
+
+	} else if (strcmp(TYPE_4_COLORS_STR, value) == 0) {
+		return TYPE_4_COLORS;
 
 	} else {
 		log_exit("Unknown type: %s", line);
@@ -143,12 +152,19 @@ static int cfg_get_type(const char *line) {
 static void s_game_debug(const s_game_cfg *game_cfg) {
 
 	log_debug("id: %d", game_cfg->id);
+
 	log_debug("title: %s", game_cfg->title);
 	log_debug("type: %d", game_cfg->type);
+
 	log_debug("data: %s", game_cfg->data);
+
 	log_debug("game dim: %d/%d", game_cfg->game_dim.row, game_cfg->game_dim.col);
+	log_debug("game size: %d/%d", game_cfg->game_size.row, game_cfg->game_size.col);
+
 	log_debug("drop dim: %d/%d", game_cfg->drop_dim.row, game_cfg->drop_dim.col);
+
 	log_debug("home num: %d", game_cfg->home_num);
+	log_debug("home size: %d/%d", game_cfg->home_size.row, game_cfg->home_size.col);
 
 }
 
@@ -172,9 +188,13 @@ static void s_game_init() {
 
 		s_point_set(&game_cfg[i].game_dim, -1, -1);
 
+		s_point_set(&game_cfg[i].game_size, -1, -1);
+
 		s_point_set(&game_cfg[i].drop_dim, -1, -1);
 
 		game_cfg[i].home_num = -1;
+
+		s_point_set(&game_cfg[i].home_size, -1, -1);
 	}
 }
 
@@ -216,12 +236,20 @@ static void s_game_check() {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_GAME_DIM_ROW, CFG_GAME_DIM_COL);
 		}
 
+		if (game_cfg[i].game_size.row < 0 || game_cfg[i].game_size.col < 0) {
+			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_GAME_SIZE_ROW, CFG_GAME_SIZE_COL);
+		}
+
 		if (game_cfg[i].drop_dim.row < 0 || game_cfg[i].drop_dim.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_DROP_DIM_ROW, CFG_DROP_DIM_COL);
 		}
 
 		if (game_cfg[i].home_num < 0) {
 			log_exit("Game: %d - not set: '%s'", i, CFG_HOME_NUM);
+		}
+
+		if (game_cfg[i].home_size.row < 0 || game_cfg[i].home_size.col < 0) {
+			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_HOME_SIZE_ROW, CFG_HOME_SIZE_COL);
 		}
 	}
 }
@@ -307,12 +335,26 @@ void s_game_cfg_read(const char *path) {
 				game->type = cfg_get_type(line);
 
 				switch (game->type) {
-				case TYPE_4_COLORS:
+
+				case TYPE_LINES:
 					game->chess_type = CHESS_SIMPLE_LIGHT;
+					game->fct_ptr_set_data = s_shapes_read;
+					game->fct_ptr_rules_remove = rules_remove_lines;
+					game->fct_ptr_init_random = s_shapes_init_random;
 					break;
 
 				case TYPE_SQUARES_LINES:
 					game->chess_type = CHESS_DOUBLE;
+					game->fct_ptr_set_data = s_shapes_read;
+					game->fct_ptr_rules_remove = rules_remove_squares_lines;
+					game->fct_ptr_init_random = s_shapes_init_random;
+					break;
+
+				case TYPE_4_COLORS:
+					game->chess_type = CHESS_SIMPLE_LIGHT;
+					game->fct_ptr_set_data = colors_setup_init_random;
+					game->fct_ptr_rules_remove = rules_remove_neighbors;
+					game->fct_ptr_init_random = colors_init_random;
 					break;
 
 				default:
@@ -328,6 +370,12 @@ void s_game_cfg_read(const char *path) {
 			} else if (starts_with(line, CFG_GAME_DIM_COL)) {
 				game->game_dim.col = cfg_get_int(line);
 
+			} else if (starts_with(line, CFG_GAME_SIZE_ROW)) {
+				game->game_size.row = cfg_get_int(line);
+
+			} else if (starts_with(line, CFG_GAME_SIZE_COL)) {
+				game->game_size.col = cfg_get_int(line);
+
 			} else if (starts_with(line, CFG_DROP_DIM_ROW)) {
 				game->drop_dim.row = cfg_get_int(line);
 
@@ -336,6 +384,12 @@ void s_game_cfg_read(const char *path) {
 
 			} else if (starts_with(line, CFG_HOME_NUM)) {
 				game->home_num = cfg_get_int(line);
+
+			} else if (starts_with(line, CFG_HOME_SIZE_ROW)) {
+				game->home_size.row = cfg_get_int(line);
+
+			} else if (starts_with(line, CFG_HOME_SIZE_COL)) {
+				game->home_size.col = cfg_get_int(line);
 
 			} else {
 				log_exit("Unknown definition: %s", line);

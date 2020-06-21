@@ -27,6 +27,7 @@
 
 #include "colors.h"
 #include "common.h"
+#include "rules.h"
 
 /******************************************************************************
  * The definition of the game types.
@@ -34,16 +35,21 @@
 
 #define TYPE_UNDEF -1
 
-#define TYPE_4_COLORS 1
+#define TYPE_LINES 1
 
 #define TYPE_SQUARES_LINES 2
+
+#define TYPE_4_COLORS 3
 
 //
 // String values for the configuration file.
 //
-#define TYPE_4_COLORS_STR "4-colors"
+
+#define TYPE_LINES_STR "lines"
 
 #define TYPE_SQUARES_LINES_STR "squares-lines"
+
+#define TYPE_4_COLORS_STR "4-colors"
 
 /******************************************************************************
  * The definition of the s_game struct.
@@ -55,11 +61,16 @@
 
 typedef struct s_game_cfg {
 
-	// TODO: not used
+	//
+	// The id of the game configurations. It is used for the name of the score
+	// file.
+	//
 	int id;
 
 	//
-	// An parameter with the type of the game.
+	// An parameter with the type of the game. Values:
+	//
+	// TYPE_LINES / TYPE_SQUARES_LINES / TYPE_4_COLORS
 	//
 	int type;
 
@@ -79,7 +90,12 @@ typedef struct s_game_cfg {
 	s_point game_dim;
 
 	//
-	// The dimenstion of the drop area and the home areas.
+	// The size of a block of the game area.
+	//
+	s_point game_size;
+
+	//
+	// The dimension of the drop area and the home areas.
 	//
 	s_point drop_dim;
 
@@ -89,14 +105,35 @@ typedef struct s_game_cfg {
 	int home_num;
 
 	//
+	// The size of a block of the home area.
+	//
+	s_point home_size;
+
+	//
 	// An enum with the different chess types for the background of the areas.
 	//
 	e_chess_type chess_type;
 
+	//
+	// The function is called to set the data for the random functions.
+	//
+	void (*fct_ptr_set_data)(const char *data);
+
+	//
+	// The function is called to remove blocks. It defines the rules for this
+	// game.
+	//
+	int (*fct_ptr_rules_remove)(const s_area *area);
+
+	//
+	// The function is called to fill / refill the home areas.
+	//
+	void (*fct_ptr_init_random)(t_block**, const int, const int);
+
 } s_game_cfg;
 
 /******************************************************************************
- * Declaration of an array for game configurations.
+ * Declaration of an array for game configurations. (Used for the menu).
  *****************************************************************************/
 
 #define S_GAMES_CFG_MAX 4
