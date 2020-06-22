@@ -20,7 +20,7 @@ OPTION_FLAGS=
 DEBUG = false
 
 ifeq ($(DEBUG),true)
-  OPTION_FLAGS += -DDEBUG -g3
+  OPTION_FLAGS += -DDEBUG -g
   
   #
   # Seams not to work. Unit tests faild, but not due to asan.
