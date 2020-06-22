@@ -119,7 +119,7 @@ int str_2_int(const char *str) {
  * (Unit tested)
  *****************************************************************************/
 
-void cpy_str_centered(char *to, const int size, const char *from) {
+char* cpy_str_centered(char *to, const int size, const char *from) {
 
 	const int src_len = strlen(from);
 	const int start = center(size - 1, src_len);
@@ -144,4 +144,6 @@ void cpy_str_centered(char *to, const int size, const char *from) {
 	to[size - 1] = '\0';
 
 	log_debug("source: '%s' target: '%s' start-idx: %d end-idx: %d source-len: %d size: %d", from, to, start, end, src_len, size);
+
+	return to;
 }
