@@ -31,10 +31,8 @@
  * Definition of the strings for the menu.
  *****************************************************************************/
 
-#define STR_SQLI "New Squares-and-Lines"
-#define STR_4COL "   New Four-Colors   "
-#define STR_CONT "      Continue       "
-#define STR_EXIT "        Exit         "
+#define STR_CONT "Continue"
+#define STR_EXIT "Exit"
 
 #define ESC_RETURN -1
 
