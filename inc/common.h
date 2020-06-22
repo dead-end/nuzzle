@@ -117,4 +117,6 @@ void trim_r(char *str);
 
 int str_2_int(const char *str);
 
+void cpy_str_centered(char *to, const int size, const char *from);
+
 #endif /* INC_COMMON_H_ */

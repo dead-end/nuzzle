@@ -104,3 +104,44 @@ int str_2_int(const char *str) {
 
 	return result;
 }
+
+/******************************************************************************
+ * The function copies the source string centered to the target string.
+ *
+ * Example:
+ *
+ * - source string: 123
+ * - target size: 9 (with \0)
+ *
+ * 012345678
+ *   1234  \0
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+void cpy_str_centered(char *to, const int size, const char *from) {
+
+	const int src_len = strlen(from);
+	const int start = center(size - 1, src_len);
+	const int end = start + src_len;
+
+	//
+	// Copy the source to the destination with the padding.
+	//
+	for (int i = 0; i < size - 1; i++) {
+
+		if (i < start || i >= end) {
+			to[i] = ' ';
+
+		} else {
+			to[i] = from[i - start];
+		}
+	}
+
+	//
+	// Add terminating \0 to the target
+	//
+	to[size - 1] = '\0';
+
+	log_debug("source: '%s' target: '%s' start-idx: %d end-idx: %d source-len: %d size: %d", from, to, start, end, src_len, size);
+}
