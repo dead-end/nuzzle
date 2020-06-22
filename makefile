@@ -20,7 +20,14 @@ OPTION_FLAGS=
 DEBUG = false
 
 ifeq ($(DEBUG),true)
-  OPTION_FLAGS += -DDEBUG -g
+  OPTION_FLAGS += -DDEBUG -g3
+  
+  #
+  # Seams not to work. Unit tests faild, but not due to asan.
+  #
+  # export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.4
+  #
+  # OPTION_FLAGS += -fsanitize=address
 endif
 
 ################################################################################
@@ -66,9 +73,11 @@ SRC_LIBS = \
 	$(SRC_DIR)/s_shapes.c \
 	$(SRC_DIR)/s_status.c \
 	$(SRC_DIR)/rules.c \
+	$(SRC_DIR)/s_game_cfg.c \
 	$(SRC_DIR)/ut_utils.c \
 	$(SRC_DIR)/ut_s_area.c \
 	$(SRC_DIR)/ut_rules.c \
+	$(SRC_DIR)/ut_common.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
