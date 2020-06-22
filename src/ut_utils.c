@@ -77,3 +77,15 @@ void ut_check_bool(const bool cur, const bool exp, const char *msg) {
 	log_debug("[%s] OK current: %s", msg, bool_str(cur));
 }
 
+/******************************************************************************
+ * The function checks whether a str parameter has the expected value or not.
+ *****************************************************************************/
+
+void ut_check_str(const char *cur, const char *exp, const char *msg) {
+
+	if (strcmp(cur, exp) != 0) {
+		log_exit("[%s] current: '%s' expected: '%s'", msg, cur, exp);
+	}
+
+	log_debug("[%s] OK current: '%s'", msg, cur);
+}
