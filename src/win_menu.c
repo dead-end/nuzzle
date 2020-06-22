@@ -381,11 +381,29 @@ int wm_process_menu(const char **labels, const int selected, const bool ignore_e
 	WINDOW *menu_derwin;
 
 	//
-	// Compute the dimensions of the menu.
+	// Get the dimension of the label and add a padding.
 	//
+	s_point dim_labels = strs_dim(labels);
+	dim_labels.col += 4;
+
 	const s_point dim_header = strs_dim(headers);
-	const s_point dim_labels = strs_dim(labels);
 	const s_point dim_total = { .row = dim_header.row + dim_labels.row, .col = dim_header.col };
+
+	//
+	// Create a two dimensional array for the centered labels.
+	//
+	char label_block[dim_labels.row][dim_labels.col + 1];
+
+	//
+	// Create an (NULL terminated) array for the labels.
+	//
+	const char *label_block_ptr[dim_labels.row + 1];
+
+	for (int i = 0; i < dim_labels.row; i++) {
+		label_block_ptr[i] = cpy_str_centered(label_block[i], dim_labels.col + 1, labels[i]);
+	}
+
+	label_block_ptr[dim_labels.row] = NULL;
 
 	//
 	// Create the windows for the menu.
@@ -396,7 +414,7 @@ int wm_process_menu(const char **labels, const int selected, const bool ignore_e
 	//
 	// Create the menu with an array of item labels.
 	//
-	menu = wm_create_menu(labels);
+	menu = wm_create_menu(label_block_ptr);
 
 	wm_menu_link(menu_win, menu_derwin, menu);
 
@@ -412,4 +430,3 @@ int wm_process_menu(const char **labels, const int selected, const bool ignore_e
 
 	return idx;
 }
-
