@@ -26,6 +26,7 @@
 #include <mcheck.h>
 #include "ut_s_area.h"
 #include "ut_rules.h"
+#include "ut_common.h"
 
 /******************************************************************************
  * The main function delegates the call to the individual unit test functions.
@@ -33,22 +34,11 @@
 
 int main() {
 
-#ifdef DEBUG
-
-	//
-	// # export MALLOC_TRACE=/tmp/out.trace
-	// # ./ut_test 2>/tmp /out && mtrace ./ut_test /tmp/out.trace
-	//
-	mtrace();
-#endif
-
 	ut_s_area_exec();
 
 	ut_rules_exec();
 
-#ifdef DEBUG
-	muntrace();
-#endif
+	ut_common_exec();
 
 	return EXIT_SUCCESS;
 }
