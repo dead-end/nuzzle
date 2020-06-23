@@ -28,7 +28,7 @@
 //
 // The 2-dimensional array with temporary data.
 //
-static t_block **_marks;
+static t_block **_marks = NULL;
 
 /******************************************************************************
  * The function creates an area which is used for markings. This has to be
