@@ -22,9 +22,15 @@
  * SOFTWARE.
  */
 
+#include <mcheck.h>
 #include <ncurses.h>
 #include <time.h>
 #include <locale.h>
+
+#include "s_game_cfg.h"
+
+#include "s_shapes.h"
+#include "s_status.h"
 
 #include "nuzzle.h"
 #include "nz_curses.h"
@@ -34,6 +40,8 @@
 #include "game.h"
 #include "win_menu.h"
 
+static s_status _status = { .game_cfg = NULL };
+
 /******************************************************************************
  * The exit callback function resets the terminal and frees the memory. This is
  * important if the program terminates after an error.
@@ -41,7 +49,9 @@
 
 static void exit_callback() {
 
-	home_area_free();
+	game_free_game(&_status);
+
+	home_area_free_game();
 
 	//
 	// Free the allocated memory.
@@ -62,7 +72,7 @@ static void exit_callback() {
  * The method initializes the application.
  *****************************************************************************/
 
-static void init(s_status *status) {
+static void init() {
 
 	//
 	// Set the locale to allow utf8.
@@ -100,71 +110,126 @@ static void init(s_status *status) {
 	//
 	colors_init();
 
-	info_area_init();
+	game_init();
 
-	home_area_create(2, &(s_point ) { 3, 3 }, &(s_point ) { 2, 4 }, colors_init_random);
-
-	game_init(status);
+	s_game_cfg_read("cfg/nuzzle.cfg");
 }
 
 /******************************************************************************
- * The function shows the start menu, which has only two options: "start" or
- * "exit"
+ * The function starts a new game based on the game configuration.
+ *****************************************************************************/
+// TODO: same name as global
+static void create_game(s_status *status, const bool free, const s_game_cfg *game_cfg) {
+
+	//
+	// If a game is running we have to cleanup up front.
+	//
+	if (free) {
+		game_free_game(status);
+
+		home_area_free_game();
+	}
+
+	//
+	// Save the game configuration.
+	//
+	status->game_cfg = game_cfg;
+
+	//
+	// Create the game and the drop area based on the dimensions.
+	//
+	game_create_game(status, &game_cfg->game_size);
+
+	//
+	// TODO: move to game_create_game ???
+	//
+	game_cfg->fct_ptr_set_data(status->game_cfg->data);
+
+	home_area_create_game(game_cfg->home_num, &game_cfg->drop_dim, &game_cfg->home_size, game_cfg->fct_ptr_init_random);
+
+	info_area_init(status);
+}
+
+/******************************************************************************
+ * The function shows the menu. This can be a start menu or a menu to change a
+ * running game. In the second situation, a game is running, that can be
+ * continued. So the menu is mostly identical. If the game is running, there is
+ * a "continue" choice.
  *****************************************************************************/
 
-static void show_start_menu() {
+void show_menu(s_status *status, const bool show_continue) {
 	log_debug_str("Showing start menu");
 
-	const char *choices[] = { STR_GAME, STR_EXIT, NULL, };
-	int idx = wm_process_menu(choices, 0, true);
-
-	if (idx == 1) {
-		exit(0);
+	//
+	// If a game is running, we have to clear the window.
+	//
+	if (show_continue) {
+		clear();
+		refresh();
 	}
-}
 
-/******************************************************************************
- * The function shows the game menu. It allows to exit or to restart the game.
- *****************************************************************************/
-
-static void show_game_menu(s_status *status) {
-	log_debug_str("Showing game menu");
+	const int offset = show_continue ? 1 : 0;
+	const int idx_exit = offset + s_game_cfg_num;
 
 	//
-	// Delete the old content
+	// Initialize the choices array.
 	//
-	clear();
-	refresh();
+	const char *choices[offset + s_game_cfg_num + 2];
 
 	//
-	// Show the menu
+	// If it is possible to continue the game, we have to add the choice.
 	//
-	const char *choices[] = { STR_CONT, STR_GAME, STR_EXIT, NULL, };
-	const int idx = wm_process_menu(choices, 0, false);
+	if (show_continue) {
+		choices[0] = STR_CONT;
+	}
 
 	//
-	// IDX 0: continue
+	// Set the titles for the games.
 	//
-	if (idx == 0 || idx == ESC_RETURN) {
+	for (int i = 0; i < s_game_cfg_num; i++) {
+		choices[i + offset] = game_cfg[i].title;
+	}
+
+	//
+	// Set the "exit" choice and terminate the array with NULL.
+	//
+	choices[idx_exit] = STR_EXIT;
+	choices[idx_exit + 1] = NULL;
+
+	//
+	// Process the menu (the second parameter is a flag to ignore ESC)
+	//
+	const int idx = wm_process_menu(choices, 0, !show_continue);
+
+	//
+	// Continue the current game
+	//
+	if (show_continue && (idx == 0 || idx == ESC_RETURN)) {
 		game_do_center(status);
-
 	}
 
 	//
-	// IDX 1: new game
+	// Create a new game
 	//
-	else if (idx == 1) {
-		game_reset(status);
+	else if (offset <= idx && idx < offset + s_game_cfg_num) {
 
-		game_do_center(status);
+		log_debug("TYPE idx: %d", idx - offset);
+		create_game(status, show_continue, &game_cfg[idx - offset]);
 
+		if (show_continue) {
+			game_reset(status);
+			game_do_center(status);
+		}
 	}
 
 	//
-	// IDX 2: end
+	// Exit the game
 	//
-	else if (idx == 2) {
+	else if (idx == idx_exit) {
 		exit(0);
+
+	} else {
+		log_exit("Unknown index: %d", idx);
 	}
 }
 
@@ -176,7 +241,10 @@ static void process_mouse_event(s_status *status, const int c) {
 	MEVENT event;
 
 	if (getmouse(&event) != OK) {
-		log_exit_str("Unable to get mouse event!");
+		//log_exit_str("Unable to get mouse event!");
+		// TODO: This happens ???
+		log_debug_str("Unable to get mouse event!");
+		return;
 	}
 
 	log_debug("Button: %d", c);
@@ -217,20 +285,23 @@ static void process_mouse_event(s_status *status, const int c) {
  *****************************************************************************/
 
 int main() {
-	s_status status;
+
+#ifdef DEBUG
+	mtrace();
+#endif
 
 	log_debug_str("Starting nuzzle...");
 
-	init(&status);
+	init();
 
-	show_start_menu();
+	show_menu(&_status, false);
 
 	//
 	// Without the refresh() the centered window will not be printed.
 	//
 	refresh();
 
-	game_do_center(&status);
+	game_do_center(&_status);
 
 	game_win_refresh();
 
@@ -256,15 +327,15 @@ int main() {
 			//
 			refresh();
 
-			game_do_center(&status);
+			game_do_center(&_status);
 
 		} else if (c == KEY_ESC || c == 'm') {
 
-			show_game_menu(&status);
+			show_menu(&_status, true);
 
 		} else {
 
-			if (s_status_is_end(&status)) {
+			if (s_status_is_end(&_status)) {
 				log_debug_str("Ignoring key event due to current game end!");
 				continue;
 			}
@@ -272,31 +343,31 @@ int main() {
 			switch (c) {
 
 			case KEY_MOUSE:
-				process_mouse_event(&status, c);
+				process_mouse_event(&_status, c);
 				break;
 
 			case KEY_UP:
-				game_event_keyboard_mv(&status, -1, 0);
+				game_event_keyboard_mv(&_status, -1, 0);
 				break;
 
 			case KEY_DOWN:
-				game_event_keyboard_mv(&status, 1, 0);
+				game_event_keyboard_mv(&_status, 1, 0);
 				break;
 
 			case KEY_LEFT:
-				game_event_keyboard_mv(&status, 0, -1);
+				game_event_keyboard_mv(&_status, 0, -1);
 				break;
 
 			case KEY_RIGHT:
-				game_event_keyboard_mv(&status, 0, 1);
+				game_event_keyboard_mv(&_status, 0, 1);
 				break;
 
 			case '\t':
-				game_event_toggle_pickup(&status);
+				game_event_toggle_pickup(&_status);
 				break;
 
 			case 10:
-				game_event_drop(&status);
+				game_event_drop(&_status);
 				break;
 
 			default:
