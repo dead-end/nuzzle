@@ -46,6 +46,8 @@ void* xmalloc(const size_t size) {
 /******************************************************************************
  * The function is called with an array of strings, which is NULL terminated.
  * It computes the maximal string length and the number of rows.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 s_point strs_dim(const char *strs[]) {
@@ -66,6 +68,8 @@ s_point strs_dim(const char *strs[]) {
 
 /******************************************************************************
  * The function removes the tailing white spaces from a string.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 void trim_r(char *str) {
@@ -79,6 +83,8 @@ void trim_r(char *str) {
 
 /******************************************************************************
  * The function converts a sting to an integer value.
+ *
+ * The function is not unit tested. The interesting part is the error handling.
  *****************************************************************************/
 
 int str_2_int(const char *str) {

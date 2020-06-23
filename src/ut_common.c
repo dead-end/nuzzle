@@ -25,6 +25,30 @@
 #include "ut_utils.h"
 
 /******************************************************************************
+ * The function checks the strs_dim() function.
+ *****************************************************************************/
+
+static void test_strs_dim() {
+	const char *str[] = { "1", "12", "123", "1234", "1", NULL };
+
+	const s_point dim = strs_dim(str);
+
+	ut_check_s_point(&dim, &(s_point ) { 5, 4 }, "test_strs_dim");
+}
+
+/******************************************************************************
+ * The function checks the trim_r() function.
+ *****************************************************************************/
+
+static void test_trim_r() {
+	char str[] = "012  ";
+
+	trim_r(str);
+
+	ut_check_str(str, "012", "test_trim_r");
+}
+
+/******************************************************************************
  * The function checks the cpy_str_centered() function, which copies the source
  * string centered to the destination string.
  *****************************************************************************/
@@ -69,6 +93,10 @@ static void test_cpy_str_centered() {
  *****************************************************************************/
 
 void ut_common_exec() {
+
+	test_strs_dim();
+
+	test_trim_r();
 
 	test_cpy_str_centered();
 }

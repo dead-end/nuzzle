@@ -49,6 +49,9 @@
 #define log_debug(fmt, ...)
 #define log_debug_str(fmt)
 
+//
+// Can be used for function parameters, that are only used in debug mode.
+//
 #define DEBUG_USED __attribute__((unused))
 
 #endif
@@ -61,23 +64,27 @@
 #define log_exit(fmt, ...) fprintf(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(EXIT_FAILURE)
 #define log_exit_str(fmt)  fprintf(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__); exit(EXIT_FAILURE)
 
-void* xmalloc(const size_t size);
-
-// -------------------------------
+/******************************************************************************
+ * Definitions
+ *****************************************************************************/
 
 #define BLOCK_FULL L'\u2588'
 
 #define BLOCK_EMPTY L' '
 
-// TODO: choose correct character
-
-//#define BLOCK_BOTH L'\u2593'
-
-//#define BLOCK_BOTH L'\u258C'
-
 #define BLOCK_BOTH L'\u2592'
 
 #define KEY_ESC 27
+
+/******************************************************************************
+ * Macro definitions.
+ *****************************************************************************/
+
+#define max(a,b) ((a) > (b) ? (a) : (b))
+
+#define bool_str(b) (b) ? "true" : "false"
+
+#define center(t,w) (((t) - (w)) / 2)
 
 /******************************************************************************
  * The s_point struct represents an element that has a row and a column. This
@@ -101,15 +108,11 @@ typedef struct s_point {
 
 #define s_point_same(t,f) (((t)->row == (f)->row) && ((t)->col == (f)->col))
 
-#define max(a,b) ((a) > (b) ? (a) : (b))
-
-#define bool_str(b) (b) ? "true" : "false"
-
-#define center(t,w) (((t) - (w)) / 2)
-
 /******************************************************************************
- *
+ * The definition of the functions.
  *****************************************************************************/
+
+void* xmalloc(const size_t size);
 
 s_point strs_dim(const char *strs[]);
 
