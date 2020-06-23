@@ -58,6 +58,8 @@ static int _num_shapes;
  * The function is used for logging and prints a shape.
  ******************************************************************************/
 
+#ifdef DEBUG
+
 static void s_shape_debug(const int idx) {
 	char str[SHAPE_DIM + 1];
 
@@ -80,6 +82,8 @@ static void s_shape_debug(const int idx) {
 		log_debug(" %s", str);
 	}
 }
+
+#endif
 
 /*******************************************************************************
  * The function initializes a shape struct.
