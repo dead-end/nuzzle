@@ -48,6 +48,13 @@ t_block** blocks_create(const int rows, const int cols) {
 
 void blocks_free(t_block **blocks, const int rows) {
 
+	//
+	// Ensure that there is something to free.
+	//
+	if (blocks == NULL) {
+		return;
+	}
+
 	for (int row = 0; row < rows; row++) {
 		free(blocks[row]);
 	}
