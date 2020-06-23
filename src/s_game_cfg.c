@@ -146,8 +146,11 @@ static int cfg_get_type(const char *line) {
 #define cfg_get_int(l) str_2_int(cfg_get_value(l))
 
 /*******************************************************************************
- * The function prints a game config structure.
+ * The function prints a game config structure. With non debug mode, the
+ * function is empty and produces unused-parameter warnings.
  ******************************************************************************/
+
+#ifdef DEBUG
 
 static void s_game_debug(const s_game_cfg *game_cfg) {
 
@@ -165,8 +168,9 @@ static void s_game_debug(const s_game_cfg *game_cfg) {
 
 	log_debug("home num: %d", game_cfg->home_num);
 	log_debug("home size: %d/%d", game_cfg->home_size.row, game_cfg->home_size.col);
-
 }
+
+#endif
 
 /*******************************************************************************
  * The function initializes all values for the s_game structures with invalid
