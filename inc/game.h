@@ -28,9 +28,13 @@
 #include "common.h"
 #include "s_status.h"
 
-void game_init(s_status *status);
+void game_init();
 
 void game_free();
+
+void game_create_game(s_status *status, const s_point *size);
+
+void game_free_game(const s_status *status);
 
 s_point game_get_game_area_size();
 

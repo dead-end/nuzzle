@@ -33,39 +33,46 @@
 #include "info_area.h"
 #include "home_area.h"
 #include "bg_area.h"
-#include "blocks.h"
-#include "s_area.h"
-#include "colors.h"
-#include "s_status.h"
-#include "common.h"
+#include "rules.h"
+
+/******************************************************************************
+ * Definition of a sleep time. It is used between the dropping of an area and
+ * the deletion of blocks. The pause gives the user the chance to see, why the
+ * blocks are removed. On debug mode the sleep time is higher.
+ *****************************************************************************/
+
+#ifdef DEBUG
+
+#define USLEEP 800000
+
+#else
+
+#define USLEEP 200000
+
+#endif
+
+/******************************************************************************
+ * Definition of the meaning of a flag that make the code more readable.
+ *****************************************************************************/
 
 #define DO_PRINT true
 
 #define DO_DELETE false
 
-#ifdef DEBUG
-#define USLEEP 800000
-#else
-#define USLEEP 200000
-#endif
+#define LAYOUT_HORIZONTAL true
 
-//#define USLEEP 2000000
+#define LAYOUT_VERTICAL false
 
 /******************************************************************************
+ * The number of characters that are used to adjust a block. This means, if an
+ * area should be dropped and the drop area is not perfectly aligned with the
+ * game area, it is in some cases possible to move the drop area, so that it is
+ * aligned after the movement.
  *
+ * The definition is the number of columns that can be moved.
  *****************************************************************************/
 
-#define HOME_EVENT -1
-
-#define OFFSET_NOT_SET -1
-
 #define ADJUST 1
-
-#define GAME_SIZE 11
-
-#define DROP_AREA_ROW 3
-
-#define DROP_AREA_COL 3
 
 /******************************************************************************
  * The structs for the game.
@@ -74,18 +81,16 @@
 //
 // The game area struct
 //
-static s_area _game_area;
+static s_area _game_area = { .blocks = NULL };
 
 //
 // The drop area struct
 //
-static s_area _drop_area;
+static s_area _drop_area = { .blocks = NULL };
 
 //
-// The 2-dimensional array with temporary data.
+// The window used for the game.
 //
-static t_block **_marks;
-
 static WINDOW *_win_game = NULL;
 
 /******************************************************************************
@@ -93,7 +98,7 @@ static WINDOW *_win_game = NULL;
  * color. The block may overlap areas (game_area, info_area, background area).
  *****************************************************************************/
 
-static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_point *drop_area_pos, const s_point *drop_area_size, const t_block da_color) {
+static void game_print_foreground(WINDOW *win, const s_status *status, const s_area *game_area, const s_point *drop_area_pos, const s_point *drop_area_size, const t_block da_color) {
 	s_point pixel;
 
 	//
@@ -106,13 +111,13 @@ static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_
 			// Check the position of each block pixel.
 			//
 			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
-				s_area_print_chess_pixel(win, game_area, &pixel, da_color);
+				s_area_print_chess_pixel(win, game_area, &pixel, da_color, status->game_cfg->chess_type);
 
 			} else if (info_area_contains(&pixel)) {
 				info_area_print_pixel(win, &pixel, da_color);
 
 			} else if (home_area_get_idx(&pixel) >= 0) {
-				home_area_print_pixel(win, &pixel, da_color);
+				home_area_print_pixel(win, status, &pixel, da_color);
 
 			} else {
 				bg_area_print_pixel(win, &pixel, da_color);
@@ -126,7 +131,7 @@ static void game_print_foreground(WINDOW *win, const s_area *game_area, const s_
  * (terminal character) is computed.
  *****************************************************************************/
 
-static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const s_area *drop_area, const bool do_print) {
+static void drop_area_process_blocks(WINDOW *win, const s_status *status, const s_area *game_area, const s_area *drop_area, const bool do_print) {
 	s_point drop_area_ul;
 	s_point idx;
 
@@ -149,10 +154,10 @@ static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const
 			drop_area_ul = s_area_get_ul(drop_area, &idx);
 
 			if (do_print) {
-				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[idx.row][idx.col]);
+				game_print_foreground(win, status, game_area, &drop_area_ul, &drop_area->size, drop_area->blocks[idx.row][idx.col]);
 
 			} else {
-				game_print_foreground(win, game_area, &drop_area_ul, &drop_area->size, CLR_NONE);
+				game_print_foreground(win, status, game_area, &drop_area_ul, &drop_area->size, CLR_NONE);
 			}
 		}
 	}
@@ -167,15 +172,24 @@ static void drop_area_process_blocks(WINDOW *win, const s_area *game_area, const
 
 static bool do_adjust(const s_area *game_area, const s_area *drop_area, s_area *adj_area) {
 
+	//
+	// If the drop area is aligned, there is nothing to do.
+	//
 	if (s_area_is_aligned(game_area, drop_area->pos.row, drop_area->pos.col)) {
 		return true;
 	}
 
+	//
+	// If the moved drop area is aligned, we adjust the position and return.
+	//
 	if (s_area_is_aligned(game_area, drop_area->pos.row, drop_area->pos.col + ADJUST)) {
 		adj_area->pos.col += ADJUST;
 		return true;
 	}
 
+	//
+	// If the moved drop area is aligned, we adjust the position and return.
+	//
 	if (s_area_is_aligned(game_area, drop_area->pos.row, drop_area->pos.col - ADJUST)) {
 		adj_area->pos.col -= ADJUST;
 		return true;
@@ -186,35 +200,10 @@ static bool do_adjust(const s_area *game_area, const s_area *drop_area, s_area *
 }
 
 /******************************************************************************
- * The function initializes the drop area. The area is filled with new colors.
- * As a second step, the area is normalized, which means that completely empty
- * rows and columns are removed from the beginning of the area
- *****************************************************************************/
-
-static void area_update(s_area *area) {
-
-	//
-	// The normalization (see below) may change the dimension, so it has to be
-	// set each time the drop area is filled.
-	//
-	s_point_set(&area->dim, DROP_AREA_ROW, DROP_AREA_COL);
-
-	//
-	// Fill the blocks with random colors.
-	//
-	colors_init_random(area->blocks, area->dim.row, area->dim.col);
-
-	//
-	// Normalize the area.
-	//
-	s_area_normalize(area);
-}
-
-/******************************************************************************
  * The function moves the drop area to a given position.
  *****************************************************************************/
 
-static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, const s_point *to) {
+static void animate_move(WINDOW *win, const s_status *status, s_area *game_area, s_area *drop_area, const s_point *to) {
 
 	log_debug("Move from: %d/%d to: %d/%d", drop_area->pos.row, drop_area->pos.col, to->row, to->col);
 
@@ -228,7 +217,7 @@ static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, cons
 	//
 	// Delete the drop area at the old position.
 	//
-	drop_area_process_blocks(win, &_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(win, status, game_area, &_drop_area, DO_DELETE);
 
 	//
 	// Move the drop area to the new position.
@@ -238,7 +227,7 @@ static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, cons
 	//
 	// Print and show the drop area at the new position.
 	//
-	drop_area_process_blocks(win, game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(win, status, game_area, &_drop_area, DO_PRINT);
 
 	nzc_win_refresh(win);
 
@@ -254,7 +243,7 @@ static void animate_move(WINDOW *win, s_area *game_area, s_area *drop_area, cons
  * The function drops the drop area at a given position.
  *****************************************************************************/
 
-static void animate_drop(WINDOW *win, s_area *game_area, const s_point *drop_point, s_area *drop_area) {
+static void animate_drop(WINDOW *win, const s_status *status, s_area *game_area, const s_point *drop_point, const s_area *drop_area) {
 
 	log_debug("Dropping drop area: %d/%d at game: %d/%d", drop_area->pos.row, drop_area->pos.col, drop_point->row, drop_point->col);
 
@@ -266,7 +255,7 @@ static void animate_drop(WINDOW *win, s_area *game_area, const s_point *drop_poi
 	//
 	// Delete the drop area from the foreground
 	//
-	drop_area_process_blocks(win, &_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(win, status, &_game_area, &_drop_area, DO_DELETE);
 
 	nzc_win_refresh(win);
 
@@ -285,12 +274,12 @@ static void animate_drop(WINDOW *win, s_area *game_area, const s_point *drop_poi
  * the block index in the game area, where the drop area is dropped.
  *****************************************************************************/
 
-static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *drop_area, s_area *adj_area) {
+static bool game_area_can_drop(s_area *game_area, s_point *drop_point, const s_area *drop_area, s_area *adj_area) {
 
 	//
 	// Copy the drop area to the adjusted area.
 	//
-	s_area_copy(adj_area, drop_area);
+	s_area_copy(drop_area, adj_area);
 
 	//
 	// do adjust the new_area if possible
@@ -319,8 +308,138 @@ static bool game_area_can_drop(s_area *game_area, s_point *drop_point, s_area *d
 	return s_area_drop(game_area, drop_point, drop_area, false);
 }
 
+/******************************************************************************
+ * The function computes the layout of the game. The home area is printed
+ * horizontal under the info area and both right to the game area.
+ *****************************************************************************/
+
+static void layout_horizontal(const s_point *win_size, const s_point *game_area_size, const s_point *info_area_size, const s_point *delim) {
+
+	//
+	// Compute the size of the home area.
+	//
+	const s_point home_area_size = home_area_get_size(LAYOUT_HORIZONTAL);
+
+	//
+	// Compute the size of all areas.
+	//
+	const int total_rows = game_area_size->row;
+	const int total_cols = game_area_size->col + delim->col + max(home_area_size.col, info_area_size->col);
+
+	//
+	// Get the center positions.
+	//
+	const int ul_row = (win_size->row - total_rows) / 2;
+	const int ul_col = (win_size->col - total_cols) / 2;
+
+	log_debug("upper left row: %d col: %d", ul_row, ul_col);
+
+	//
+	// Set the position of the game area, which is the upper left corner.
+	//
+	s_point_set(&_game_area.pos, ul_row, ul_col);
+
+	//
+	// Set the position of the info area, which is top right to the game area.
+	//
+	info_area_set_pos(ul_row, ul_col + game_area_size->col + delim->col);
+
+	//
+	// Set the position of the home area, which is right to the game area and
+	// under the info area.
+	//
+	const s_point home_pos = { ul_row + info_area_size->row + delim->row, _game_area.pos.col + game_area_size->col + delim->col };
+	home_area_layout(&home_pos, LAYOUT_HORIZONTAL);
+}
+
+/******************************************************************************
+ * The function moves the drop area to the first possible position on the game
+ * area.
+ *****************************************************************************/
+
+static inline void game_mv_possible_pos(s_status *status) {
+	s_point idx;
+
+	//
+	// Get the index of the first position where the drop area can be dropped.
+	//
+	if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, &idx)) {
+		log_exit_str("Unexpected end!");
+	}
+
+	//
+	// Get the absolute upper left position of the index.
+	//
+	const s_point pos = s_area_get_ul(&_game_area, &idx);
+
+	log_debug("Possible - idx: %d/%d - pos: %d/%d", idx.row, idx.col, pos.row, pos.col);
+
+	game_event_move(status, &pos);
+}
+
 // ----------------------------------------
 // INTERFACE
+
+/******************************************************************************
+ * The function initializes the new area.
+ *****************************************************************************/
+
+void game_create_game(s_status *status, const s_point *size) {
+
+	//
+	// Create the game area.
+	//
+	s_area_create(&_game_area, &status->game_cfg->game_dim, size);
+
+	blocks_set(_game_area.blocks, &_game_area.dim, CLR_NONE);
+
+	log_debug("game_area pos: %d/%d", _game_area.pos.row, _game_area.pos.col);
+
+	//
+	// The area with the temporary marks
+	//
+	rules_create_game(&_game_area);
+
+	//
+	// drop area
+	//
+	s_area_create(&_drop_area, &status->game_cfg->drop_dim, size);
+
+	//
+	// Initialize the game status
+	//
+	s_status_init(status);
+}
+
+/******************************************************************************
+ * The function frees the memory necessary for a game. It is possible that the
+ * game does not started.
+ *****************************************************************************/
+
+void game_free_game(const s_status *status) {
+
+	log_debug("Freeing game area: %d/%d", _game_area.dim.row, _game_area.dim.col);
+
+	s_area_free(&_game_area);
+
+	rules_free_game(&_game_area);
+
+	//
+	// Without game configuration, we cannot free the drop area.
+	//
+	if (status->game_cfg != NULL) {
+
+		log_debug("Freeing drop area: %d/%d", _drop_area.dim.row, _drop_area.dim.col);
+
+		//
+		// The normalization of the drop area changes the dimension. To be able
+		// to free the drop area, we have to reset the dimension.
+		//
+		s_point_set(&_drop_area.dim, status->game_cfg->drop_dim.row, status->game_cfg->drop_dim.col);
+
+		s_area_free(&_drop_area);
+	}
+}
 
 /******************************************************************************
  * The function processes a new "released" event. This requires checking if the
@@ -348,41 +467,39 @@ bool game_event_drop(s_status *status) {
 		//
 		// Move the drop area to the adjusted position if necessary.
 		//
-		animate_move(_win_game, &_game_area, &_drop_area, &adj_area.pos);
+		animate_move(_win_game, status, &_game_area, &_drop_area, &adj_area.pos);
 
 		//
 		// Drop the drop area.
 		//
-		animate_drop(_win_game, &_game_area, &drop_point, &_drop_area);
+		animate_drop(_win_game, status, &_game_area, &drop_point, &_drop_area);
 
-		//
-		// Remove adjacent blocks if possible.
-		//
-		const int num_removed = s_area_remove_blocks(&_game_area, &drop_point, &_drop_area, _marks);
-		if (num_removed >= 4) {
-			info_area_add_to_score(_win_game, num_removed);
-			s_area_print_chess(_win_game, &_game_area);
+		const int num_removed = status->game_cfg->fct_ptr_rules_remove(&_game_area);
+
+		if (num_removed > 0) {
+			info_area_add_to_score(_win_game, status, num_removed);
+			s_area_print_chess(_win_game, &_game_area, status->game_cfg->chess_type);
 		}
 
 		//
 		// Dropping the drop area means copying the blocks to the background.
 		// After this, the drop area can be deleted from the foreground.
 		//
-		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
+		drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_DELETE);
 
 		//
-		// Fill the blocks with new, random colors.
 		//
-		//area_update(&_drop_area);
+		//
 		home_area_mark_drop();
+
 		// TODO: status => pickup
 		s_status_release(status);
+
 		if (home_area_refill(false)) {
-			home_area_print(_win_game);
+			home_area_print(_win_game, status);
 		}
 
 		// TODO: needs to be implemented in home_area
-		//if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, NULL)) {
 		if (!home_area_can_drop_anywhere(&_game_area)) {
 
 			//
@@ -405,39 +522,15 @@ bool game_event_drop(s_status *status) {
  * necessary.
  *****************************************************************************/
 
-#define DELIM 4
-
 void game_do_center(const s_status *status) {
 
-	//
-	// Get the sizes of the different areas.
-	//
 	const s_point game_area_size = s_area_get_size(&_game_area);
-
-	const s_point drop_area_size = s_area_get_size(&_drop_area);
 
 	const s_point info_area_size = info_area_get_size();
 
-	//
-	// Compute the size of all areas.
-	//
-	int total_rows = game_area_size.row;
-	int total_cols = game_area_size.col + DELIM + max(info_area_size.col, drop_area_size.col);
+	const s_point win_size = { getmaxy(_win_game), getmaxx(_win_game) };
 
-	//
-	// Get the center positions.
-	//
-	const int ul_row = (getmaxy(_win_game) - total_rows) / 2;
-	const int ul_col = (getmaxx(_win_game) - total_cols) / 2;
-
-	log_debug("upper left row: %d col: %d", ul_row, ul_col);
-
-	s_point_set(&_game_area.pos, ul_row, ul_col);
-
-	home_area_set_pos(ul_row + info_area_size.row + DELIM, ul_col + game_area_size.col + DELIM);
-	//home_area_center_pos(&_drop_area.pos, &_drop_area.dim);
-
-	info_area_set_pos(ul_row, ul_col + game_area_size.col + DELIM);
+	layout_horizontal(&win_size, &game_area_size, &info_area_size, &status->game_cfg->game_size);
 
 	//
 	// Delete the old content.
@@ -447,13 +540,13 @@ void game_do_center(const s_status *status) {
 	//
 	// Print the areas at the updated position.
 	//
-	s_area_print_chess(_win_game, &_game_area);
+	s_area_print_chess(_win_game, &_game_area, status->game_cfg->chess_type);
 
-	home_area_print(_win_game);
+	home_area_print(_win_game, status);
 
 	// TODO:
 	if (s_status_is_picked_up(status)) {
-		drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+		drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_PRINT);
 	}
 
 	info_area_print(_win_game);
@@ -463,41 +556,12 @@ void game_do_center(const s_status *status) {
  * The function initializes the new area.
  *****************************************************************************/
 
-void game_init(s_status *status) {
+void game_init() {
 
 	//
 	// Create the game window
 	//
 	_win_game = nzc_win_create_fully();
-
-	//
-	// Game area
-	//
-	s_area_create(&_game_area, GAME_SIZE, GAME_SIZE, 2, 4);
-
-	blocks_set(_game_area.blocks, &_game_area.dim, CLR_NONE);
-
-	log_debug("game_area pos: %d/%d", _game_area.pos.row, _game_area.pos.col);
-
-	//
-	// The area with the temporary marks
-	//
-	_marks = blocks_create(_game_area.dim.row, _game_area.dim.col);
-
-	//
-	// drop area
-	//
-	s_area_create(&_drop_area, 3, 3, 2, 4);
-
-	//
-	// Fill the blocks with random colors.
-	//
-	area_update(&_drop_area);
-
-	//
-	// Initialize the game status
-	//
-	s_status_init(status);
 }
 
 /******************************************************************************
@@ -505,14 +569,6 @@ void game_init(s_status *status) {
  *****************************************************************************/
 
 void game_free() {
-
-	log_debug_str("Freeing blocks.");
-
-	s_area_free(&_game_area);
-
-	blocks_free(_marks, _game_area.dim.row);
-
-	s_area_free(&_drop_area);
 
 	nzc_win_del(_win_game);
 }
@@ -534,27 +590,9 @@ void game_reset(s_status *status) {
 	s_area_set_blocks(&_game_area, 0);
 
 	//
-	// Load a new drop area
-	//
-	area_update(&_drop_area);
-
-	//
 	// Move the drop area to the home position.
 	//
-	//drop_area_move_home(_win_game, &_game_area, &_drop_area, status);
 	home_area_reset();
-	//home_area_refill();
-
-	//
-	// Reset the score
-	//
-	info_area_reset_score(_win_game);
-
-	//
-	// Reset message
-	//
-	info_area_set_msg(_win_game, "", status);
-
 }
 
 /******************************************************************************
@@ -606,7 +644,7 @@ void game_event_move(s_status *status, const s_point *event) {
 	//
 	// Delete the drop area at its old position.
 	//
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_DELETE);
 
 	//
 	// Set the new position of the drop area.
@@ -617,7 +655,7 @@ void game_event_move(s_status *status, const s_point *event) {
 	//
 	// Print the drop area at the new position.
 	//
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_PRINT);
 }
 
 /******************************************************************************
@@ -651,7 +689,7 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 	// Mark the home area as picked up and print the empty home area.
 	//
 	home_area_pickup(&_drop_area, event);
-	home_area_print(_win_game);
+	home_area_print(_win_game, status);
 
 	//
 	// If the event is inside the home area we compute the exact position.
@@ -670,7 +708,7 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 	//
 	// Print the drop area at the new position.
 	//
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_PRINT);
+	drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_PRINT);
 }
 
 /******************************************************************************
@@ -693,7 +731,7 @@ void game_process_event_undo_pickup(s_status *status) {
 	//
 	// Delete the drop area from the old position.
 	//
-	drop_area_process_blocks(_win_game, &_game_area, &_drop_area, DO_DELETE);
+	drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_DELETE);
 
 	//
 	// Mark the status as not picked up
@@ -704,32 +742,7 @@ void game_process_event_undo_pickup(s_status *status) {
 	// Mark the home area as not picked up.
 	//
 	home_area_undo_pickup();
-	home_area_print(_win_game);
-}
-
-/******************************************************************************
- * The function moves the drop area to the first possible position on the game
- * area.
- *****************************************************************************/
-
-static inline void game_mv_possible_pos(s_status *status) {
-	s_point idx;
-
-	//
-	// Get the index of the first position where the drop area can be dropped.
-	//
-	if (!s_area_can_drop_anywhere(&_game_area, &_drop_area, &idx)) {
-		log_exit_str("Unexpected end!");
-	}
-
-	//
-	// Get the absolute upper left position of the index.
-	//
-	const s_point pos = s_area_get_ul(&_game_area, &idx);
-
-	log_debug("Possible - idx: %d/%d - pos: %d/%d", idx.row, idx.col, pos.row, pos.col);
-
-	game_event_move(status, &pos);
+	home_area_print(_win_game, status);
 }
 
 /******************************************************************************
@@ -761,6 +774,8 @@ void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff
 		// The alignment is only necessary if the control switches from mouse
 		// to keyboard.
 		//
+		// TODO: the function s_area_move_inner_area() assumes that the event
+		// point is the position of the drop area.
 		const bool aligned = s_area_align_point(&_game_area, &event);
 
 		//
