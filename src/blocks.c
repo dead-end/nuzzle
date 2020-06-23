@@ -60,6 +60,11 @@ void blocks_free(t_block **blocks, const int rows) {
 	}
 
 	free(blocks);
+
+	//
+	// Set NULL to prevent double frees.
+	//
+	blocks = NULL;
 }
 
 /******************************************************************************
