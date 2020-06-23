@@ -52,6 +52,7 @@ void blocks_free(t_block **blocks, const int rows) {
 	// Ensure that there is something to free.
 	//
 	if (blocks == NULL) {
+		log_debug_str("Already freed!");
 		return;
 	}
 
