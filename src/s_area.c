@@ -279,6 +279,9 @@ s_point s_area_get_max_inner_pos(const s_area *outer_area, const s_area *inner_a
  * The function does not use the position of the inner area. It is expected
  * that the point is the current position of the inner area.
  *
+ * If the movement is possible, the position of the inner area is unchanged and
+ * the point is the new position of the inner area.
+ *
  * (Unit tested)
  *****************************************************************************/
 
@@ -299,6 +302,13 @@ bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, 
 	//
 	if (!s_area_is_area_inside(outer_area, inner_area)) {
 		log_exit_str("Inner area is not inside the outer area!");
+	}
+
+	//
+	// The point has to be the position of the inner area..
+	//
+	if (!s_point_same(&inner_area->pos, point)) {
+		log_exit_str("The position of the inner area is not the point!");
 	}
 
 	//
@@ -453,7 +463,7 @@ void s_area_create(s_area *area, const s_point *dim, const s_point *size) {
  *****************************************************************************/
 
 void s_area_free(s_area *area) {
-	log_debug_str("Freeing area.");
+	log_debug("Freeing area: %d/%d", area->dim.row, area->dim.col);
 
 	blocks_free(area->blocks, area->dim.row);
 }
