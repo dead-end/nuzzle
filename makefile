@@ -23,11 +23,9 @@ ifeq ($(DEBUG),true)
   OPTION_FLAGS += -DDEBUG -g
   
   #
-  # Seams not to work. Unit tests faild, but not due to asan.
+  # The following definitions switch on asan in debug mode.
   #
-  # export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.4
-  #
-  # OPTION_FLAGS += -fsanitize=address
+  OPTION_FLAGS += -fsanitize=address,undefined -fsanitize-undefined-trap-on-error -static-libasan -fno-omit-frame-pointer
 endif
 
 ################################################################################
