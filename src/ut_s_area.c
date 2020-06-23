@@ -359,21 +359,25 @@ static void test_s_area_move_inner_area() {
 	// Movements that fail
 	//
 	s_point_set(&point, 3, 5);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, 1 });
 	ut_check_bool(result, false, "right - false");
 	ut_check_s_point(&point, &(s_point ) { 3, 5 }, "right - false");
 
 	s_point_set(&point, 5, 1);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 1, 0 });
 	ut_check_bool(result, false, "down - false");
 	ut_check_s_point(&point, &(s_point ) { 5, 1 }, "down - false");
 
 	s_point_set(&point, 3, 1);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, -1 });
 	ut_check_bool(result, false, "left - false");
 	ut_check_s_point(&point, &(s_point ) { 3, 1 }, "left - false");
 
 	s_point_set(&point, 1, 5);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { -1, 0 });
 	ut_check_bool(result, false, "up - false");
 	ut_check_s_point(&point, &(s_point ) { 1, 5 }, "up - false");
@@ -382,21 +386,25 @@ static void test_s_area_move_inner_area() {
 	// Movements that work
 	//
 	s_point_set(&point, 1, 1);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, 1 });
 	ut_check_bool(result, true, "right - true");
 	ut_check_s_point(&point, &(s_point ) { 1, 3 }, "right - true");
 
 	s_point_set(&point, 3, 1);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 1, 0 });
 	ut_check_bool(result, true, "down - true");
 	ut_check_s_point(&point, &(s_point ) { 5, 1 }, "down - true");
 
 	s_point_set(&point, 3, 3);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { 0, -1 });
 	ut_check_bool(result, true, "left - true");
 	ut_check_s_point(&point, &(s_point ) { 3, 1 }, "left - true");
 
 	s_point_set(&point, 5, 3);
+	s_point_copy(&inner.pos, &point);
 	result = s_area_move_inner_area(&outer, &inner, &point, &(s_point ) { -1, 0 });
 	ut_check_bool(result, true, "up - true");
 	ut_check_s_point(&point, &(s_point ) { 3, 3 }, "up - true");
