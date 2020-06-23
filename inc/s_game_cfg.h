@@ -140,11 +140,16 @@ typedef struct s_game_cfg {
 
 extern int s_game_cfg_num;
 
-extern s_game_cfg game_cfg[S_GAMES_CFG_MAX];
+//
+// Export the array do not use it directly. Use s_game_cfg_get() instead.
+//
+extern s_game_cfg _game_cfg[S_GAMES_CFG_MAX];
 
 /******************************************************************************
  * Function definitions.
  *****************************************************************************/
+
+#define s_game_cfg_get(i) (&_game_cfg[(i)])
 
 void s_game_cfg_read(const char *path);
 

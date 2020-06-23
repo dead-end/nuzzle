@@ -36,7 +36,7 @@
 
 int s_game_cfg_num = 0;
 
-s_game_cfg game_cfg[S_GAMES_CFG_MAX];
+s_game_cfg _game_cfg[S_GAMES_CFG_MAX];
 
 /*******************************************************************************
  * The definition of keys and tags for the configuration file.
@@ -152,7 +152,7 @@ static int cfg_get_type(const char *line) {
 
 #ifdef DEBUG
 
-static void s_game_debug(const s_game_cfg *game_cfg) {
+void s_game_debug(const s_game_cfg *game_cfg) {
 
 	log_debug("id: %d", game_cfg->id);
 
@@ -168,6 +168,8 @@ static void s_game_debug(const s_game_cfg *game_cfg) {
 
 	log_debug("home num: %d", game_cfg->home_num);
 	log_debug("home size: %d/%d", game_cfg->home_size.row, game_cfg->home_size.col);
+
+	log_debug("chess type: %d", game_cfg->chess_type);
 }
 
 #endif
@@ -182,23 +184,23 @@ static void s_game_init() {
 
 	for (int i = 0; i < S_GAMES_CFG_MAX; i++) {
 
-		game_cfg[i].id = -1;
+		_game_cfg[i].id = -1;
 
-		game_cfg[i].title[0] = '\0';
+		_game_cfg[i].title[0] = '\0';
 
-		game_cfg[i].type = TYPE_UNDEF;
+		_game_cfg[i].type = TYPE_UNDEF;
 
-		game_cfg[i].data[0] = '\0';
+		_game_cfg[i].data[0] = '\0';
 
-		s_point_set(&game_cfg[i].game_dim, -1, -1);
+		s_point_set(&_game_cfg[i].game_dim, -1, -1);
 
-		s_point_set(&game_cfg[i].game_size, -1, -1);
+		s_point_set(&_game_cfg[i].game_size, -1, -1);
 
-		s_point_set(&game_cfg[i].drop_dim, -1, -1);
+		s_point_set(&_game_cfg[i].drop_dim, -1, -1);
 
-		game_cfg[i].home_num = -1;
+		_game_cfg[i].home_num = -1;
 
-		s_point_set(&game_cfg[i].home_size, -1, -1);
+		s_point_set(&_game_cfg[i].home_size, -1, -1);
 	}
 }
 
@@ -220,39 +222,39 @@ static void s_game_check() {
 	//
 	for (int i = 0; i < s_game_cfg_num; i++) {
 
-		if (game_cfg[i].id < 0) {
+		if (_game_cfg[i].id < 0) {
 			log_exit("Game: %d -not set: '%s'", i, CFG_GAME_ID);
 		}
 
-		if (game_cfg[i].title[0] == '\0') {
+		if (_game_cfg[i].title[0] == '\0') {
 			log_exit("Game: %d - not set: '%s'", i, CFG_GAME_TITLE);
 		}
 
-		if (game_cfg[i].type == TYPE_UNDEF) {
+		if (_game_cfg[i].type == TYPE_UNDEF) {
 			log_exit("Game: %d -not set: '%s'", i, CFG_GAME_TYPE);
 		}
 
-		if (game_cfg[i].data[0] == '\0') {
+		if (_game_cfg[i].data[0] == '\0') {
 			log_exit("Game: %d - not set: '%s'", i, CFG_GAME_TYPE_DATA);
 		}
 
-		if (game_cfg[i].game_dim.row < 0 || game_cfg[i].game_dim.col < 0) {
+		if (_game_cfg[i].game_dim.row < 0 || _game_cfg[i].game_dim.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_GAME_DIM_ROW, CFG_GAME_DIM_COL);
 		}
 
-		if (game_cfg[i].game_size.row < 0 || game_cfg[i].game_size.col < 0) {
+		if (_game_cfg[i].game_size.row < 0 || _game_cfg[i].game_size.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_GAME_SIZE_ROW, CFG_GAME_SIZE_COL);
 		}
 
-		if (game_cfg[i].drop_dim.row < 0 || game_cfg[i].drop_dim.col < 0) {
+		if (_game_cfg[i].drop_dim.row < 0 || _game_cfg[i].drop_dim.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_DROP_DIM_ROW, CFG_DROP_DIM_COL);
 		}
 
-		if (game_cfg[i].home_num < 0) {
+		if (_game_cfg[i].home_num < 0) {
 			log_exit("Game: %d - not set: '%s'", i, CFG_HOME_NUM);
 		}
 
-		if (game_cfg[i].home_size.row < 0 || game_cfg[i].home_size.col < 0) {
+		if (_game_cfg[i].home_size.row < 0 || _game_cfg[i].home_size.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_HOME_SIZE_ROW, CFG_HOME_SIZE_COL);
 		}
 	}
@@ -320,7 +322,7 @@ void s_game_cfg_read(const char *path) {
 			}
 
 			s_game_cfg_num++;
-			game = &game_cfg[s_game_cfg_num - 1];
+			game = &_game_cfg[s_game_cfg_num - 1];
 			continue;
 		}
 
@@ -409,7 +411,7 @@ void s_game_cfg_read(const char *path) {
 #ifdef DEBUG
 
 	for (int i = 0; i < s_game_cfg_num; i++) {
-		s_game_debug(&game_cfg[i]);
+		s_game_debug(&_game_cfg[i]);
 	}
 #endif
 
