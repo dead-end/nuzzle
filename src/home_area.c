@@ -74,7 +74,7 @@ static int _pickup_idx;
  * use the drop area as a backup.
  *****************************************************************************/
 
-static t_block **_blocks;
+static t_block **_blocks = NULL;
 
 static s_point _blocks_dim;
 
@@ -450,11 +450,24 @@ void home_area_reset() {
 
 void home_area_free_game() {
 
+	//
+	// Check if there is something to free.
+	//
+	if (_blocks == NULL) {
+		log_debug_str("Already freed!");
+		return;
+	}
+
 	for (int i = 0; i < _home_num; i++) {
 		s_area_free(&_home_area[i].area);
 	}
 
 	blocks_free(_blocks, _blocks_dim.row);
+
+	//
+	// Mark as freed
+	//
+	_blocks = NULL;
 }
 
 /******************************************************************************
