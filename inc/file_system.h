@@ -36,7 +36,7 @@
 #define CHECK_DIR false
 
 /*******************************************************************************
- *
+ * Definition of the functions.
  ******************************************************************************/
 
 bool fs_entry_exists(const char *path, const bool reg_file);
