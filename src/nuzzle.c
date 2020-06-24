@@ -26,6 +26,7 @@
 #include <ncurses.h>
 #include <time.h>
 #include <locale.h>
+#include <linux/limits.h>
 
 #include "s_game_cfg.h"
 
@@ -39,6 +40,7 @@
 #include "bg_area.h"
 #include "game.h"
 #include "win_menu.h"
+#include "file_system.h"
 
 static s_status _status = { .game_cfg = NULL };
 
@@ -110,7 +112,14 @@ static void init() {
 
 	game_init();
 
-	s_game_cfg_read("cfg/nuzzle.cfg");
+	//
+	// Lookup config file and read the game config
+	//
+	char path[PATH_MAX];
+	if (!fs_get_cfg_file(fs_cfg_dirs, "nuzzle.cfg", path, PATH_MAX)) {
+		log_exit_str("No config file found!");
+	}
+	s_game_cfg_read(path);
 }
 
 /******************************************************************************
