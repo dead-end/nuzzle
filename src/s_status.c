@@ -28,7 +28,7 @@
  * The function initializes the s_status struct.
  *****************************************************************************/
 
-void s_status_init(s_status *status) {
+void s_status_init(s_status *status, const s_game_cfg *game_cfg) {
 
 	//
 	// A negative offset means that the drop area is not picked up.
@@ -36,6 +36,8 @@ void s_status_init(s_status *status) {
 	s_point_set(&status->offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
 
 	status->end = false;
+
+	status->game_cfg = game_cfg;
 }
 
 /******************************************************************************

@@ -68,7 +68,7 @@ typedef struct s_status {
 
 #define s_status_is_end(s) ((s)->end)
 
-void s_status_init(s_status *status);
+void s_status_init(s_status *status, const s_game_cfg *game_cfg);
 
 void s_status_release(s_status *status);
 
