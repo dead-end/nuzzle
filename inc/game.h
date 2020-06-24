@@ -32,7 +32,7 @@ void game_init();
 
 void game_free();
 
-void game_create_game(s_status *status, const s_point *size);
+void game_create_game(const s_status *status);
 
 void game_free_game(const s_status *status);
 

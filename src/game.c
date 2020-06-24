@@ -381,34 +381,52 @@ static inline void game_mv_possible_pos(s_status *status) {
 // INTERFACE
 
 /******************************************************************************
- * The function initializes the new area.
+ * The function creates and initializes all data structures for a new game of
+ * a given type. The s_game_cfg struct contains the definition of the selected
+ * game.
  *****************************************************************************/
 
-void game_create_game(s_status *status, const s_point *size) {
+void game_create_game(const s_status *status) {
 
 	//
-	// Create the game area.
+	// Save the game configuration to a variable for easier access.
 	//
-	s_area_create(&_game_area, &status->game_cfg->game_dim, size);
+	const s_game_cfg *game_cfg = status->game_cfg;
+	log_debug("Create game: %s", game_cfg->title);
+
+	//
+	// Create and initialize the game area.
+	//
+	s_area_create(&_game_area, &game_cfg->game_dim, &game_cfg->game_size);
 
 	blocks_set(_game_area.blocks, &_game_area.dim, CLR_NONE);
 
 	log_debug("game_area pos: %d/%d", _game_area.pos.row, _game_area.pos.col);
 
 	//
-	// The area with the temporary marks
+	// Create the drop area
+	//
+	s_area_create(&_drop_area, &status->game_cfg->drop_dim, &game_cfg->game_size);
+
+	//
+	// Create and initialize the rules for the game.
 	//
 	rules_create_game(&_game_area);
 
 	//
-	// drop area
+	// Set / load game data
 	//
-	s_area_create(&_drop_area, &status->game_cfg->drop_dim, size);
+	game_cfg->fct_ptr_set_data(status->game_cfg->data);
 
 	//
-	// Initialize the game status
+	// Create and initialize thehome area
 	//
-	s_status_init(status);
+	home_area_create_game(game_cfg->home_num, &game_cfg->drop_dim, &game_cfg->home_size, game_cfg->fct_ptr_init_random);
+
+	//
+	// Initialize the info area
+	//
+	info_area_init(status);
 }
 
 /******************************************************************************
@@ -439,6 +457,8 @@ void game_free_game(const s_status *status) {
 
 		s_area_free(&_drop_area);
 	}
+
+	home_area_free_game();
 }
 
 /******************************************************************************
@@ -582,7 +602,7 @@ void game_reset(s_status *status) {
 	//
 	// Initialize the game status
 	//
-	s_status_init(status);
+	s_status_init(status, status->game_cfg);
 
 	//
 	// Reset the game area
