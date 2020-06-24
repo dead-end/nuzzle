@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-#ifndef INC_FS_PERSIST_H_
-#define INC_FS_PERSIST_H_
+#ifndef INC_SCORE_H_
+#define INC_SCORE_H_
 
 #include "s_status.h"
 
 void fs_ensure_nuzzle_dir();
 
-int fs_read_score(const s_status *status);
+int score_read(const s_status *status);
 
-void fs_write_score(const s_status *status, const int score);
+void score_write(const s_status *status, const int score);
 
-#endif /* INC_FS_PERSIST_H_ */
+#endif /* INC_SCORE_H_ */

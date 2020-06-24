@@ -23,9 +23,9 @@
  */
 
 #include <ncurses.h>
+#include <score.h>
 
 #include "info_area.h"
-#include "fs_persist.h"
 
 /******************************************************************************
  * Define of the array with the strings. The string array's have a fixed size.
@@ -82,7 +82,7 @@ void info_area_init(const s_status *status) {
 	//
 	// Read the high score from the score file.
 	//
-	_high_score = fs_read_score(status);
+	_high_score = score_read(status);
 
 	_cur_score = 0;
 
@@ -144,7 +144,7 @@ void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2
 	// the the new score and have to update the high score.
 	//
 	if (_cur_score > _high_score) {
-		fs_write_score(status, _cur_score);
+		score_write(status, _cur_score);
 		_high_score = _cur_score;
 	}
 

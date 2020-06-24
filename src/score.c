@@ -142,7 +142,7 @@ static void get_score_file(const s_status *status, char *path, const int buf_len
  * exist, the method returns 0.
  ******************************************************************************/
 
-int fs_read_score(const s_status *status) {
+int score_read(const s_status *status) {
 	char path[PATH_MAX];
 
 	//
@@ -188,7 +188,7 @@ int fs_read_score(const s_status *status) {
  * which contains the score file does not exist, it will be created.
  ******************************************************************************/
 
-void fs_write_score(const s_status *status, const int score) {
+void score_write(const s_status *status, const int score) {
 	char path[PATH_MAX];
 
 	//
