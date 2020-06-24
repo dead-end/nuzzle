@@ -398,6 +398,8 @@ void s_area_move_inside(const s_area *outer_area, const s_area *inner_area, s_po
 	log_debug("pos: %d/%d", pos->row, pos->col);
 }
 
+// -----------
+
 /******************************************************************************
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
@@ -438,6 +440,7 @@ void s_area_set_blocks(const s_area *area, const t_block value) {
 bool s_area_same_pos(const s_area *area, const int pos_row, const int pos_col) {
 
 	const bool result = pos_row == area->pos.row && pos_col == area->pos.col;
+
 	log_debug("Position %d/%d  is the same: %d", pos_row, pos_col, result);
 
 	return result;
