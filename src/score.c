@@ -31,62 +31,13 @@
 #include <sys/stat.h>
 
 #include "s_status.h"
+#include "file_system.h"
 
 /*******************************************************************************
  * The definitions of the nuzzle directories and files.
  ******************************************************************************/
 
 #define NUZZLE_DIR ".nuzzle"
-
-/*******************************************************************************
- * Two definitions for a flag makes it more readable.
- ******************************************************************************/
-
-#define CHECK_FILE true
-
-#define CHECK_DIR false
-
-/*******************************************************************************
- * The function checks whether a system file entry exists or not. The entry can
- * be a file (true) or a directory (false).
- ******************************************************************************/
-
-static bool fs_entry_exists(const char *path, const bool reg_file) {
-	struct stat sb;
-
-	const int stat_result = stat(path, &sb);
-
-	//
-	// Stat returns an error if no file system entry exists.
-	//
-	if (stat_result == -1) {
-
-		//
-		// Ensure that there is no other error (example: ELOOP Too many symbolic
-		// links)
-		//
-		if (errno == ENOENT) {
-			log_debug("Path: %s errno: %s", path, strerror(errno));
-			return false;
-		}
-
-		log_exit("Unable to check directory: %s", strerror(errno));
-	}
-
-	//
-	// The file system exists, so we have to check whether it is a file.
-	//
-	else if (reg_file) {
-		return S_ISREG(sb.st_mode);
-	}
-
-	//
-	// The file system exists, so we have to check whether it is a directory.
-	//
-	else {
-		return S_ISDIR(sb.st_mode);
-	}
-}
 
 /******************************************************************************
  * The function checks if the nuzzle directory exists. If not, it will be
