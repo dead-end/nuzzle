@@ -51,8 +51,6 @@ static void exit_callback() {
 
 	game_free_game(&_status);
 
-	home_area_free_game();
-
 	//
 	// Free the allocated memory.
 	//
@@ -118,7 +116,7 @@ static void init() {
 /******************************************************************************
  * The function starts a new game based on the game configuration.
  *****************************************************************************/
-// TODO: same name as global
+
 static void create_game(s_status *status, const bool free, const s_game_cfg *game_cfg) {
 
 	//
@@ -126,28 +124,17 @@ static void create_game(s_status *status, const bool free, const s_game_cfg *gam
 	//
 	if (free) {
 		game_free_game(status);
-
-		home_area_free_game();
 	}
 
 	//
-	// Save the game configuration.
+	// Initialize the game status
 	//
-	status->game_cfg = game_cfg;
+	s_status_init(status, game_cfg);
 
 	//
 	// Create the game and the drop area based on the dimensions.
 	//
-	game_create_game(status, &game_cfg->game_size);
-
-	//
-	// TODO: move to game_create_game ???
-	//
-	game_cfg->fct_ptr_set_data(status->game_cfg->data);
-
-	home_area_create_game(game_cfg->home_num, &game_cfg->drop_dim, &game_cfg->home_size, game_cfg->fct_ptr_init_random);
-
-	info_area_init(status);
+	game_create_game(status);
 }
 
 /******************************************************************************
@@ -187,7 +174,7 @@ void show_menu(s_status *status, const bool show_continue) {
 	// Set the titles for the games.
 	//
 	for (int i = 0; i < s_game_cfg_num; i++) {
-		choices[i + offset] = game_cfg[i].title;
+		choices[i + offset] = s_game_cfg_get(i)->title;
 	}
 
 	//
@@ -214,7 +201,7 @@ void show_menu(s_status *status, const bool show_continue) {
 	else if (offset <= idx && idx < offset + s_game_cfg_num) {
 
 		log_debug("TYPE idx: %d", idx - offset);
-		create_game(status, show_continue, &game_cfg[idx - offset]);
+		create_game(status, show_continue, s_game_cfg_get(idx - offset));
 
 		if (show_continue) {
 			game_reset(status);
@@ -237,7 +224,7 @@ void show_menu(s_status *status, const bool show_continue) {
  * The function does the processing of the mouse event.
  *****************************************************************************/
 
-static void process_mouse_event(s_status *status, const int c) {
+static void process_mouse_event(s_status *status) {
 	MEVENT event;
 
 	if (getmouse(&event) != OK) {
@@ -246,8 +233,6 @@ static void process_mouse_event(s_status *status, const int c) {
 		log_debug_str("Unable to get mouse event!");
 		return;
 	}
-
-	log_debug("Button: %d", c);
 
 	if ((event.bstate & BUTTON2_RELEASED) || (event.bstate & BUTTON3_RELEASED)) {
 
@@ -343,7 +328,7 @@ int main() {
 			switch (c) {
 
 			case KEY_MOUSE:
-				process_mouse_event(&_status, c);
+				process_mouse_event(&_status);
 				break;
 
 			case KEY_UP:
