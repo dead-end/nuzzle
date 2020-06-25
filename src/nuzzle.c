@@ -116,7 +116,7 @@ static void init() {
 	// Lookup config file and read the game config
 	//
 	char path[PATH_MAX];
-	if (!fs_get_cfg_file(fs_cfg_dirs, "nuzzle.cfg", path, PATH_MAX)) {
+	if (!fs_get_cfg_file("nuzzle.cfg", path, PATH_MAX)) {
 		log_exit_str("No config file found!");
 	}
 	s_game_cfg_read(path);

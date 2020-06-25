@@ -29,6 +29,7 @@
 #include "s_shapes.h"
 #include "colors.h"
 #include "common.h"
+#include "file_system.h"
 
 /*******************************************************************************
  * Definition of a fixed size array with shape structures.
@@ -166,12 +167,15 @@ static void s_shape_finish(const int idx) {
 
 #define BUF_SIZE 1024
 
-void s_shapes_read(const char *path) {
+void s_shapes_read(const char *file_name) {
 	char line[1024];
 	int idx = -1;
 	_num_shapes = 0;
 
-	log_debug("Reading shapes from file: %s", path);
+	char path[PATH_MAX];
+	fs_get_cfg_file(file_name, path, PATH_MAX);
+
+	log_debug("Reading shapes from file: %s", file_name);
 
 	//
 	// Open the score file.
