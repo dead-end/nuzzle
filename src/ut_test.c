@@ -27,6 +27,7 @@
 #include "ut_s_area.h"
 #include "ut_rules.h"
 #include "ut_common.h"
+#include "ut_file_system.h"
 
 /******************************************************************************
  * The main function delegates the call to the individual unit test functions.
@@ -39,6 +40,8 @@ int main() {
 	ut_rules_exec();
 
 	ut_common_exec();
+
+	ut_file_system_exec();
 
 	return EXIT_SUCCESS;
 }

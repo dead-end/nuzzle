@@ -67,15 +67,17 @@ SRC_LIBS = \
 	$(SRC_DIR)/s_area.c \
 	$(SRC_DIR)/win_menu.c \
 	$(SRC_DIR)/nz_curses.c \
-	$(SRC_DIR)/fs_persist.c \
+	$(SRC_DIR)/score.c \
+	$(SRC_DIR)/file_system.c \
 	$(SRC_DIR)/s_shapes.c \
 	$(SRC_DIR)/s_status.c \
 	$(SRC_DIR)/rules.c \
 	$(SRC_DIR)/s_game_cfg.c \
 	$(SRC_DIR)/ut_utils.c \
+	$(SRC_DIR)/ut_common.c \
 	$(SRC_DIR)/ut_s_area.c \
 	$(SRC_DIR)/ut_rules.c \
-	$(SRC_DIR)/ut_common.c \
+	$(SRC_DIR)/ut_file_system.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
