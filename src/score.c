@@ -23,67 +23,25 @@
  */
 
 #include <linux/limits.h>
-#include <stdbool.h>
 #include <errno.h>
 #include <stdio.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "s_status.h"
 #include "file_system.h"
-
-/*******************************************************************************
- * The definitions of the nuzzle directories and files.
- ******************************************************************************/
-
-#define NUZZLE_DIR ".nuzzle"
-
-/******************************************************************************
- * The function checks if the nuzzle directory exists. If not, it will be
- * created.
- *****************************************************************************/
-
-void fs_ensure_nuzzle_dir() {
-
-	//
-	// Get the home directory.
-	//
-	const char *homedir;
-
-	if ((homedir = getenv("HOME")) == NULL) {
-		log_exit_str("Home directory not found!");
-	}
-
-	//
-	// Get the nuzzle directory.
-	//
-	char path[PATH_MAX];
-
-	if (snprintf(path, PATH_MAX, "%s/%s", homedir, NUZZLE_DIR) >= PATH_MAX) {
-		log_exit_str("Path is too long!");
-	}
-
-	//
-	// If the directory does not exist, we create it.
-	//
-	if (!fs_entry_exists(path, CHECK_DIR) && mkdir(path, S_IRWXU | S_IRWXG) == -1) {
-		log_exit("Unable to create directory: %s - %s", path, strerror(errno));
-	}
-}
 
 /******************************************************************************
  * The function creates the filename for of the score file.
  *****************************************************************************/
 
 static void get_score_file(const s_status *status, char *path, const int buf_len) {
-	const char *homedir;
+	char tmp[PATH_MAX];
 
-	if ((homedir = getenv("HOME")) == NULL) {
-		log_exit_str("Home directory not found!");
-	}
+	//
+	// Get the nuzzle directory.
+	//
+	fs_nuzzle_dir_get(tmp, PATH_MAX);
 
-	if (snprintf(path, buf_len, "%s/%s/score-id-%d", homedir, NUZZLE_DIR, status->game_cfg->id) >= buf_len) {
+	if (snprintf(path, buf_len, "%s/score-id-%d", tmp, status->game_cfg->id) >= buf_len) {
 		log_exit_str("Path is too long!");
 	}
 }
@@ -145,7 +103,7 @@ void score_write(const s_status *status, const int score) {
 	//
 	// Ensure that the nuzzle directory exists.
 	//
-	fs_ensure_nuzzle_dir();
+	fs_nuzzle_dir_ensure();
 
 	//
 	// Get the absolute path of the score file.

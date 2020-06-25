@@ -27,8 +27,6 @@
 
 #include "s_status.h"
 
-void fs_ensure_nuzzle_dir();
-
 int score_read(const s_status *status);
 
 void score_write(const s_status *status, const int score);
