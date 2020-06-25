@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <linux/limits.h>
 #include <errno.h>
 #include <sys/stat.h>
 
@@ -29,17 +30,22 @@
 #include "file_system.h"
 
 /*******************************************************************************
- * The array defines the lookup paths for configuration files. The order of the
- * array matters.
+ * The definitions of the nuzzle directories and files.
  ******************************************************************************/
 
-const char *fs_cfg_dirs[] = { "cfg", "/etc/nuzzle", NULL };
+#define CFG_DIR_HOME ".nuzzle"
+
+#define CFG_DIR_REL "cfg"
+
+#define CFG_DIR_SYS "/etc/nuzzle"
 
 /*******************************************************************************
  * The function checks whether a system file entry exists or not. The entry can
  * be a file (true) or a directory (false).
+ *
+ * (unit tested)
  ******************************************************************************/
-// TODO: unit test
+
 bool fs_entry_exists(const char *path, const bool reg_file) {
 	struct stat sb;
 
@@ -77,34 +83,98 @@ bool fs_entry_exists(const char *path, const bool reg_file) {
 	}
 }
 
+/******************************************************************************
+ * The function creates the path of the nuzzle directory, which is:
+ *
+ *   <HOME>/.nuzzle
+ *****************************************************************************/
+
+void fs_nuzzle_dir_get(char *path, const int size) {
+
+	//
+	// Get the home directory.
+	//
+	const char *homedir;
+
+	if ((homedir = getenv("HOME")) == NULL) {
+		log_exit_str("Home directory not found!");
+	}
+
+	//
+	// Get the nuzzle directory.
+	//
+	if (snprintf(path, size, "%s/%s", homedir, CFG_DIR_HOME) >= size) {
+		log_exit_str("Path is too long!");
+	}
+}
+
+/******************************************************************************
+ * The function checks if the nuzzle directory exists. If not, it will be
+ * created.
+ *****************************************************************************/
+
+void fs_nuzzle_dir_ensure() {
+	char path[PATH_MAX];
+
+	//
+	// Get the nuzzle directory.
+	//
+	fs_nuzzle_dir_get(path, PATH_MAX);
+
+	//
+	// If the directory does not exist, we create it.
+	//
+	if (!fs_entry_exists(path, CHECK_DIR) && mkdir(path, S_IRWXU | S_IRWXG) == -1) {
+		log_exit("Unable to create directory: %s - %s", path, strerror(errno));
+	}
+}
+
 /*******************************************************************************
- * The function is called with a NULL terminated array of directories and a file
- * name. It concatenates each directory with the file name and check if the
- * result exists in the file system. It saves the result in the path parameter
- * and returns true if something was found.
+ * The function checks the nuzzle configuration directories for a given file.
+ * The function returns true if the file was found in one of the directories and
+ * copies the path to the path parameter and returns true. The function returns
+ * false if the file was not found.
  ******************************************************************************/
-// TODO: unit test
-bool fs_get_cfg_file(const char *dirs[], const char *name, char *path, const int size) {
+
+bool fs_get_cfg_file(const char *name, char *path, const int size) {
 
 	//
-	// Iterate over the NULL terminates array of directory paths
+	// check: cfg/<file>
 	//
-	for (const char **ptr = dirs; *ptr != NULL; ptr++) {
+	if (snprintf(path, size, "%s/%s", CFG_DIR_REL, name) >= size) {
+		log_exit("Truncated: %s/%s", CFG_DIR_REL, name);
+	}
 
-		//
-		// Concatenate the directory with the file name
-		//
-		if (snprintf(path, size, "%s/%s", *ptr, name) >= size) {
-			log_exit("Truncated: %s/%s", *ptr, name);
-		}
+	if (fs_entry_exists(path, CHECK_FILE)) {
+		log_debug("File exists: %s", path);
+		return true;
+	}
 
-		//
-		// If the result exists (and is a file) we are done.
-		//
-		if (fs_entry_exists(path, CHECK_FILE)) {
-			log_debug("File exists: %s", path);
-			return true;
-		}
+	//
+	// check: <home>/.nuzzle/<file>
+	//
+	char tmp[PATH_MAX];
+	fs_nuzzle_dir_get(tmp, PATH_MAX);
+
+	if (snprintf(path, size, "%s/%s", tmp, name) >= size) {
+		log_exit("Truncated: %s/%s", tmp, name);
+	}
+
+	if (fs_entry_exists(path, CHECK_FILE)) {
+		log_debug("File exists: %s", path);
+		return true;
+	}
+
+	//
+	// check: /etc/nuzzle/<file>
+	//
+	if (snprintf(path, size, "%s/%s", CFG_DIR_SYS, name) >= size) {
+		log_exit("Truncated: %s/%s", CFG_DIR_SYS, name);
+	}
+
+	if (fs_entry_exists(path, CHECK_FILE)) {
+		log_debug("File exists: %s", path);
+		return true;
 	}
 
 	//

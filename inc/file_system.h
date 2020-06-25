@@ -35,14 +35,16 @@
 
 #define CHECK_DIR false
 
-extern const char *fs_cfg_dirs[];
-
 /*******************************************************************************
  * Definition of the functions.
  ******************************************************************************/
 
 bool fs_entry_exists(const char *path, const bool reg_file);
 
-bool fs_get_cfg_file(const char *dirs[], const char *name, char *path, const int size);
+void fs_nuzzle_dir_get(char *path, const int size);
+
+void fs_nuzzle_dir_ensure();
+
+bool fs_get_cfg_file(const char *name, char *path, const int size);
 
 #endif /* INC_FILE_SYSTEM_H_ */
