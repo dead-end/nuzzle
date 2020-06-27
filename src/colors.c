@@ -442,7 +442,7 @@ static short colors_chess_get_color(const s_point *idx, const e_chess_type chess
  * color index and a flag indicating whether the block is odd or even.
  *****************************************************************************/
 
-wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const s_point *idx, const e_chess_type chess_type) {
+wchar_t colors_chess_attr_char(WINDOW *win, t_block ga_color, const t_block da_color, const s_point *idx, const e_chess_type chess_type) {
 	int color_pair;
 	wchar_t chr;
 
@@ -465,6 +465,17 @@ wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_bloc
 			color_pair = color_pair_get(ga_color, da_color);
 		}
 	} else {
+
+		//
+		// If CHESS_DOUBLE is active we assume that ga_color is CLR_MK_N.
+		//
+		if (chess_type == CHESS_DOUBLE && colors_is_even((idx->row / 3), (idx->col / 3))) {
+
+			//
+			// ATTENTION: Parameter is reset
+			//
+			ga_color = CLR_MK_L;
+		}
 
 		//
 		// The foreground is set, so we need a full character.

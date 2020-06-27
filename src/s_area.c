@@ -726,29 +726,6 @@ void s_area_print_block(WINDOW *win, const s_area *area, const s_point *idx, con
 }
 
 /******************************************************************************
- * The function computes the color of the game area depending on the chess
- * pattern type.
- *****************************************************************************/
-
-// TODO: check if this should be part of the colors_chess_attr_char() function
-static t_block get_ga_color(const s_area *area, const s_point *idx, const e_chess_type chess_type) {
-
-	//
-	// We need the primary color of the game area.
-	//
-	const t_block ga_color = area->blocks[idx->row][idx->col];
-
-	//
-	// We check if a modification is necessary.
-	//
-	if (chess_type == CHESS_DOUBLE && ga_color != CLR_NONE && colors_is_even((idx->row / 3), (idx->col / 3))) {
-		return CLR_MK_L;
-	}
-
-	return ga_color;
-}
-
-/******************************************************************************
  * The function prints an empty area with a chess pattern. This can be used as
  * an initialization.
  *****************************************************************************/
@@ -768,7 +745,7 @@ void s_area_print_chess(WINDOW *win, const s_area *area, const e_chess_type ches
 			// Get the color of the game area depending on the chess pattern
 			// type.
 			//
-			ga_color = get_ga_color(area, &idx, chess_type);
+			ga_color = area->blocks[idx.row][idx.col];
 
 			//
 			// Set the color pair and get the character to display.
@@ -802,7 +779,7 @@ void s_area_print_chess_pixel(WINDOW *win, const s_area *area, const s_point *pi
 	//
 	// Get the color of the game area depending on the chess pattern type.
 	//
-	const t_block ga_color = get_ga_color(area, &block_idx, chess_type);
+	const t_block ga_color = area->blocks[block_idx.row][block_idx.col];
 
 	//
 	// Set the color pair and get the character to display.
