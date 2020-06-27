@@ -113,13 +113,9 @@ static void init() {
 	game_init();
 
 	//
-	// Lookup config file and read the game config
+	// Read the configuration file.
 	//
-	char path[PATH_MAX];
-	if (!fs_get_cfg_file("nuzzle.cfg", path, PATH_MAX)) {
-		log_exit_str("No config file found!");
-	}
-	s_game_cfg_read(path);
+	s_game_cfg_read(NUZZLE_CFG_FILE);
 }
 
 /******************************************************************************
