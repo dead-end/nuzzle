@@ -483,7 +483,6 @@ wchar_t colors_chess_attr_char(WINDOW *win, t_block ga_color, const t_block da_c
 		if (da_color == CLR_NONE) {
 			chr = BLOCK_FULL;
 			color_pair = color_pair_get(ga_color, da_color);
-
 		}
 
 		//
