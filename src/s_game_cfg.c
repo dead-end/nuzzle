@@ -29,6 +29,7 @@
 
 #include "colors.h"
 #include "s_shapes.h"
+#include "file_system.h"
 
 /*******************************************************************************
  * Declaration of an array for game configurations.
@@ -396,7 +397,16 @@ static void s_game_cfg_process(FILE *file, const char *path) {
  * s_game_cfg structures.
  ******************************************************************************/
 
-void s_game_cfg_read(const char *path) {
+void s_game_cfg_read(const char *file_name) {
+
+	//
+	//  The function is called with the file name. We need the path of the file.
+	//
+	char path[PATH_MAX];
+
+	if (!fs_get_cfg_file(file_name, path, PATH_MAX)) {
+		log_exit("No config file found: %s", file_name);
+	}
 
 	//
 	// Initialize the game configurations. This is required by the

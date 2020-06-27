@@ -261,7 +261,10 @@ void s_shapes_read(const char *file_name) {
 	// The function is called with the file name. We need the path of the file.
 	//
 	char path[PATH_MAX];
-	fs_get_cfg_file(file_name, path, PATH_MAX);
+
+	if (!fs_get_cfg_file(file_name, path, PATH_MAX)) {
+		log_exit("No config file found: %s", file_name);
+	}
 
 	log_debug("Reading shapes from file: %s", file_name);
 
