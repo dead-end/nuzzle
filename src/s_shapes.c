@@ -162,28 +162,15 @@ static void s_shape_finish(const int idx) {
 }
 
 /*******************************************************************************
- * The function read the content of the file and fills the shape structures.
+ * The function does the processing of the configuration file.
  ******************************************************************************/
 
 #define BUF_SIZE 1024
 
-void s_shapes_read(const char *file_name) {
+static void s_shape_process(FILE *file, const char *path) {
 	char line[1024];
 	int idx = -1;
 	_num_shapes = 0;
-
-	char path[PATH_MAX];
-	fs_get_cfg_file(file_name, path, PATH_MAX);
-
-	log_debug("Reading shapes from file: %s", file_name);
-
-	//
-	// Open the score file.
-	//
-	FILE *file = fopen(path, "r");
-	if (file == NULL) {
-		log_exit("Unable open file: %s - %s", path, strerror(errno));
-	}
 
 	//
 	// Read the file line by line.
@@ -262,8 +249,41 @@ void s_shapes_read(const char *file_name) {
 	if (idx >= 0) {
 		s_shape_finish(_num_shapes - 1);
 	}
+}
 
-	fclose(file);
+/*******************************************************************************
+ * The function read the content of the file and fills the shape structures.
+ ******************************************************************************/
+
+void s_shapes_read(const char *file_name) {
+
+	//
+	// The function is called with the file name. We need the path of the file.
+	//
+	char path[PATH_MAX];
+	fs_get_cfg_file(file_name, path, PATH_MAX);
+
+	log_debug("Reading shapes from file: %s", file_name);
+
+	//
+	// Open the score file.
+	//
+	FILE *file = fopen(path, "r");
+	if (file == NULL) {
+		log_exit("Unable open file: %s - %s", path, strerror(errno));
+	}
+
+	//
+	// Delegate the processing to a separate function.
+	//
+	s_shape_process(file, path);
+
+	//
+	// Close the file and check for errors.
+	//
+	if (fclose(file) == -1) {
+		log_exit("Unable close file: %s - %s", path, strerror(errno));
+	}
 }
 
 /*******************************************************************************
