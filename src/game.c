@@ -513,7 +513,7 @@ bool game_event_drop(s_status *status) {
 		home_area_mark_drop();
 
 		// TODO: status => pickup
-		s_status_release(status);
+		s_status_undo_pickup(status);
 
 		if (home_area_refill(false)) {
 			home_area_print(_win_game, status);
@@ -738,16 +738,6 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 
 void game_process_event_undo_pickup(s_status *status) {
 
-#ifdef DEBUG
-
-	//
-	// Ensure that the drop area is not already picked up.
-	//
-	if (!s_status_is_picked_up(status)) {
-		log_exit_str("Not picked up!");
-	}
-#endif
-
 	//
 	// Delete the drop area from the old position.
 	//
@@ -756,7 +746,7 @@ void game_process_event_undo_pickup(s_status *status) {
 	//
 	// Mark the status as not picked up
 	//
-	s_status_release(status);
+	s_status_undo_pickup(status);
 
 	//
 	// Mark the home area as not picked up.
