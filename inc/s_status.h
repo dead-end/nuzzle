@@ -70,7 +70,7 @@ typedef struct s_status {
 
 void s_status_init(s_status *status, const s_game_cfg *game_cfg);
 
-void s_status_release(s_status *status);
+void s_status_undo_pickup(s_status *status);
 
 void s_status_pickup(s_status *status, const int offset_row, const int offset_col);
 
