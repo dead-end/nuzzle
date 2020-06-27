@@ -28,6 +28,18 @@
 #include <stdbool.h>
 
 /*******************************************************************************
+ * The definitions of the nuzzle directories and files.
+ ******************************************************************************/
+
+#define NUZZLE_CFG_DIR_HOME ".nuzzle"
+
+#define NUZZLE_CFG_DIR_REL "cfg"
+
+#define NUZZLE_CFG_DIR_SYS "/etc/nuzzle"
+
+#define NUZZLE_CFG_FILE "nuzzle.cfg"
+
+/*******************************************************************************
  * Two definitions for a flag makes it more readable.
  ******************************************************************************/
 

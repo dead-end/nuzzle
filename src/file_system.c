@@ -30,16 +30,6 @@
 #include "file_system.h"
 
 /*******************************************************************************
- * The definitions of the nuzzle directories and files.
- ******************************************************************************/
-
-#define CFG_DIR_HOME ".nuzzle"
-
-#define CFG_DIR_REL "cfg"
-
-#define CFG_DIR_SYS "/etc/nuzzle"
-
-/*******************************************************************************
  * The function checks whether a system file entry exists or not. The entry can
  * be a file (true) or a directory (false).
  *
@@ -103,7 +93,7 @@ void fs_nuzzle_dir_get(char *path, const int size) {
 	//
 	// Get the nuzzle directory.
 	//
-	if (snprintf(path, size, "%s/%s", homedir, CFG_DIR_HOME) >= size) {
+	if (snprintf(path, size, "%s/%s", homedir, NUZZLE_CFG_DIR_HOME) >= size) {
 		log_exit_str("Path is too long!");
 	}
 }
@@ -141,8 +131,8 @@ bool fs_get_cfg_file(const char *name, char *path, const int size) {
 	//
 	// check: cfg/<file>
 	//
-	if (snprintf(path, size, "%s/%s", CFG_DIR_REL, name) >= size) {
-		log_exit("Truncated: %s/%s", CFG_DIR_REL, name);
+	if (snprintf(path, size, "%s/%s", NUZZLE_CFG_DIR_REL, name) >= size) {
+		log_exit("Truncated: %s/%s", NUZZLE_CFG_DIR_REL, name);
 	}
 
 	if (fs_entry_exists(path, CHECK_FILE)) {
@@ -168,8 +158,8 @@ bool fs_get_cfg_file(const char *name, char *path, const int size) {
 	//
 	// check: /etc/nuzzle/<file>
 	//
-	if (snprintf(path, size, "%s/%s", CFG_DIR_SYS, name) >= size) {
-		log_exit("Truncated: %s/%s", CFG_DIR_SYS, name);
+	if (snprintf(path, size, "%s/%s", NUZZLE_CFG_DIR_SYS, name) >= size) {
+		log_exit("Truncated: %s/%s", NUZZLE_CFG_DIR_SYS, name);
 	}
 
 	if (fs_entry_exists(path, CHECK_FILE)) {
