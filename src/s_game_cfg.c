@@ -261,30 +261,14 @@ static void s_game_check() {
 }
 
 /*******************************************************************************
- * The function reads the configurations from the config file to an array of
- * s_game_cfg structures.
+ * The function processes the configurations from the config file line by line.
  ******************************************************************************/
 
 #define BUF_SIZE 1024
 
-void s_game_cfg_read(const char *path) {
+static void s_game_cfg_process(FILE *file, const char *path) {
 	char line[BUF_SIZE];
 	s_game_cfg *game = NULL;
-
-	//
-	// Initialize the game configurations. This is required by the
-	// s_game_check() function to be able to check if all configurations are
-	// complete
-	//
-	s_game_init();
-
-	//
-	// Open the score file.
-	//
-	FILE *file = fopen(path, "r");
-	if (file == NULL) {
-		log_exit("Unable open file: %s - %s", path, strerror(errno));
-	}
 
 	//
 	// Read the file line by line.
@@ -405,8 +389,41 @@ void s_game_cfg_read(const char *path) {
 			log_exit("Unknown definition: %s", line);
 		}
 	}
+}
 
-	fclose(file);
+/*******************************************************************************
+ * The function reads the configurations from the config file to an array of
+ * s_game_cfg structures.
+ ******************************************************************************/
+
+void s_game_cfg_read(const char *path) {
+
+	//
+	// Initialize the game configurations. This is required by the
+	// s_game_check() function to be able to check if all configurations are
+	// complete
+	//
+	s_game_init();
+
+	//
+	// Open the game configuration file.
+	//
+	FILE *file = fopen(path, "r");
+	if (file == NULL) {
+		log_exit("Unable open file: %s - %s", path, strerror(errno));
+	}
+
+	//
+	// Delegate the processing to a separate function.
+	//
+	s_game_cfg_process(file, path);
+
+	//
+	// Close the file and check for errors.
+	//
+	if (fclose(file) == -1) {
+		log_exit("Unable close file: %s - %s", path, strerror(errno));
+	}
 
 #ifdef DEBUG
 
