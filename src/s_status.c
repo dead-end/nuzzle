@@ -44,7 +44,17 @@ void s_status_init(s_status *status, const s_game_cfg *game_cfg) {
  * The function sets the status to "NOT picked up" or released.
  *****************************************************************************/
 
-void s_status_release(s_status *status) {
+void s_status_undo_pickup(s_status *status) {
+
+#ifdef DEBUG
+
+	//
+	// Ensure that the drop area is picked up.
+	//
+	if (!s_status_is_picked_up(status)) {
+		log_exit_str("Not picked up!");
+	}
+#endif
 
 	s_point_set(&status->offset, OFFSET_NOT_SET, OFFSET_NOT_SET);
 }
@@ -58,11 +68,10 @@ void s_status_pickup(s_status *status, const int offset_row, const int offset_co
 #ifdef DEBUG
 
 	//
-	// The offset is not allowed to be negative. This is interpreted as not
-	// been picked up.
+	// Ensure that the drop area is not picked up.
 	//
-	if (offset_row < 0 || offset_col < 0) {
-		log_exit("Invalid offset %d/%d", offset_row, offset_col);
+	if (s_status_is_picked_up(status)) {
+		log_exit_str("Already picked up!");
 	}
 #endif
 
