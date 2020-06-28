@@ -28,28 +28,7 @@
 #include <ncurses.h>
 
 #include "blocks.h"
-
-/******************************************************************************
- * The enum defines the different forms of chess pattern.
- *****************************************************************************/
-// TODO: is this the right place?
-typedef enum e_chess_type {
-
-	//
-	// Simple chess pattern with two light colors
-	//
-	CHESS_SIMPLE_LIGHT,
-
-		//
-		// Simple chess pattern with two dark colors
-		//
-		CHESS_SIMPLE_DARK,
-
-		//
-		// Double chess pattern with three colors
-		//
-		CHESS_DOUBLE
-} e_chess_type;
+#include "colors.h"
 
 /******************************************************************************
  * The definition of the area struct.
