@@ -30,6 +30,7 @@
 #include "colors.h"
 #include "s_shapes.h"
 #include "file_system.h"
+#include "rules.h"
 
 /*******************************************************************************
  * Declaration of an array for game configurations.
@@ -70,6 +71,8 @@ s_game_cfg _game_cfg[S_GAMES_CFG_MAX];
 #define CFG_HOME_SIZE_ROW "home.size.row"
 
 #define CFG_HOME_SIZE_COL "home.size.col"
+
+#define CFG_COLOR "color"
 
 /*******************************************************************************
  * The macro checks if the string starts with a prefix.
@@ -140,6 +143,56 @@ static int cfg_get_type(const char *line) {
 }
 
 /*******************************************************************************
+ * The function parses a color from the line. Valid values are:
+ *
+ * - Games: "lines" and "squares-lines": red, green, blue, yellow
+ *
+ * - Games: "4-colors": empty string
+ ******************************************************************************/
+
+static int cfg_get_color(const int type, const char *line) {
+
+	if (type == TYPE_UNDEF) {
+		log_exit("Type undefined: %s", line);
+	}
+
+	const char *value = cfg_get_value(line);
+
+	if (type == TYPE_4_COLORS) {
+
+		if (strlen(value) == 0) {
+			return CLR_NONE;
+		}
+
+		log_exit("Invalid color definition for 4-colors: %s", line);
+
+	} else {
+
+		if (strlen(value) == 0) {
+			return CLR_BLUE_N;
+		}
+
+		if (strcmp(value, "red") == 0) {
+			return CLR_RED__N;
+		}
+
+		if (strcmp(value, "green") == 0) {
+			return CLR_GREE_N;
+		}
+
+		if (strcmp(value, "blue") == 0) {
+			return CLR_BLUE_N;
+		}
+
+		if (strcmp(value, "yellow") == 0) {
+			return CLR_YELL_N;
+		}
+
+		log_exit("Unknown color: %s", line);
+	}
+}
+
+/*******************************************************************************
  * The macro is called with a key value pair ("key=value") and it is assumed
  * that the value is an integer. It returns the value as an int.
  ******************************************************************************/
@@ -169,6 +222,8 @@ void s_game_debug(const s_game_cfg *game_cfg) {
 
 	log_debug("home num: %d", game_cfg->home_num);
 	log_debug("home size: %d/%d", game_cfg->home_size.row, game_cfg->home_size.col);
+
+	log_debug("color: %d", game_cfg->color);
 
 	log_debug("chess type: %d", game_cfg->chess_type);
 }
@@ -200,6 +255,8 @@ static void s_game_init() {
 		s_point_set(&_game_cfg[i].drop_dim, -1, -1);
 
 		_game_cfg[i].home_num = -1;
+
+		_game_cfg[i].color = -1;
 
 		s_point_set(&_game_cfg[i].home_size, -1, -1);
 	}
@@ -257,6 +314,10 @@ static void s_game_check() {
 
 		if (_game_cfg[i].home_size.row < 0 || _game_cfg[i].home_size.col < 0) {
 			log_exit("Game: %d - not set: '%s' or '%s'", i, CFG_HOME_SIZE_ROW, CFG_HOME_SIZE_COL);
+		}
+
+		if (_game_cfg[i].color < 0) {
+			log_exit("Game: %d - not set: '%s'", i, CFG_COLOR);
 		}
 	}
 }
@@ -381,6 +442,9 @@ static void s_game_cfg_process(FILE *file, const char *path) {
 
 			} else if (starts_with(line, CFG_HOME_SIZE_COL)) {
 				game->home_size.col = cfg_get_int(line);
+
+			} else if (starts_with(line, CFG_COLOR)) {
+				game->color = cfg_get_color(game->type, line);
 
 			} else {
 				log_exit("Unknown definition: %s", line);
