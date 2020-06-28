@@ -23,12 +23,7 @@
  */
 
 #include "home_area.h"
-
-/******************************************************************************
- * The definition of the function to refill empty home areas.
- *****************************************************************************/
-
-static void (*_fptr_refill)(t_block**, const int, const int);
+#include "colors.h"
 
 /******************************************************************************
  * The home area consists of areas that can be picked up. They are stored in an
@@ -257,7 +252,7 @@ static bool home_area_needs_refilling() {
  * not want to check if refilling is necessary.
  *****************************************************************************/
 
-bool home_area_refill(const bool force) {
+bool home_area_refill(const s_game_cfg *game_cfg, const bool force) {
 
 #ifdef DEBUG
 
@@ -280,8 +275,7 @@ bool home_area_refill(const bool force) {
 		//
 		// Call the configured refilling function
 		//
-		(*_fptr_refill)(_home_area[i].area.blocks, _home_area[i].area.dim.row, _home_area[i].area.dim.col);
-
+		(*game_cfg->fct_ptr_init_random)(game_cfg, _home_area[i].area.blocks);
 		//
 		// Remove the dropped mark, which is definitely set at this point.
 		//
@@ -436,11 +430,11 @@ void home_area_print_pixel(WINDOW *win, const s_status *status, const s_point *p
  * home areas are refilled, independent of their state.
  *****************************************************************************/
 
-void home_area_reset() {
+void home_area_reset(const s_game_cfg *game_cfg) {
 
 	_pickup_idx = PICKUP_IDX_UNDEF;
 
-	home_area_refill(true);
+	home_area_refill(game_cfg, true);
 }
 
 /******************************************************************************
@@ -475,42 +469,37 @@ void home_area_free_game() {
  * starts.
  *****************************************************************************/
 
-void home_area_create_game(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int)) {
+void home_area_create_game(const s_game_cfg *game_cfg) {
 
 	//
 	// Ensure that the number of home areas is valid.
 	//
-	if (num > HOME_MAX) {
-		log_exit("Number of home areas too large: %d", num);
+	if (game_cfg->home_num > HOME_MAX) {
+		log_exit("Number of home areas too large: %d", game_cfg->home_num);
 	}
 
 	//
 	// Allocate the home areas.
 	//
-	_home_num = num;
+	_home_num = game_cfg->home_num;
 
 	for (int i = 0; i < _home_num; i++) {
 		log_debug("Creating area: %d", i);
 
-		s_area_create(&_home_area[i].area, dim, size);
+		s_area_create(&_home_area[i].area, &game_cfg->drop_dim, &game_cfg->home_size);
 	}
 
 	//
 	// Allocate backup storage.
 	//
-	s_point_set(&_blocks_dim, dim->row, dim->col);
+	s_point_set(&_blocks_dim, game_cfg->drop_dim.row, game_cfg->drop_dim.col);
 
 	_blocks = blocks_create(_blocks_dim.row, _blocks_dim.col);
 
 	//
-	// Store the refilling function.
-	//
-	_fptr_refill = fct_ptr;
-
-	//
 	// Reset / initialize the home area.
 	//
-	home_area_reset();
+	home_area_reset(game_cfg);
 }
 
 /******************************************************************************

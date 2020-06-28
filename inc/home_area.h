@@ -36,7 +36,7 @@ bool home_area_can_drop_anywhere(s_area *area);
 
 void home_area_mark_drop();
 
-bool home_area_refill(const bool force);
+bool home_area_refill(const s_game_cfg *game_cfg, const bool force);
 
 void home_area_pickup(s_area *area, const s_point *pixel);
 
@@ -46,9 +46,9 @@ void home_area_print(WINDOW *win, const s_status *status);
 
 void home_area_print_pixel(WINDOW *win, const s_status *status, const s_point *pixel, const t_block da_color);
 
-void home_area_reset();
+void home_area_reset(const s_game_cfg *game_cfg);
 
-void home_area_create_game(const int num, const s_point *dim, const s_point *size, void (*fct_ptr)(t_block**, const int, const int));
+void home_area_create_game(const s_game_cfg *game_cfg);
 
 void home_area_free_game();
 
