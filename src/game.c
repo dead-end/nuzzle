@@ -421,7 +421,7 @@ void game_create_game(const s_status *status) {
 	//
 	// Create and initialize thehome area
 	//
-	home_area_create_game(game_cfg->home_num, &game_cfg->drop_dim, &game_cfg->home_size, game_cfg->fct_ptr_init_random);
+	home_area_create_game(status->game_cfg);
 
 	//
 	// Initialize the info area
@@ -515,7 +515,7 @@ bool game_event_drop(s_status *status) {
 		// TODO: status => pickup
 		s_status_undo_pickup(status);
 
-		if (home_area_refill(false)) {
+		if (home_area_refill(status->game_cfg, false)) {
 			home_area_print(_win_game, status);
 		}
 
@@ -612,7 +612,7 @@ void game_reset(s_status *status) {
 	//
 	// Move the drop area to the home position.
 	//
-	home_area_reset();
+	home_area_reset(status->game_cfg);
 }
 
 /******************************************************************************
