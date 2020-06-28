@@ -40,9 +40,9 @@
  * s_game_cfg struct.
  ******************************************************************************/
 
-void s_shapes_read(const char *path);
+void init_random_shapes_read(const char *path);
 
-void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks);
+void init_random_shapes(const s_game_cfg *game_cfg, t_block **blocks);
 
 void init_random_colors_setup(const char *data);
 
@@ -406,16 +406,16 @@ static void s_game_cfg_process(FILE *file, const char *path) {
 
 				case TYPE_LINES:
 					game->chess_type = CHESS_SIMPLE_LIGHT;
-					game->fct_ptr_set_data = s_shapes_read;
+					game->fct_ptr_set_data = init_random_shapes_read;
 					game->fct_ptr_rules_remove = rules_remove_lines;
-					game->fct_ptr_init_random = s_shapes_init_random;
+					game->fct_ptr_init_random = init_random_shapes;
 					break;
 
 				case TYPE_SQUARES_LINES:
 					game->chess_type = CHESS_DOUBLE;
-					game->fct_ptr_set_data = s_shapes_read;
+					game->fct_ptr_set_data = init_random_shapes_read;
 					game->fct_ptr_rules_remove = rules_remove_squares_lines;
-					game->fct_ptr_init_random = s_shapes_init_random;
+					game->fct_ptr_init_random = init_random_shapes;
 					break;
 
 				case TYPE_4_COLORS:
