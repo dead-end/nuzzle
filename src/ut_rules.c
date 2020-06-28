@@ -174,25 +174,25 @@ static void test_check_neighbors() {
 	s_area_create(&area, &_dim, &_size);
 	s_area_set_blocks(&area, 0);
 
-	area.blocks[0][0] = CLR_RED_;
-	area.blocks[0][1] = CLR_RED_;
+	area.blocks[0][0] = CLR_RED__N;
+	area.blocks[0][1] = CLR_RED__N;
 
-	area.blocks[1][1] = CLR_RED_;
+	area.blocks[1][1] = CLR_RED__N;
 
-	area.blocks[2][1] = CLR_RED_;
-	area.blocks[2][2] = CLR_BLUE;
-	area.blocks[2][3] = CLR_BLUE;
-	area.blocks[2][4] = CLR_BLUE;
-	area.blocks[2][5] = CLR_BLUE;
+	area.blocks[2][1] = CLR_RED__N;
+	area.blocks[2][2] = CLR_BLUE_N;
+	area.blocks[2][3] = CLR_BLUE_N;
+	area.blocks[2][4] = CLR_BLUE_N;
+	area.blocks[2][5] = CLR_BLUE_N;
 
-	area.blocks[3][2] = CLR_BLUE;
+	area.blocks[3][2] = CLR_BLUE_N;
 
-	area.blocks[4][2] = CLR_BLUE;
-	area.blocks[4][3] = CLR_BLUE;
-	area.blocks[4][4] = CLR_BLUE;
-	area.blocks[4][5] = CLR_BLUE;
+	area.blocks[4][2] = CLR_BLUE_N;
+	area.blocks[4][3] = CLR_BLUE_N;
+	area.blocks[4][4] = CLR_BLUE_N;
+	area.blocks[4][5] = CLR_BLUE_N;
 
-	area.blocks[5][2] = CLR_BLUE;
+	area.blocks[5][2] = CLR_BLUE_N;
 
 	//
 	// Create the rules and remove the neighbors.
