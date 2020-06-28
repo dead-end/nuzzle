@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 dead-end
+ * Copyright (c) 2020 dead-end
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 #include <ncurses.h>
 
-#include "blocks.h"
+#include "s_game_cfg.h"
 
 /******************************************************************************
  * The definition of color indices. They are used as an index for an array with
@@ -36,39 +36,33 @@
 
 #define CLR_NONE        0
 
-#define CLR_RED_        1
-#define CLR_GREE        2
-#define CLR_BLUE        3
-#define CLR_YELL        4
+//
+// Normal colors
+//
+#define CLR_RED__N      1
+#define CLR_GREE_N      2
+#define CLR_BLUE_N      3
+#define CLR_YELL_N      4
 
-#define CLR_GREY_DARK_  5
-#define CLR_GREY_MID__  6
-#define CLR_GREY_LIGHT  7
+//
+// Light colors
+//
+#define CLR_RED__L      5
+#define CLR_GREE_L      6
+#define CLR_BLUE_L      7
+#define CLR_YELL_L      8
 
-#define CLR_MK_L        8
-#define CLR_MK_N        9
+//
+// To get the light color from a normal color, simply add 4
+//
+#define colors_get_light(c) (c) + 4
 
-/******************************************************************************
- * The enum defines the different forms of chess pattern.
- *****************************************************************************/
-
-typedef enum e_chess_type {
-
-	//
-	// Simple chess pattern with two light colors
-	//
-	CHESS_SIMPLE_LIGHT,
-
-		//
-		// Simple chess pattern with two dark colors
-		//
-		CHESS_SIMPLE_DARK,
-
-		//
-		// Double chess pattern with three colors
-		//
-		CHESS_DOUBLE
-} e_chess_type;
+//
+// Background chess pattern colors
+//
+#define CLR_GREY_DARK_  9
+#define CLR_GREY_MID__ 10
+#define CLR_GREY_LIGHT 11
 
 /******************************************************************************
  * Functions and macros
@@ -80,7 +74,7 @@ void colors_init();
 
 void colors_setup_init_random(const char *data);
 
-void colors_init_random(t_block **blocks, const int rows, const int cols);
+void colors_init_random(const s_game_cfg *game_cfg, t_block **blocks);
 
 void colors_normal_set_attr(WINDOW *win, const t_block da_color);
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 dead-end
+ * Copyright (c) 2020 dead-end
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
 
 #include <ncurses.h>
 
-#include "common.h"
 #include "colors.h"
 
 /******************************************************************************
@@ -36,33 +35,21 @@
 #define BG_M_G 17
 #define BG_D_G 18
 
-#define FG_RED 19
-#define BG_RED 20
+#define LG_RED 19
+#define FG_RED 20
+#define BG_RED 21
 
-#define FG_GRE 21
-#define BG_GRE 22
+#define LG_GRE 22
+#define FG_GRE 23
+#define BG_GRE 24
 
-#define FG_BLU 23
-#define BG_BLU 24
+#define LG_BLU 25
+#define FG_BLU 26
+#define BG_BLU 27
 
-#define FG_YEL 25
-#define BG_YEL 26
-
-#define MK_DRK 27
-#define MK_MID 28
-#define MK_LIG 29
-
-/******************************************************************************
- * The definition of the color constants.
- *****************************************************************************/
-
-#define FULL 999
-#define CORR 100
-#define COHA  50
-#define LIGH 600
-#define DARK 300
-
-#define MID_ 700
+#define LG_YEL 28
+#define FG_YEL 29
+#define BG_YEL 30
 
 /******************************************************************************
  * The color pairs are stored in a 2 dimensional array. The indices are the
@@ -74,19 +61,18 @@
 //
 #define CP_DEFAULT 0
 
-#define CP_START 8
+#define CP_START   8
 
-#define CP_UNDEF -1
+#define CP_UNDEF  -1
 
 //
 // The number of colors for the foreground and the background:
 //
 // - none / black
 // - 3 x grey
-// - 4 colors
-// - 3 marker
+// - 4 normal and 4 light colors
 //
-#define NUM_COLORS 11
+#define NUM_COLORS 12
 
 static t_block _color_pairs[NUM_COLORS][NUM_COLORS];
 
@@ -127,6 +113,9 @@ static inline t_block color_pair_get(const short fg, const short bg) {
 #ifdef DEBUG
 	log_debug("Color pair: %d fg: %d bg: %d", cp, fg, bg);
 
+	//
+	// Ensure that the color pair is defined.
+	//
 	if (cp == CP_UNDEF) {
 		log_exit("Color pair is not defined - fg: %d bg: %d", fg, bg);
 	}
@@ -166,8 +155,6 @@ static void colors_init_color(const short color, const short red, const short gr
 
 static void colors_alloc() {
 
-	// TODO: use constants for the colors or not.
-
 	//
 	// Chess pattern colors
 	//
@@ -178,33 +165,30 @@ static void colors_alloc() {
 	//
 	// Red
 	//
-	colors_init_color(FG_RED, FULL, DARK - COHA, DARK - COHA);
-	colors_init_color(BG_RED, FULL, LIGH, LIGH);
+	colors_init_color(LG_RED, 999, 600, 600);
+	colors_init_color(FG_RED, 999, 300, 300);
+	colors_init_color(BG_RED, 700, 0, 0);
 
 	//
 	// Green
 	//
-	colors_init_color(FG_GRE, DARK, FULL - CORR - CORR, DARK - CORR);
-	colors_init_color(BG_GRE, LIGH, FULL, LIGH);
+	colors_init_color(LG_GRE, 700, 999, 700);
+	colors_init_color(FG_GRE, 0, 900, 0);
+	colors_init_color(BG_GRE, 0, 500, 0);
 
 	//
 	// Blue
 	//
-	colors_init_color(FG_BLU, DARK, DARK, FULL);
-	colors_init_color(BG_BLU, LIGH, LIGH, FULL);
+	colors_init_color(LG_BLU, 700, 700, 999);
+	colors_init_color(FG_BLU, 400, 400, 999);
+	colors_init_color(BG_BLU, 0, 0, 600);
 
 	//
 	// Yellow
 	//
-	colors_init_color(FG_YEL, FULL - CORR, FULL - CORR, DARK - CORR);
-	colors_init_color(BG_YEL, FULL, FULL, LIGH);
-
-	//
-	// Marker
-	//
-	colors_init_color(MK_DRK, 500, 0, 300);
-	colors_init_color(MK_MID, 800, 100, 500);
-	colors_init_color(MK_LIG, 999, 200, 700);
+	colors_init_color(LG_YEL, 999, 999, 600);
+	colors_init_color(FG_YEL, 850, 850, 0);
+	colors_init_color(BG_YEL, 500, 500, 0);
 }
 
 /******************************************************************************
@@ -231,49 +215,53 @@ static void color_pairs_alloc() {
 	//
 	// Initialize the color pairs with black.
 	//
-	_color_pairs[CLR_RED_][CLR_NONE] = colors_init_pair(color_pair++, FG_RED, COLOR_BLACK);
-	_color_pairs[CLR_GREE][CLR_NONE] = colors_init_pair(color_pair++, FG_GRE, COLOR_BLACK);
-	_color_pairs[CLR_BLUE][CLR_NONE] = colors_init_pair(color_pair++, FG_BLU, COLOR_BLACK);
-	_color_pairs[CLR_YELL][CLR_NONE] = colors_init_pair(color_pair++, FG_YEL, COLOR_BLACK);
+	_color_pairs[CLR_RED__N][CLR_NONE] = colors_init_pair(color_pair++, FG_RED, COLOR_BLACK);
+	_color_pairs[CLR_GREE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_GRE, COLOR_BLACK);
+	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_BLU, COLOR_BLACK);
+	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, FG_YEL, COLOR_BLACK);
 
-	_color_pairs[CLR_NONE][CLR_RED_] = colors_init_pair(color_pair++, COLOR_BLACK, BG_RED);
-	_color_pairs[CLR_NONE][CLR_GREE] = colors_init_pair(color_pair++, COLOR_BLACK, BG_GRE);
-	_color_pairs[CLR_NONE][CLR_BLUE] = colors_init_pair(color_pair++, COLOR_BLACK, BG_BLU);
-	_color_pairs[CLR_NONE][CLR_YELL] = colors_init_pair(color_pair++, COLOR_BLACK, BG_YEL);
+	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_RED);
+	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_GRE);
+	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_BLU);
+	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_YEL);
 
 	//
 	// Initialize the color pairs for the rgby combinations.
 	//
-	_color_pairs[CLR_RED_][CLR_RED_] = colors_init_pair(color_pair++, FG_RED, BG_RED);
-	_color_pairs[CLR_RED_][CLR_GREE] = colors_init_pair(color_pair++, FG_RED, BG_GRE);
-	_color_pairs[CLR_RED_][CLR_BLUE] = colors_init_pair(color_pair++, FG_RED, BG_BLU);
-	_color_pairs[CLR_RED_][CLR_YELL] = colors_init_pair(color_pair++, FG_RED, BG_YEL);
+	_color_pairs[CLR_RED__N][CLR_RED__N] = colors_init_pair(color_pair++, FG_RED, BG_RED);
+	_color_pairs[CLR_RED__N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_RED, BG_GRE);
+	_color_pairs[CLR_RED__N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_RED, BG_BLU);
+	_color_pairs[CLR_RED__N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_RED, BG_YEL);
 
-	_color_pairs[CLR_GREE][CLR_RED_] = colors_init_pair(color_pair++, FG_GRE, BG_RED);
-	_color_pairs[CLR_GREE][CLR_GREE] = colors_init_pair(color_pair++, FG_GRE, BG_GRE);
-	_color_pairs[CLR_GREE][CLR_BLUE] = colors_init_pair(color_pair++, FG_GRE, BG_BLU);
-	_color_pairs[CLR_GREE][CLR_YELL] = colors_init_pair(color_pair++, FG_GRE, BG_YEL);
+	_color_pairs[CLR_GREE_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_GRE, BG_RED);
+	_color_pairs[CLR_GREE_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_GRE, BG_GRE);
+	_color_pairs[CLR_GREE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_GRE, BG_BLU);
+	_color_pairs[CLR_GREE_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_GRE, BG_YEL);
 
-	_color_pairs[CLR_BLUE][CLR_RED_] = colors_init_pair(color_pair++, FG_BLU, BG_RED);
-	_color_pairs[CLR_BLUE][CLR_GREE] = colors_init_pair(color_pair++, FG_BLU, BG_GRE);
-	_color_pairs[CLR_BLUE][CLR_BLUE] = colors_init_pair(color_pair++, FG_BLU, BG_BLU);
-	_color_pairs[CLR_BLUE][CLR_YELL] = colors_init_pair(color_pair++, FG_BLU, BG_YEL);
+	_color_pairs[CLR_BLUE_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_BLU, BG_RED);
+	_color_pairs[CLR_BLUE_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_BLU, BG_GRE);
+	_color_pairs[CLR_BLUE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_BLU, BG_BLU);
+	_color_pairs[CLR_BLUE_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_BLU, BG_YEL);
 
-	_color_pairs[CLR_YELL][CLR_RED_] = colors_init_pair(color_pair++, FG_YEL, BG_RED);
-	_color_pairs[CLR_YELL][CLR_GREE] = colors_init_pair(color_pair++, FG_YEL, BG_GRE);
-	_color_pairs[CLR_YELL][CLR_BLUE] = colors_init_pair(color_pair++, FG_YEL, BG_BLU);
-	_color_pairs[CLR_YELL][CLR_YELL] = colors_init_pair(color_pair++, FG_YEL, BG_YEL);
+	_color_pairs[CLR_YELL_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_YEL, BG_RED);
+	_color_pairs[CLR_YELL_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_YEL, BG_GRE);
+	_color_pairs[CLR_YELL_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_YEL, BG_BLU);
+	_color_pairs[CLR_YELL_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_YEL, BG_YEL);
 
 	//
-	// Initialize the color pairs for marker / double chess combinations.
+	// Initialize the color pairs for light colors.
 	//
-	_color_pairs[CLR_NONE][CLR_MK_N] = colors_init_pair(color_pair++, COLOR_BLACK, MK_DRK);
+	_color_pairs[CLR_RED__L][CLR_NONE] = colors_init_pair(color_pair++, LG_RED, COLOR_BLACK);
+	_color_pairs[CLR_RED__L][CLR_RED__N] = colors_init_pair(color_pair++, LG_RED, BG_RED);
 
-	_color_pairs[CLR_MK_L][CLR_NONE] = colors_init_pair(color_pair++, MK_LIG, COLOR_BLACK);
-	_color_pairs[CLR_MK_N][CLR_NONE] = colors_init_pair(color_pair++, MK_MID, COLOR_BLACK);
+	_color_pairs[CLR_GREE_L][CLR_NONE] = colors_init_pair(color_pair++, LG_GRE, COLOR_BLACK);
+	_color_pairs[CLR_GREE_L][CLR_GREE_N] = colors_init_pair(color_pair++, LG_GRE, BG_GRE);
 
-	_color_pairs[CLR_MK_L][CLR_MK_N] = colors_init_pair(color_pair++, MK_LIG, MK_DRK);
-	_color_pairs[CLR_MK_N][CLR_MK_N] = colors_init_pair(color_pair++, MK_MID, MK_DRK);
+	_color_pairs[CLR_BLUE_L][CLR_NONE] = colors_init_pair(color_pair++, LG_BLU, COLOR_BLACK);
+	_color_pairs[CLR_BLUE_L][CLR_BLUE_N] = colors_init_pair(color_pair++, LG_BLU, BG_BLU);
+
+	_color_pairs[CLR_YELL_L][CLR_NONE] = colors_init_pair(color_pair++, LG_YEL, COLOR_BLACK);
+	_color_pairs[CLR_YELL_L][CLR_YELL_N] = colors_init_pair(color_pair++, LG_YEL, BG_YEL);
 }
 
 /******************************************************************************
@@ -341,13 +329,13 @@ void colors_setup_init_random(const char *data) {
 
 #define colors_get_color() (rand() % 4) + 1
 
-void colors_init_random(t_block **blocks, const int rows, const int cols) {
+void colors_init_random(const s_game_cfg *game_cfg, t_block **blocks) {
 
 	//
 	// Get the center block coordinates.
 	//
-	const int row_center = (rows / 2);
-	const int col_center = (cols / 2);
+	const int row_center = (game_cfg->drop_dim.row / 2);
+	const int col_center = (game_cfg->drop_dim.col / 2);
 
 	log_debug("center: %d/%d", row_center, col_center);
 
@@ -356,8 +344,8 @@ void colors_init_random(t_block **blocks, const int rows, const int cols) {
 	//
 	blocks[row_center][row_center] = colors_get_color();
 
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
+	for (int row = 0; row < game_cfg->drop_dim.row; row++) {
+		for (int col = 0; col < game_cfg->drop_dim.col; col++) {
 
 			//
 			// Skip the center block, which is already set.
@@ -396,7 +384,7 @@ void colors_normal_set_attr(WINDOW *win, const t_block da_color) {
  *****************************************************************************/
 
 void colors_normal_end_attr(WINDOW *win) {
-	wattrset(win, A_BLINK| COLOR_PAIR(color_pair_get(CLR_RED_,CLR_NONE)));
+	wattrset(win, A_BLINK| COLOR_PAIR(color_pair_get(CLR_RED__N,CLR_NONE)));
 }
 
 /******************************************************************************
@@ -467,14 +455,14 @@ wchar_t colors_chess_attr_char(WINDOW *win, t_block ga_color, const t_block da_c
 	} else {
 
 		//
-		// If CHESS_DOUBLE is active we assume that ga_color is CLR_MK_N.
+		// If CHESS_DOUBLE is active we assume that ga_color is normal color.
 		//
 		if (chess_type == CHESS_DOUBLE && colors_is_even((idx->row / 3), (idx->col / 3))) {
 
 			//
-			// ATTENTION: Parameter is reset
+			// ATTENTION: Parameter is reset with a light color
 			//
-			ga_color = CLR_MK_L;
+			ga_color = colors_get_light(ga_color);
 		}
 
 		//
