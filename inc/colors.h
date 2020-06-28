@@ -27,7 +27,7 @@
 
 #include <ncurses.h>
 
-#include "s_game_cfg.h"
+#include "blocks.h"
 
 /******************************************************************************
  * The definition of color indices. They are used as an index for an array with
@@ -65,16 +65,36 @@
 #define CLR_GREY_LIGHT 11
 
 /******************************************************************************
+ * The enum defines the different forms of chess pattern.
+ *****************************************************************************/
+
+typedef enum e_chess_type {
+
+	//
+	// Simple chess pattern with two light colors
+	//
+	CHESS_SIMPLE_LIGHT,
+
+		//
+		// Simple chess pattern with two dark colors
+		//
+		CHESS_SIMPLE_DARK,
+
+		//
+		// Double chess pattern with three colors
+		//
+		CHESS_DOUBLE
+} e_chess_type;
+
+/******************************************************************************
  * Functions and macros
  *****************************************************************************/
 
 #define colors_is_even(r,c) ((r) % 2) == ((c) % 2)
 
+#define colors_random_color() (rand() % 4) + 1
+
 void colors_init();
-
-void colors_setup_init_random(const char *data);
-
-void colors_init_random(const s_game_cfg *game_cfg, t_block **blocks);
 
 void colors_normal_set_attr(WINDOW *win, const t_block da_color);
 
