@@ -25,15 +25,15 @@
 #ifndef INC_S_SHAPES_H_
 #define INC_S_SHAPES_H_
 
-#include "blocks.h"
+#include "s_game_cfg.h"
 
 /*******************************************************************************
  * Definition of constants.
  ******************************************************************************/
 
-#define SHAPE_DIM 5
+#define SHAPE_DIM   5
 
-#define SHAPE_DEF 1
+#define SHAPE_DEF   1
 
 #define SHAPE_UNDEF 0
 
@@ -44,10 +44,9 @@
 typedef struct s_shape {
 
 	//
-	// Currently the label contains the number of blocks that are set. This can
-	// be used to modify the probabilities of the random selection.
+	// Currently the label contains the index of the shape in the array of
+	// shapes. It is used only for debug statements.
 	//
-	// TODO: currently not in use
 	int label;
 
 	//
@@ -63,6 +62,6 @@ typedef struct s_shape {
 
 void s_shapes_read(const char *path);
 
-void s_shapes_init_random(t_block **blocks, const int rows, const int cols);
+void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks);
 
 #endif /* INC_S_SHAPES_H_ */

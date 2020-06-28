@@ -28,7 +28,6 @@
 
 #include "s_shapes.h"
 #include "colors.h"
-#include "common.h"
 #include "file_system.h"
 
 /*******************************************************************************
@@ -45,15 +44,15 @@ static int _num_shapes;
  * Definitions of characters for the reading and writing of the shape data.
  ******************************************************************************/
 
-#define SHAPE_READ_DEF 'x'
+#define SHAPE_READ_DEF    'x'
 
-#define SHAPE_READ_UNDEF ' '
+#define SHAPE_READ_UNDEF  ' '
 
-#define SHAPE_WRITE_DEF 'x'
+#define SHAPE_WRITE_DEF   'x'
 
 #define SHAPE_WRITE_UNDEF '-'
 
-#define SHAPE_COMMENT '#'
+#define SHAPE_COMMENT     '#'
 
 /*******************************************************************************
  * The function is used for logging and prints a shape.
@@ -137,24 +136,12 @@ static void s_shape_add_line(const int idx_shape, const int idx_line, const char
 }
 
 /*******************************************************************************
- * The function is called after the blocks of the shape are copied. It computes
- * the number of blocks which are defined.
+ * The function is called after the blocks of the shape are copied.
  ******************************************************************************/
 
 static void s_shape_finish(const int idx) {
 
-	s_shape *shape = &_shapes[idx];
-
-	shape->label = 0;
-
-	for (int i = 0; i < SHAPE_DIM; i++) {
-		for (int j = 0; j < SHAPE_DIM; j++) {
-
-			if (shape->blocks[i][j] == SHAPE_DEF) {
-				shape->label++;
-			}
-		}
-	}
+	_shapes[idx].label = idx;
 
 #ifdef DEBUG
 	s_shape_debug(idx);
@@ -294,15 +281,17 @@ void s_shapes_read(const char *file_name) {
  * fixed size / dimension. The target area may be smaller.
  ******************************************************************************/
 
-void s_shapes_init_random(t_block **blocks, const int rows, const int cols) {
+void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks) {
+
+	const s_point *dim = &game_cfg->drop_dim;
 
 #ifdef DEBUG
 
 	//
 	// Ensure that the dimension is valid.
 	//
-	if (rows < 0 || rows > SHAPE_DIM || cols < 0 || cols > SHAPE_DIM) {
-		log_exit("Invalid dim: %d/%d", rows, cols);
+	if (dim->row < 0 || dim->row > SHAPE_DIM || dim->col < 0 || dim->col > SHAPE_DIM) {
+		log_exit("Invalid dim: %d/%d", dim->row, dim->col);
 	}
 #endif
 
@@ -317,9 +306,9 @@ void s_shapes_init_random(t_block **blocks, const int rows, const int cols) {
 	//
 	// Copy the shape.
 	//
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols; j++) {
-			blocks[i][j] = shape->blocks[i][j] == SHAPE_DEF ? CLR_MK_N : CLR_NONE;
+	for (int i = 0; i < dim->row; i++) {
+		for (int j = 0; j < dim->col; j++) {
+			blocks[i][j] = shape->blocks[i][j] == SHAPE_DEF ? game_cfg->color : CLR_NONE;
 		}
 	}
 }
