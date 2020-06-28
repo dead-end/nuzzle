@@ -26,7 +26,7 @@
 #include <linux/limits.h>
 #include <errno.h>
 
-#include "s_shapes.h"
+#include "init_random_shapes.h"
 #include "colors.h"
 #include "file_system.h"
 
@@ -242,7 +242,7 @@ static void s_shape_process(FILE *file, const char *path) {
  * The function read the content of the file and fills the shape structures.
  ******************************************************************************/
 
-void s_shapes_read(const char *file_name) {
+void init_random_shapes_read(const char *file_name) {
 
 	//
 	// The function is called with the file name. We need the path of the file.
@@ -281,7 +281,7 @@ void s_shapes_read(const char *file_name) {
  * fixed size / dimension. The target area may be smaller.
  ******************************************************************************/
 
-void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks) {
+void init_random_shapes(const s_game_cfg *game_cfg, t_block **blocks) {
 
 	const s_point *dim = &game_cfg->drop_dim;
 
