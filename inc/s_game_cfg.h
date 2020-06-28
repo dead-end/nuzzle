@@ -25,9 +25,8 @@
 #ifndef INC_S_GAME_CFG_H_
 #define INC_S_GAME_CFG_H_
 
-#include "colors.h"
 #include "common.h"
-#include "rules.h"
+#include "s_area.h"
 
 /******************************************************************************
  * The definition of the game types.
@@ -44,7 +43,6 @@
 //
 // String values for the configuration file.
 //
-
 #define TYPE_LINES_STR "lines"
 
 #define TYPE_SQUARES_LINES_STR "squares-lines"
@@ -59,7 +57,11 @@
 
 #define SIZE_DATA 1024
 
-typedef struct s_game_cfg {
+struct s_game_cfg;
+
+typedef struct s_game_cfg s_game_cfg;
+
+struct s_game_cfg {
 
 	//
 	// The id of the game configurations. It is used for the name of the score
@@ -110,6 +112,11 @@ typedef struct s_game_cfg {
 	s_point home_size;
 
 	//
+	// Definition of the color
+	//
+	t_block color;
+
+	//
 	// An enum with the different chess types for the background of the areas.
 	//
 	e_chess_type chess_type;
@@ -128,9 +135,9 @@ typedef struct s_game_cfg {
 	//
 	// The function is called to fill / refill the home areas.
 	//
-	void (*fct_ptr_init_random)(t_block**, const int, const int);
+	void (*fct_ptr_init_random)(const s_game_cfg*, t_block**);
 
-} s_game_cfg;
+};
 
 /******************************************************************************
  * Declaration of an array for game configurations. (Used for the menu).
