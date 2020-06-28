@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef INC_S_SHAPES_H_
-#define INC_S_SHAPES_H_
+#ifndef INC_INIT_RANDOM_SHAPES_H_
+#define INC_INIT_RANDOM_SHAPES_H_
 
 #include "s_game_cfg.h"
 
@@ -60,8 +60,8 @@ typedef struct s_shape {
  * Definition of functions.
  ******************************************************************************/
 
-void s_shapes_read(const char *path);
+void init_random_shapes_read(const char *path);
 
-void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks);
+void init_random_shapes(const s_game_cfg *game_cfg, t_block **blocks);
 
-#endif /* INC_S_SHAPES_H_ */
+#endif /* INC_INIT_RANDOM_SHAPES_H_ */
