@@ -30,7 +30,6 @@
 
 #include "s_game_cfg.h"
 
-#include "s_shapes.h"
 #include "s_status.h"
 
 #include "nuzzle.h"
