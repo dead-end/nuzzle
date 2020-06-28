@@ -59,6 +59,8 @@ LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm -lmenuw
 SRC_LIBS = \
 	$(SRC_DIR)/common.c \
 	$(SRC_DIR)/colors.c \
+	$(SRC_DIR)/init_random_colors.c \
+	$(SRC_DIR)/init_random_shapes.c \
 	$(SRC_DIR)/info_area.c \
 	$(SRC_DIR)/home_area.c \
 	$(SRC_DIR)/bg_area.c \
@@ -69,7 +71,6 @@ SRC_LIBS = \
 	$(SRC_DIR)/nz_curses.c \
 	$(SRC_DIR)/score.c \
 	$(SRC_DIR)/file_system.c \
-	$(SRC_DIR)/s_shapes.c \
 	$(SRC_DIR)/s_status.c \
 	$(SRC_DIR)/rules.c \
 	$(SRC_DIR)/s_game_cfg.c \
