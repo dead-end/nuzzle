@@ -25,12 +25,28 @@
 #include <stdio.h>
 #include <linux/limits.h>
 #include <errno.h>
-#include <s_game_cfg.h>
+
+#include "s_game_cfg.h"
 
 #include "colors.h"
-#include "s_shapes.h"
 #include "file_system.h"
 #include "rules.h"
+
+/*******************************************************************************
+ * Forward declaration of the functions for the function pointers to prevent
+ * cyclic includes.
+ *
+ * The s_shapes file has to include "s_game_cfg.h", to be able to use the
+ * s_game_cfg struct.
+ ******************************************************************************/
+
+void s_shapes_read(const char *path);
+
+void s_shapes_init_random(const s_game_cfg *game_cfg, t_block **blocks);
+
+void init_random_colors_setup(const char *data);
+
+void init_random_colors(const s_game_cfg *game_cfg, t_block **blocks);
 
 /*******************************************************************************
  * Declaration of an array for game configurations.
@@ -404,9 +420,9 @@ static void s_game_cfg_process(FILE *file, const char *path) {
 
 				case TYPE_4_COLORS:
 					game->chess_type = CHESS_SIMPLE_LIGHT;
-					game->fct_ptr_set_data = colors_setup_init_random;
+					game->fct_ptr_set_data = init_random_colors_setup;
 					game->fct_ptr_rules_remove = rules_remove_neighbors;
-					game->fct_ptr_init_random = colors_init_random;
+					game->fct_ptr_init_random = init_random_colors;
 					break;
 
 				default:
