@@ -23,7 +23,7 @@
  */
 
 #include <stdlib.h>
-#include <mcheck.h>
+
 #include "ut_s_area.h"
 #include "ut_rules.h"
 #include "ut_common.h"

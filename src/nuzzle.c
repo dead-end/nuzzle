@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-#include <mcheck.h>
 #include <ncurses.h>
 #include <time.h>
 #include <locale.h>
@@ -274,10 +273,6 @@ static void process_mouse_event(s_status *status) {
  *****************************************************************************/
 
 int main() {
-
-#ifdef DEBUG
-	mtrace();
-#endif
 
 	log_debug_str("Starting nuzzle...");
 
