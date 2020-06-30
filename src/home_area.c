@@ -551,18 +551,28 @@ void home_area_layout(const s_point *pos, const bool horizontal) {
  *
  *****************************************************************************/
 
-//TODO: tab moving is not optimal
 bool home_area_next_unused(s_point *pos) {
 
-	const int start = _pickup_idx == PICKUP_IDX_UNDEF ? 0 : _pickup_idx + 1;
+	int start, end;
+	if (_pickup_idx == PICKUP_IDX_UNDEF) {
+		start = 0;
+		end = _home_num;
+	} else {
+		start = _pickup_idx + 1;
+		end = _pickup_idx + _home_num;
+	}
 
-	for (int i = start; i < _home_num; i++) {
+	log_debug("start: %d end: %d num: %d pickup: %d", start, end, _home_num, _pickup_idx);
 
-		if (!_home_area[i].droped) {
-			s_point_copy(pos, &_home_area[i].area.pos);
+	int idx;
+	for (int i = start; i < end; i++) {
+
+		idx = i % _home_num;
+		if (!_home_area[idx].droped) {
+			s_point_copy(pos, &_home_area[idx].area.pos);
 			return true;
 		}
 	}
 
-	return false;;
+	return false;
 }
