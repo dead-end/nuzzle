@@ -545,34 +545,55 @@ void home_area_layout(const s_point *pos, const bool horizontal) {
 	}
 }
 
-// ------------------------------------
-
 /******************************************************************************
- *
+ * The function returns the next unused home area. It returns true if an area
+ * was found. It returns false if there is only one unused home area and this
+ * home area is picked up, so there is no other unused home area.
  *****************************************************************************/
 
 bool home_area_next_unused(s_point *pos) {
-
 	int start, end;
+
+	//
+	// If no home area is not picked up, we check all home areas.
+	//
 	if (_pickup_idx == PICKUP_IDX_UNDEF) {
 		start = 0;
 		end = _home_num;
-	} else {
+
+	}
+
+	//
+	// If a home area is picked up, we check the rest of the home areas. We
+	// start after the current.
+	//
+	else {
 		start = _pickup_idx + 1;
 		end = _pickup_idx + _home_num;
 	}
 
 	log_debug("start: %d end: %d num: %d pickup: %d", start, end, _home_num, _pickup_idx);
 
-	int idx;
-	for (int i = start; i < end; i++) {
+	for (int idx, i = start; i < end; i++) {
 
+		//
+		// Ensure that the index is in range
+		//
 		idx = i % _home_num;
+
+		//
+		//  If we found an unsused home area, we copy the position and return
+		// true.
+		//
 		if (!_home_area[idx].droped) {
 			s_point_copy(pos, &_home_area[idx].area.pos);
 			return true;
 		}
 	}
 
+	//
+	// At this point, we did not found an unused home area, other than the
+	// currently picked up area (if an area is picked up).
+	//
 	return false;
 }
