@@ -101,7 +101,7 @@ void s_status_keyboard_event(s_status *status) {
  * picked up.
  *****************************************************************************/
 
-void s_status_update_pos(s_status *status, s_point *pos, const int row, const int col) {
+void s_status_update_pos(s_status *status, s_point *pos, const s_point *event) {
 
 #ifdef DEBUG
 	if (!s_status_is_picked_up(status)) {
@@ -109,8 +109,8 @@ void s_status_update_pos(s_status *status, s_point *pos, const int row, const in
 	}
 #endif
 
-	pos->row = row - status->offset.row;
-	pos->col = col - status->offset.col;
+	pos->row = event->row - status->offset.row;
+	pos->col = event->col - status->offset.col;
 
 	log_debug("pos: %d/%d offset: %d/%d", pos->row, pos->col, status->offset.row, status->offset.col);
 }
