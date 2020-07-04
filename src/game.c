@@ -807,30 +807,43 @@ void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff
 }
 
 /******************************************************************************
- * The function switches the position of the drop area from and to the home
- * location.
+ * The function picks up the next unused home area.
  *****************************************************************************/
 
-void game_event_toggle_pickup(s_status *status) {
+void game_event_next_home_area(s_status *status) {
 
 	//
 	// Mark as keyboard event.
 	//
 	s_status_keyboard_event(status);
 
+	//
+	// If a home area is picked up, we are looking for the next unused.
+	//
 	if (s_status_is_picked_up(status)) {
-
 		s_point unused;
 
+		//
+		// Get the next unused home area. If one one unused home area was left,
+		// the function returns false.
+		//
 		const bool found = home_area_next_unused(&unused);
 
-		game_process_event_undo_pickup(status);
-
+		//
+		// If an new unused home area was found, we switch to this home area.
+		//
 		if (found) {
+			game_process_event_undo_pickup(status);
+
 			game_process_do_pickup(status, &unused);
 		}
 
-	} else {
+	}
+
+	//
+	// At this point no home area is picked up, so we get the first possible.
+	//
+	else {
 		s_point unused;
 
 		if (!home_area_next_unused(&unused)) {

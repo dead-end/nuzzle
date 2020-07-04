@@ -62,7 +62,7 @@ void game_process_event_undo_pickup(s_status *status);
 
 void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff_col);
 
-void game_event_toggle_pickup(s_status *status);
+void game_event_next_home_area(s_status *status);
 
 void game_process_do_pickup(s_status *status, const s_point *event);
 
