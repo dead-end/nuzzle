@@ -166,6 +166,7 @@ static void test_s_area_get_ul() {
 static void test_s_area_is_inside() {
 	s_area area;
 	bool result;
+	s_point point;
 
 	s_point_set(&area.dim, 1, 2);
 	s_point_set(&area.size, 3, 4);
@@ -174,37 +175,45 @@ static void test_s_area_is_inside() {
 	//
 	// Outside
 	//
-	result = s_area_is_inside(&area, 0, 0);
+	s_point_set(&point, 0, 0);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "0,0");
 
-	result = s_area_is_inside(&area, 0, 6);
+	s_point_set(&point, 0, 6);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "0,6");
 
-	result = s_area_is_inside(&area, 5, 0);
+	s_point_set(&point, 5, 0);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "5,0");
 
 	//
 	// Upper left
 	//
-	result = s_area_is_inside(&area, 5, 6);
+	s_point_set(&point, 5, 6);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, true, "5,6");
 
 	//
 	// Lower right
 	//
-	result = s_area_is_inside(&area, 7, 13);
+	s_point_set(&point, 7, 13);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, true, "7, 13");
 
 	//
 	// Outside
 	//
-	result = s_area_is_inside(&area, 8, 13);
+	s_point_set(&point, 8, 13);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "8, 13");
 
-	result = s_area_is_inside(&area, 7, 14);
+	s_point_set(&point, 7, 14);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "7, 14");
 
-	result = s_area_is_inside(&area, 16, 16);
+	s_point_set(&point, 16, 16);
+	result = s_area_is_inside(&area, &point);
 	ut_check_bool(result, false, "16, 16");
 }
 
