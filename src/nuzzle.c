@@ -231,9 +231,11 @@ static void process_mouse_event(s_status *status) {
 	MEVENT event;
 
 	if (getmouse(&event) != OK) {
-		//log_exit_str("Unable to get mouse event!");
-		// TODO: This happens ???
-		log_debug_str("Unable to get mouse event!");
+
+		//
+		// Report the details of the mouse event.
+		//
+		log_exit("Unable to get mouse event! mask: %s coords: %d/%d/%d", bool_str(event.bstate == 0), event.x, event.y, event.z);
 		return;
 	}
 
@@ -347,11 +349,24 @@ int main() {
 				break;
 
 			case '\t':
-				game_event_toggle_pickup(&_status);
+				game_event_next_home_area(&_status);
 				break;
 
 			case 10:
-				game_event_drop(&_status);
+
+				//
+				// Try to drop the drop area on the game area. If the drop area
+				// was dropped, the home areas are refilled if necessary.
+				//
+				if (game_event_drop(&_status)) {
+
+					//
+					// If the drop area was dropped, then nothing is picked up.
+					// In this situation game_event_toggle_pickup() will pickup
+					// the next unused home area.
+					//
+					game_event_next_home_area(&_status);
+				}
 				break;
 
 			default:
