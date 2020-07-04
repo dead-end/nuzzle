@@ -52,8 +52,8 @@ static int _home_num;
 static s_home _home_area[HOME_MAX];
 
 /******************************************************************************
- * The variable has the index of the home area, which is currently picked up or
- * PICKUP_IDX_UNDEF if no home area is picked up.
+ * The variable contains the index of the home area, which is currently picked
+ * up or PICKUP_IDX_UNDEF if no home area is picked up.
  *
  * The parameter has to be consistent with the s_status struct, which also has
  * a parameter (see offset), which indicates that a drop area is picked up.
@@ -149,19 +149,18 @@ int home_area_get_idx(const s_point *pixel) {
  * area, to test if the game actually ended. Areas that are already dropped are
  * ignored.
  *
- * The function is called after an area is dropped. So there should be not home
- * area picked up.
+ * The function is called after an area is dropped. So there should not be a
+ * home area picked up.
  *****************************************************************************/
 
 bool home_area_can_drop_anywhere(s_area *area) {
 	bool result = false;
 
 	//
-	// Create an array and use the backup blocks. To to this, we need to ensure
+	// Create an area and use the backup blocks. To to this, we need to ensure
 	// that nothing is picked up. In this case the blocks are not in used.
 	//
-	s_area norm_area;
-	norm_area.blocks = _blocks;
+	s_area norm_area = { .blocks = _blocks };
 
 #ifdef DEBUG
 
@@ -276,6 +275,7 @@ bool home_area_refill(const s_game_cfg *game_cfg, const bool force) {
 		// Call the configured refilling function
 		//
 		(*game_cfg->fct_ptr_init_random)(game_cfg, _home_area[i].area.blocks);
+
 		//
 		// Remove the dropped mark, which is definitely set at this point.
 		//
