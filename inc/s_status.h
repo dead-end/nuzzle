@@ -76,6 +76,6 @@ void s_status_pickup(s_status *status, const int offset_row, const int offset_co
 
 void s_status_keyboard_event(s_status *status);
 
-void s_status_update_pos(s_status *status, s_point *pos, const int row, const int col);
+void s_status_update_pos(s_status *status, s_point *pos, const s_point *event);
 
 #endif /* INC_S_STATUS_H_ */
