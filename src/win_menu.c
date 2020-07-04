@@ -300,6 +300,13 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 		c = wgetch(menu_win);
 
 		//
+		// Quit
+		//
+		if (c == 'q') {
+			exit(0);
+		}
+
+		//
 		// On escape return or ignore
 		//
 		if (c == KEY_ESC) {
