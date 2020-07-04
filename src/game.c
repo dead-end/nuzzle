@@ -110,7 +110,7 @@ static void game_print_foreground(WINDOW *win, const s_status *status, const s_a
 			//
 			// Check the position of each block pixel.
 			//
-			if (s_area_is_inside(game_area, pixel.row, pixel.col)) {
+			if (s_area_is_inside(game_area, &pixel)) {
 				s_area_print_chess_pixel(win, game_area, &pixel, da_color, status->game_cfg->chess_type);
 
 			} else if (info_area_contains(&pixel)) {
@@ -519,7 +519,10 @@ bool game_event_drop(s_status *status) {
 			home_area_print(_win_game, status);
 		}
 
-		// TODO: needs to be implemented in home_area
+		//
+		// Check if we can drop one of the home areas. If not the game is
+		// finished.
+		//
 		if (!home_area_can_drop_anywhere(&_game_area)) {
 
 			//
@@ -669,8 +672,7 @@ void game_event_move(s_status *status, const s_point *event) {
 	//
 	// Set the new position of the drop area.
 	//
-	// TODO: maybe better: s_area_set_pos_event()
-	s_status_update_pos(status, &_drop_area.pos, event->row, event->col);
+	s_status_update_pos(status, &_drop_area.pos, event);
 
 	//
 	// Print the drop area at the new position.
@@ -714,7 +716,7 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 	//
 	// If the event is inside the home area we compute the exact position.
 	//
-	if (s_area_is_inside(&_drop_area, event->row, event->col)) {
+	if (s_area_is_inside(&_drop_area, event)) {
 		s_status_pickup(status, event->row - _drop_area.pos.row, event->col - _drop_area.pos.col);
 	} else {
 		s_status_pickup(status, 0, 0);
@@ -723,7 +725,7 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 	//
 	// Set the new position of the drop area.
 	//
-	s_status_update_pos(status, &_drop_area.pos, event->row, event->col);
+	s_status_update_pos(status, &_drop_area.pos, event);
 
 	//
 	// Print the drop area at the new position.
