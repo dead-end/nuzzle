@@ -133,7 +133,7 @@ int home_area_get_idx(const s_point *pixel) {
 		//
 		// Check if the current home area contains the pixel.
 		//
-		if (s_area_is_inside(&_home_area[i].area, pixel->row, pixel->col)) {
+		if (s_area_is_inside(&_home_area[i].area, pixel)) {
 			idx = i;
 			break;
 		}
