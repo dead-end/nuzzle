@@ -75,7 +75,7 @@ s_point s_area_get_lr(const s_area *area);
 
 s_point s_area_get_ul(const s_area *area, const s_point *idx);
 
-bool s_area_is_inside(const s_area *area, const int row, const int col);
+bool s_area_is_inside(const s_area *area, const s_point *point);
 
 bool s_area_is_area_inside(const s_area *area, const s_area *drop_area);
 
