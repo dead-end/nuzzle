@@ -120,14 +120,14 @@ s_point s_area_get_ul(const s_area *area, const s_point *idx) {
  * (Unit tested)
  *****************************************************************************/
 
-bool s_area_is_inside(const s_area *area, const int row, const int col) {
+bool s_area_is_inside(const s_area *area, const s_point *point) {
 
 	bool result = true;
 
 	//
 	// Upper left corner
 	//
-	if (row < area->pos.row || col < area->pos.col) {
+	if (point->row < area->pos.row || point->col < area->pos.col) {
 		result = false;
 	}
 
@@ -136,11 +136,11 @@ bool s_area_is_inside(const s_area *area, const int row, const int col) {
 	//
 	// lower right corner
 	//
-	if (row > lower_right.row || col > lower_right.col) {
+	if (point->row > lower_right.row || point->col > lower_right.col) {
 		result = false;
 	}
 
-	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", row, col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
+	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", point->row, point->col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
 
 	return result;
 }
@@ -210,7 +210,7 @@ bool s_area_align_point(const s_area *area, s_point *point) {
 	//
 	// Check the precondition in debug mode
 	//
-	if (!s_area_is_inside(area, point->row, point->col)) {
+	if (!s_area_is_inside(area, point)) {
 		log_exit("Point: %d/%d is outside the area", point->row, point->col);
 	}
 #endif
@@ -409,7 +409,7 @@ void s_area_get_block(const s_area *area, const s_point *pixel, s_point *block) 
 	//
 	// Ensure that the pixel is inside the area
 	//
-	if (!s_area_is_inside(area, pixel->row, pixel->col)) {
+	if (!s_area_is_inside(area, pixel)) {
 		log_exit("pixel: %d/%d not inside", pixel->row, pixel->col);
 	}
 
