@@ -350,57 +350,6 @@ bool s_area_move_inner_area(const s_area *outer_area, const s_area *inner_area, 
 }
 
 /******************************************************************************
- * The function is called with an outer and an inner area. It moves the inner
- * area into the outer area. The new position is stored in the pos structure.
- * It is assumed that the inner area is outside the outer area.
- *
- * (Unit tested)
- *
- * TODO: currently not used
- *****************************************************************************/
-
-void s_area_move_inside(const s_area *outer_area, const s_area *inner_area, s_point *pos) {
-
-#ifdef DEBUG
-
-	//
-	// Check the precondition in debug mode.
-	//
-	if (s_area_is_area_inside(outer_area, inner_area)) {
-		log_exit_str("Inner area is already inside the outer area");
-	}
-#endif
-
-	const s_point max_pos = s_area_get_max_inner_pos(outer_area, inner_area);
-
-	log_debug("pos: %d/%d", pos->row, pos->col);
-
-	//
-	// Adjust the row
-	//
-	if (inner_area->pos.row < outer_area->pos.row) {
-		pos->row = outer_area->pos.row;
-
-	} else if (inner_area->pos.row >= max_pos.row) {
-		pos->row = max_pos.row;
-	}
-
-	//
-	// Adjust the column
-	//
-	if (inner_area->pos.col < outer_area->pos.col) {
-		pos->col = outer_area->pos.col;
-
-	} else if (inner_area->pos.col >= max_pos.col) {
-		pos->col = max_pos.col;
-	}
-
-	log_debug("pos: %d/%d", pos->row, pos->col);
-}
-
-// -----------
-
-/******************************************************************************
  * The function gets the block for an absolute pixel.
  *****************************************************************************/
 
