@@ -508,11 +508,13 @@ bool game_event_drop(s_status *status) {
 		drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_DELETE);
 
 		//
-		//
+		// Mark the home area as dropped. This also means not picked up.
 		//
 		home_area_mark_drop();
 
-		// TODO: status => pickup
+		//
+		// Mark the drop area as not picked up.
+		//
 		s_status_undo_pickup(status);
 
 		if (home_area_refill(status->game_cfg, false)) {
@@ -567,7 +569,9 @@ void game_do_center(const s_status *status) {
 
 	home_area_print(_win_game, status);
 
-	// TODO:
+	//
+	// If the drop area is picked up, we need to print it.
+	//
 	if (s_status_is_picked_up(status)) {
 		drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_PRINT);
 	}
