@@ -354,19 +354,21 @@ int main() {
 
 			case 10:
 
+				//				//
+				//				// Try to drop the drop area on the game area. If the drop area
+				//				// was dropped, the home areas are refilled if necessary.
+				//				//
+				//				if (game_event_drop(&_status)) {
 				//
-				// Try to drop the drop area on the game area. If the drop area
-				// was dropped, the home areas are refilled if necessary.
-				//
-				if (game_event_drop(&_status)) {
+				//					//
+				//					// If the drop area was dropped, then nothing is picked up.
+				//					// In this situation game_event_toggle_pickup() will pickup
+				//					// the next unused home area.
+				//					//
+				//					game_event_next_home_area(&_status);
+				//				}
 
-					//
-					// If the drop area was dropped, then nothing is picked up.
-					// In this situation game_event_toggle_pickup() will pickup
-					// the next unused home area.
-					//
-					game_event_next_home_area(&_status);
-				}
+				game_event_drop(&_status);
 				break;
 
 			default:
