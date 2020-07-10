@@ -41,4 +41,6 @@ void ut_check_bool(const bool cur, const bool exp, const char *msg);
 
 void ut_check_str(const char *cur, const char *exp, const char *msg);
 
+void ut_check_wstr(const wchar_t *cur, const wchar_t *exp, const char *msg);
+
 #endif /* INC_UT_UTILS_H_ */
