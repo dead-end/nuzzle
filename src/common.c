@@ -26,6 +26,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <wchar.h>
 
 /******************************************************************************
  * The function allocates memory and terminates the program in case of an
@@ -152,4 +153,58 @@ char* cpy_str_centered(char *to, const int size, const char *from) {
 	log_debug("source: '%s' target: '%s' start-idx: %d end-idx: %d source-len: %d size: %d", from, to, start, end, src_len, size);
 
 	return to;
+}
+
+/******************************************************************************
+ * The function writes an inner box line. It has a fixed size. It is created
+ * with a string and a start/end character. Example:
+ *
+ * String: "1234" size: 11 chr: '|'
+ *
+ * "0123456789"
+ * "| 1234   |\0"
+ *****************************************************************************/
+
+void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t chr) {
+
+	const int len = wcslen(src);
+
+	//
+	//         12     34     5
+	// size - '| ' - ' |' - '\0'
+	//
+	const int end = size - 5;
+
+	if (len > end) {
+		log_exit("String too large: %ls", src);
+	}
+
+	for (int i = 0; i < end; i++) {
+		if (i < len) {
+			dst[2 + i] = src[i];
+		} else {
+			dst[2 + i] = L' ';
+		}
+	}
+
+	dst[0] = chr;
+	dst[1] = L' ';
+	dst[size - 3] = L' ';
+	dst[size - 2] = chr;
+	dst[size - 1] = L'\0';
+}
+
+/******************************************************************************
+ * The function writes a box line to a buffer. The size of the buffer has to be
+ * at least "size". The function is called with a start, and end and a padding
+ * character.
+ *****************************************************************************/
+
+void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad) {
+
+	wmemset(&dst[1], pad, size - 3);
+
+	dst[0] = start;
+	dst[size - 2] = end;
+	dst[size - 1] = L'\0';
 }
