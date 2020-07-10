@@ -31,11 +31,16 @@
  * The definitions of the nuzzle directories and files.
  ******************************************************************************/
 
+#ifdef PREFIX
+#define NUZZLE_CFG_DIR_SYS PREFIX "/share/games/nuzzle"
+
+#else
+#define NUZZLE_CFG_DIR_SYS "/usr/local/share/games/nuzzle"
+#endif
+
 #define NUZZLE_CFG_DIR_HOME ".nuzzle"
 
 #define NUZZLE_CFG_DIR_REL "cfg"
-
-#define NUZZLE_CFG_DIR_SYS "/etc/nuzzle"
 
 #define NUZZLE_CFG_FILE "nuzzle.cfg"
 
