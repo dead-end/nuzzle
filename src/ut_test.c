@@ -23,17 +23,27 @@
  */
 
 #include <stdlib.h>
+#include <locale.h>
 
 #include "ut_s_area.h"
 #include "ut_rules.h"
 #include "ut_common.h"
 #include "ut_file_system.h"
 
+#include "common.h"
+
 /******************************************************************************
  * The main function delegates the call to the individual unit test functions.
  *****************************************************************************/
 
 int main() {
+
+	//
+	// Set the locale to support wchar_t
+	//
+	if (setlocale(LC_CTYPE, "") == NULL) {
+		log_exit_str("Unable to set the locale.");
+	}
 
 	ut_s_area_exec();
 
