@@ -89,3 +89,17 @@ void ut_check_str(const char *cur, const char *exp, const char *msg) {
 
 	log_debug("[%s] OK current: '%s'", msg, cur);
 }
+
+/******************************************************************************
+ * The function checks whether a wchar_t str parameter has the expected value
+ * or not.
+ *****************************************************************************/
+
+void ut_check_wstr(const wchar_t *cur, const wchar_t *exp, const char *msg) {
+
+	if (wcscmp(cur, exp) != 0) {
+		log_exit("[%s] current: '%ls' expected: '%ls'", msg, cur, exp);
+	}
+
+	log_debug("[%s] OK current: '%ls'", msg, cur);
+}
