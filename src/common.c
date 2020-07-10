@@ -163,6 +163,8 @@ char* cpy_str_centered(char *to, const int size, const char *from) {
  *
  * "0123456789"
  * "| 1234   |\0"
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t chr) {
@@ -198,6 +200,8 @@ void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t 
  * The function writes a box line to a buffer. The size of the buffer has to be
  * at least "size". The function is called with a start, and end and a padding
  * character.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad) {
