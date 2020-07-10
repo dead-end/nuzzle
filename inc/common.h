@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <wchar.h>
 
 #define VERSION "0.2.0"
 
@@ -76,6 +77,14 @@
 
 #define KEY_ESC 27
 
+#define U_HLINE    L'\u2500'
+#define U_VLINE    L'\u2502'
+
+#define U_ULCORNER L'\u250c'
+#define U_URCORNER L'\u2510'
+#define U_LLCORNER L'\u2514'
+#define U_LRCORNER L'\u2518'
+
 /******************************************************************************
  * Macro definitions.
  *****************************************************************************/
@@ -121,5 +130,9 @@ void trim_r(char *str);
 int str_2_int(const char *str);
 
 char* cpy_str_centered(char *to, const int size, const char *from);
+
+void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t chr);
+
+void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad);
 
 #endif /* INC_COMMON_H_ */

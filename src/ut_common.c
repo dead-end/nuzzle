@@ -100,12 +100,12 @@ static void test_cp_box_str() {
 
 	swprintf(tmp, BUF_STR, L"%lc 1234   %lc", U_VLINE, U_VLINE);
 
-	cp_box_str(L"1234", buf, BUF_STR);
+	cp_box_str(L"1234", buf, BUF_STR, U_VLINE);
 	ut_check_wstr(buf, tmp, "1234");
 
 	swprintf(tmp, BUF_STR, L"%lc 123456 %lc", U_VLINE, U_VLINE);
 
-	cp_box_str(L"123456", buf, BUF_STR);
+	cp_box_str(L"123456", buf, BUF_STR, U_VLINE);
 	ut_check_wstr(buf, tmp, "123456");
 }
 
