@@ -85,6 +85,9 @@
 #define U_LLCORNER L'\u2514'
 #define U_LRCORNER L'\u2518'
 
+#define U_EMPTY L' '
+#define U_TERM L'\0'
+
 /******************************************************************************
  * Macro definitions.
  *****************************************************************************/
@@ -131,8 +134,6 @@ int str_2_int(const char *str);
 
 char* cpy_str_centered(char *to, const int size, const char *from);
 
-void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t chr);
-
-void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad);
+void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad);
 
 #endif /* INC_COMMON_H_ */
