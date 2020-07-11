@@ -29,6 +29,7 @@
 #include "ut_rules.h"
 #include "ut_common.h"
 #include "ut_file_system.h"
+#include "ut_info_area.h"
 
 #include "common.h"
 
@@ -52,6 +53,8 @@ int main() {
 	ut_common_exec();
 
 	ut_file_system_exec();
+
+	ut_info_area_exec();
 
 	return EXIT_SUCCESS;
 }
