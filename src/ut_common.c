@@ -89,40 +89,49 @@ static void test_cpy_str_centered() {
 }
 
 /******************************************************************************
- * The function checks the cp_box_str() function.
+ * The function checks the cp_pad() function.
  *****************************************************************************/
 
 #define BUF_STR 11
 
-static void test_cp_box_str() {
+static void test_cp_pad() {
 	wchar_t buf[BUF_STR];
-	wchar_t tmp[BUF_STR];
 
-	swprintf(tmp, BUF_STR, L"%lc 1234   %lc", U_VLINE, U_VLINE);
+	//
+	// Fill the destination string with data, to see that it works.
+	//
+	wmemset(buf, L'#', BUF_STR - 1);
+	buf[BUF_STR - 1] = U_TERM;
 
-	cp_box_str(L"1234", buf, BUF_STR, U_VLINE);
-	ut_check_wstr(buf, tmp, "1234");
+	//
+	// Source string is smaller, so a padding is expected.
+	//
+	cp_pad(L"1234", buf, BUF_STR, U_EMPTY);
+	ut_check_wstr(buf, L"1234      ", "cp_pad: 1234");
 
-	swprintf(tmp, BUF_STR, L"%lc 123456 %lc", U_VLINE, U_VLINE);
+	//
+	// Source string has the same length, so it is a simple copy.
+	//
+	cp_pad(L"1234567890", buf, BUF_STR, U_EMPTY);
+	ut_check_wstr(buf, L"1234567890", "cp_pad: 1234567890");
 
-	cp_box_str(L"123456", buf, BUF_STR, U_VLINE);
-	ut_check_wstr(buf, tmp, "123456");
-}
+	//
+	// We what to ensure that the padding does not write over the limits.
+	//
+	// 01234567890 <- index
+	// ##########T <- init with T as \0
+	// 1234 T####T <- result
+	//
+	wmemset(buf, L'#', BUF_STR - 1);
+	buf[BUF_STR - 1] = U_TERM;
 
-/******************************************************************************
- * The function checks the cp_box_line() function.
- *****************************************************************************/
+	cp_pad(L"1234", buf, 6, U_EMPTY);
 
-#define BUF_LINE 6
-
-static void test_cp_box_line() {
-	wchar_t buf[BUF_LINE];
-
-	const wchar_t tmp[] = { U_ULCORNER, U_HLINE, U_HLINE, U_HLINE, U_URCORNER, L'\0' };
-
-	cp_box_line(buf, BUF_LINE, U_ULCORNER, U_URCORNER, U_HLINE);
-
-	ut_check_wstr(buf, tmp, "upper");
+	//
+	// Check the two strings
+	//
+	ut_check_wstr(buf, L"1234 ", "cp_pad: - first 1234");
+	ut_check_wstr(&buf[6], L"####", "cp_pad: - second ####");
 }
 
 /******************************************************************************
@@ -137,7 +146,5 @@ void ut_common_exec() {
 
 	test_cpy_str_centered();
 
-	test_cp_box_str();
-
-	test_cp_box_line();
+	test_cp_pad();
 }
