@@ -497,8 +497,11 @@ bool game_event_drop(s_status *status) {
 		const int num_removed = status->game_cfg->fct_ptr_rules_remove(&_game_area);
 
 		if (num_removed > 0) {
-			info_area_add_to_score(_win_game, status, num_removed);
+			info_area_update_score_turns(_win_game, status, num_removed);
 			s_area_print_chess(_win_game, &_game_area, status->game_cfg->chess_type);
+
+		} else {
+			info_area_new_turn(_win_game);
 		}
 
 		//
@@ -531,7 +534,7 @@ bool game_event_drop(s_status *status) {
 			// If there is no place to drop it, we finished.
 			//
 			s_status_set_end(status);
-			info_area_set_msg(_win_game, "END!", status);
+			info_area_set_end(_win_game, status);
 			log_debug_str("ENDDDDDDDDDDDDD");
 		}
 
