@@ -200,6 +200,8 @@ void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad)
  * 1234######\0 <- result
  *
  * The size parameter contains the size of the buffer including the \0.
+ *
+ * (Unit tested)
  *****************************************************************************/
 
 void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt, ...) {
