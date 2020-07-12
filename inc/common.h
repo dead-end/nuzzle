@@ -136,4 +136,6 @@ char* cpy_str_centered(char *to, const int size, const char *from);
 
 void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad);
 
+void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt, ...);
+
 #endif /* INC_COMMON_H_ */

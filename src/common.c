@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <wchar.h>
+#include <stdarg.h>
 
 /******************************************************************************
  * The function allocates memory and terminates the program in case of an
@@ -160,6 +161,8 @@ char* cpy_str_centered(char *to, const int size, const char *from) {
  * source string is smaller than the destination, the destination is filled
  * with padding chars. The terminating \0 is always set.
  *
+ * The size parameter contains the size of the buffer including the \0.
+ *
  * (Unit tested)
  *****************************************************************************/
 
@@ -179,6 +182,65 @@ void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad)
 	if (len < size - 1) {
 		wmemset(&dst[len], pad, size - 1 - len);
 	}
+
+	//
+	// Set the terminating \0.
+	//
+	dst[size - 1] = U_TERM;
+}
+
+/******************************************************************************
+ * The function creates a a formated string with a given size. If the result of
+ * formating is smaller than the size, the string will be padded with the
+ * padding character. Example:
+ *
+ * fmt_pad(dst, 11, L'#', L"12%d", 34);
+ *
+ * 01234567890  <- index
+ * 1234######\0 <- result
+ *
+ * The size parameter contains the size of the buffer including the \0.
+ *****************************************************************************/
+
+void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt, ...) {
+
+	//
+	// Start variadic parameters
+	//
+	va_list argp;
+	va_start(argp, fmt);
+
+	const int result = vswprintf(dst, size, fmt, argp);
+
+	//
+	// Error checking.
+	//
+	if (result == -1) {
+		log_exit("Callint: vswprintf() failed: %ls", fmt);
+	}
+
+	//
+	// The result was truncated.
+	//
+	if (result >= size) {
+		log_exit("Truncated: %ls", dst);
+	}
+
+	va_end(argp);
+
+	//
+	// If the result fits the size, we do not need a padding and so we are
+	// done.
+	//
+	if (result == size - 1) {
+		log_debug_str("Fitting");
+		return;
+	}
+
+	//
+	// Do the padding.
+	//
+	wmemset(&dst[result], pad, size - 1 - result);
 
 	//
 	// Set the terminating \0.

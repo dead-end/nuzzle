@@ -94,6 +94,8 @@ static void test_cpy_str_centered() {
 
 #define BUF_STR 11
 
+#define BUF_FIRST 6
+
 static void test_cp_pad() {
 	wchar_t buf[BUF_STR];
 
@@ -125,13 +127,58 @@ static void test_cp_pad() {
 	wmemset(buf, L'#', BUF_STR - 1);
 	buf[BUF_STR - 1] = U_TERM;
 
-	cp_pad(L"1234", buf, 6, U_EMPTY);
+	cp_pad(L"1234", buf, BUF_FIRST, U_EMPTY);
 
 	//
 	// Check the two strings
 	//
 	ut_check_wstr(buf, L"1234 ", "cp_pad: - first 1234");
-	ut_check_wstr(&buf[6], L"####", "cp_pad: - second ####");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_pad: - second ####");
+}
+
+/******************************************************************************
+ * The function checks the fmt_pad() function.
+ *****************************************************************************/
+
+static void test_fmt_pad() {
+	wchar_t buf[BUF_STR];
+
+	//
+	// Fill the destination string with data, to see that it works.
+	//
+	wmemset(buf, L'#', BUF_STR - 1);
+	buf[BUF_STR - 1] = U_TERM;
+
+	//
+	// Source string is smaller, so a padding is expected.
+	//
+	fmt_pad(buf, BUF_STR, U_EMPTY, L"12%d", 34);
+	ut_check_wstr(buf, L"1234      ", "cp_pad: 1234");
+
+	//
+	// Source string has the same length, so it is a simple copy.
+	//
+	fmt_pad(buf, BUF_STR, U_EMPTY, L"123456%d", 7890);
+	ut_check_wstr(buf, L"1234567890", "cp_pad: 1234567890");
+
+	//
+	// We what to ensure that the padding does not write over the limits. We
+	// are using only half of the buffer. The rest should be untouched.
+	//
+	// 01234567890 <- index
+	// ##########T <- init with T as \0
+	// 1234 T####T <- result
+	//
+	wmemset(buf, L'#', BUF_STR - 1);
+	buf[BUF_STR - 1] = U_TERM;
+
+	fmt_pad(buf, BUF_FIRST, U_EMPTY, L"12%d", 34);
+
+	//
+	// Check the two strings
+	//
+	ut_check_wstr(buf, L"1234 ", "cp_pad: - first 1234");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_pad: - second ####");
 }
 
 /******************************************************************************
@@ -147,4 +194,6 @@ void ut_common_exec() {
 	test_cpy_str_centered();
 
 	test_cp_pad();
+
+	test_fmt_pad();
 }
