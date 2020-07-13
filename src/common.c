@@ -218,7 +218,7 @@ void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt
 	// Error checking.
 	//
 	if (result == -1) {
-		log_exit("Callint: vswprintf() failed: %ls", fmt);
+		log_exit("Calling: vswprintf() failed: %ls", fmt);
 	}
 
 	//
