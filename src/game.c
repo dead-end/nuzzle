@@ -501,7 +501,7 @@ bool game_event_drop(s_status *status) {
 			s_area_print_chess(_win_game, &_game_area, status->game_cfg->chess_type);
 
 		} else {
-			info_area_new_turn(_win_game);
+			info_area_new_turn(_win_game, status);
 		}
 
 		//
@@ -579,7 +579,7 @@ void game_do_center(const s_status *status) {
 		drop_area_process_blocks(_win_game, status, &_game_area, &_drop_area, DO_PRINT);
 	}
 
-	info_area_print(_win_game);
+	info_area_print(_win_game, status);
 }
 
 /******************************************************************************
