@@ -36,27 +36,59 @@
 // The info area has 5 rows. The size of a string array is the maximal size of
 // the title of the game.
 //
-#define ROWS 5
+#define L_ROWS 7
 
-#define COLS SIZE_TITLE
+#define L_COLS SIZE_TITLE
+
+//
+// The inner size including the terminating \0
+//
+#define size_line_get() L_COLS
+
+#define size_inner_get() (L_COLS - 4)
 
 //
 // We have an array that represents the rows and columns.
 //
-static char _data[ROWS][COLS];
+static wchar_t _data[L_ROWS][L_COLS];
 
-//
-// The index defines the index for the informations.
-//
-#define IDX_HEAD 0
+/******************************************************************************
+ * The index definitions for the lines.
+ *****************************************************************************/
+
+#define IDX_TOP 0
 
 #define IDX_TITLE 1
 
-#define IDX_HIGH 2
+#define IDX_GAME 2
 
-#define IDX_SCORE 3
+#define IDX_HIGH 3
 
-#define IDX_STATUS 4
+#define IDX_SCORE 4
+
+#define IDX_STATUS 5
+
+#define IDX_BOTTOM 6
+
+#define INNER_START IDX_TITLE
+
+#define INNER_END IDX_STATUS
+
+/******************************************************************************
+ * The format definitions for the lines.
+ *****************************************************************************/
+
+#define FMT_TITLE L"Nuzzle v%s"
+
+#define FMT_GAME L"Game - %s"
+
+#define FMT_HIGH  L"High score: %4d"
+
+#define FMT_SCORE L"Current:    %4d"
+
+#define FMT_TURN  L"Turn:       %4d"
+
+#define FMT_END   L"+++ END +++"
 
 /******************************************************************************
  * The variables contain the score informations.
@@ -66,11 +98,97 @@ static int _high_score = 0;
 
 static int _cur_score = 0;
 
+static int _turn = 0;
+
 /******************************************************************************
  * The struct contains the absolute position of the info area.
  *****************************************************************************/
 
 static s_point _pos;
+
+/******************************************************************************
+ * The function returns a struct with the effective size of the info area.
+ *****************************************************************************/
+
+s_point info_area_get_size() {
+	s_point result = { L_ROWS, L_COLS - 1 };
+	return result;
+}
+
+s_point info_area_get_size2() {
+	s_point result;
+
+	//
+	// The number of rows is fixed.
+	//
+	result.row = L_ROWS;
+
+	//
+	// We compute the maximal string length inside the array of strings.
+	//
+	result.col = 0;
+
+	for (int i = 0; i < L_ROWS; i++) {
+
+		//
+		// Get the string length of the row.
+		//
+		const int len = wcslen(_data[i]);
+
+		//
+		// If the length is higher than the current maximal length, we have to
+		// update it.
+		//
+		if (len > result.col) {
+			result.col = len;
+			log_debug("len %d str: %ls", len, _data[i]);
+		}
+	}
+
+	log_debug("size row: %d col: %d", result.row, result.col);
+
+	return result;
+}
+
+/******************************************************************************
+ * The function writes a box line to a buffer. The size of the buffer has to be
+ * at least "size". The function is called with a start, and end and a padding
+ * character.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad) {
+
+	wmemset(&dst[1], pad, size - 3);
+
+	dst[0] = start;
+	dst[size - 2] = end;
+	dst[size - 1] = L'\0';
+}
+
+/******************************************************************************
+ * Add the borders to the inner lines
+ *****************************************************************************/
+
+static void add_border(wchar_t *dst, const int size, const wchar_t border, const wchar_t pad) {
+
+	dst[0] = border;
+	dst[1] = pad;
+
+#ifdef DEBUG
+
+	//
+	// We are overwriting the terminating \0 from the inner string.
+	//
+	if (dst[size - 3] != U_TERM) {
+		log_exit("Strange: %ls", dst);
+	}
+#endif
+	dst[size - 3] = pad;
+	dst[size - 2] = border;
+	dst[size - 1] = U_TERM;
+}
 
 /******************************************************************************
  * The function initializes the info area. It is called each time a new game is
@@ -86,30 +204,40 @@ void info_area_init(const s_status *status) {
 
 	_cur_score = 0;
 
-	//
-	// Initialize the data array with '\0'.
-	//
-	memset(_data, '\0', sizeof(_data));
+	_turn = 1;
 
-	if (snprintf(_data[IDX_HEAD], COLS, "Nuzzle " VERSION) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_HEAD]);
-	}
-
-	if (snprintf(_data[IDX_TITLE], COLS, "%s", status->game_cfg->title) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_TITLE]);
-	}
-
-	if (snprintf(_data[IDX_HIGH], COLS, "high: %6d", _high_score) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_HIGH]);
-	}
-
-	if (snprintf(_data[IDX_SCORE], COLS, "now:  %6d", _cur_score) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_SCORE]);
-	}
+	cp_box_line(_data[IDX_TOP], size_line_get(), U_ULCORNER, U_URCORNER, U_HLINE);
+	cp_box_line(_data[IDX_BOTTOM], size_line_get(), U_LLCORNER, U_LRCORNER, U_HLINE);
 
 	//
-	// IDX_STATUS has no value => nothing to do.
+	// Title
 	//
+	fmt_pad(&_data[IDX_TITLE][2], size_inner_get(), U_EMPTY, FMT_TITLE, VERSION);
+	add_border(_data[IDX_TITLE], size_line_get(), U_VLINE, U_EMPTY);
+
+	//
+	// Game
+	//
+	fmt_pad(&_data[IDX_GAME][2], size_inner_get(), U_EMPTY, FMT_GAME, status->game_cfg->title);
+	add_border(_data[IDX_GAME], size_line_get(), U_VLINE, U_EMPTY);
+
+	//
+	// High score
+	//
+	fmt_pad(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
+	add_border(_data[IDX_HIGH], size_line_get(), U_VLINE, U_EMPTY);
+
+	//
+	// Current score
+	//
+	fmt_pad(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
+	add_border(_data[IDX_SCORE], size_line_get(), U_VLINE, U_EMPTY);
+
+	//
+	// Status
+	//
+	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
+	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
 }
 
 /******************************************************************************
@@ -117,17 +245,27 @@ void info_area_init(const s_status *status) {
  * high score may change.
  *****************************************************************************/
 
-static void info_area_print_score(WINDOW *win) {
+static void info_area_print_score(WINDOW *win, const s_status *status) {
 
-	if (snprintf(_data[IDX_HIGH], COLS, "high: %6d", _high_score) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_HIGH]);
-	}
+	//
+	// High score
+	//
+	fmt_pad(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
+	add_border(_data[IDX_HIGH], size_line_get(), U_VLINE, U_EMPTY);
 
-	if (snprintf(_data[IDX_SCORE], COLS, "now:  %6d", _cur_score) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_SCORE]);
-	}
+	//
+	// Current score
+	//
+	fmt_pad(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
+	add_border(_data[IDX_SCORE], size_line_get(), U_VLINE, U_EMPTY);
 
-	info_area_print(win);
+	//
+	// Status
+	//
+	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
+	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
+
+	info_area_print(win, status);
 }
 
 /******************************************************************************
@@ -135,7 +273,7 @@ static void info_area_print_score(WINDOW *win) {
  * updated info area has to be reprinted.
  *****************************************************************************/
 
-void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score) {
+void info_area_update_score_turns(WINDOW *win, const s_status *status, const int add_2_score) {
 
 	_cur_score += add_2_score;
 
@@ -148,46 +286,20 @@ void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2
 		_high_score = _cur_score;
 	}
 
-	info_area_print_score(win);
+	_turn++;
+
+	info_area_print_score(win, status);
 }
 
 /******************************************************************************
- * The function returns a struct with the effective size of the info area.
+ * The function updates the turns.
  *****************************************************************************/
 
-s_point info_area_get_size() {
-	s_point result;
+void info_area_new_turn(WINDOW *win, const s_status *status) {
 
-	//
-	// The number of rows is fixed.
-	//
-	result.row = ROWS;
+	_turn++;
 
-	//
-	// We compute the maximal string length inside the array of strings.
-	//
-	result.col = 0;
-
-	for (int i = 0; i < ROWS; i++) {
-
-		//
-		// Get the string length of the row.
-		//
-		const int len = strlen(_data[i]);
-
-		//
-		// If the length is higher than the current maximal length, we have to
-		// update it.
-		//
-		if (len > result.col) {
-			result.col = len;
-			log_debug("len %d str: %s", len, _data[i]);
-		}
-	}
-
-	log_debug("size row: %d col: %d", result.row, result.col);
-
-	return result;
+	info_area_print_score(win, status);
 }
 
 /******************************************************************************
@@ -202,18 +314,84 @@ void info_area_set_pos(const int row, const int col) {
 }
 
 /******************************************************************************
+ * The function prints an inner line.
+ *****************************************************************************/
+
+static void info_area_print_inner(WINDOW *win, const s_status *status, const int idx) {
+	wchar_t tmp[size_inner_get()];
+
+	//
+	// Copy the inner part of the line to a temporary variable.
+	//
+	wmempcpy(tmp, &_data[idx][2], size_inner_get() - 1);
+
+	//
+	// Add a terminating \0.
+	//
+	tmp[ size_inner_get() - 1] = U_TERM;
+
+	log_debug("inner: '%ls'", tmp);
+
+	//
+	// If the line is the status line and the game has ended, we use an other
+	// color.
+	//
+	if (idx == IDX_STATUS && s_status_is_end(status)) {
+		colors_normal_end_attr(win);
+	}
+
+	mvwaddwstr(win, _pos.row + IDX_STATUS, _pos.col + 2, tmp);
+}
+
+/******************************************************************************
  * The function prints the info area at the absolute position.
  *****************************************************************************/
 
-void info_area_print(WINDOW *win) {
+void info_area_print(WINDOW *win, const s_status *status) {
 
 	log_debug("row: %d col: %d", _pos.row, _pos.col);
 
 	colors_normal_set_attr(win, CLR_NONE);
 
-	for (int i = 0; i < ROWS; i++) {
-		mvwprintw(win, _pos.row + i, _pos.col, _data[i]);
+	//
+	// Print each line
+	//
+	for (int i = 0; i < L_ROWS; i++) {
+		mvwaddwstr(win, _pos.row + i, _pos.col, _data[i]);
 	}
+
+	//
+	// If the game has ended, we print the inner status line again, which is
+	// formated in a different way.
+	//
+	if (s_status_is_end(status)) {
+		info_area_print_inner(win, status, IDX_STATUS);
+	}
+}
+
+/******************************************************************************
+ * The function sets the inner status line in case of the end of the game.
+ *****************************************************************************/
+
+void info_area_set_end(WINDOW *win, const s_status *status) {
+
+	//
+	// It is assumed that the game is already marked as ended.
+	//
+	if (!s_status_is_end(status)) {
+		log_exit_str("Wrong status!");
+	}
+
+	//
+	// Set the inner status line
+	//
+	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_END);
+	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
+
+	//
+	// Print the inner line.
+	//
+	info_area_print_inner(win, status, IDX_STATUS);
 }
 
 /******************************************************************************
@@ -233,7 +411,7 @@ bool info_area_contains(const s_point *pixel) {
 	//
 	// Lower right corner (The columns have a terminating '\0')
 	//
-	if (pixel->row >= _pos.row + ROWS || pixel->col >= _pos.col + COLS - 1) {
+	if (pixel->row >= _pos.row + L_ROWS || pixel->col >= _pos.col + L_COLS - 1) {
 		return false;
 	}
 
@@ -250,35 +428,9 @@ void info_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block colo
 	const int row = pixel->row - _pos.row;
 	const int col = pixel->col - _pos.col;
 
-	const char c = _data[row][col] == '\0' ? ' ' : _data[row][col];
+	const wchar_t c = _data[row][col] == L'\0' ? L' ' : _data[row][col];
 
 	colors_normal_set_attr(win, color);
 
-	mvwprintw(win, pixel->row, pixel->col, "%c", c);
-}
-
-/******************************************************************************
- * The function prints the status message with padding characters. This is a
- * first version, to show the end of the game.
- *
- * TODO: replace with menu / options
- *****************************************************************************/
-
-void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status) {
-	const char *fmt;
-
-	if (s_status_is_end(status)) {
-		colors_normal_end_attr(win);
-		fmt = "** %s **";
-
-	} else {
-		colors_normal_set_attr(win, CLR_NONE);
-		fmt = "%s";
-	}
-
-	if (snprintf(_data[IDX_STATUS], COLS, fmt, msg) >= COLS) {
-		log_exit("Truncated: %s", _data[IDX_STATUS]);
-	}
-
-	mvwprintw(win, _pos.row + IDX_STATUS, _pos.col, _data[IDX_STATUS]);
+	mvwprintw(win, pixel->row, pixel->col, "%lc", c);
 }
