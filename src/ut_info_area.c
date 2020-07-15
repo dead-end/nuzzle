@@ -26,27 +26,6 @@
 #include "info_area.h"
 
 /******************************************************************************
- * The function checks the cp_box_str() function.
- *****************************************************************************/
-
-#define BUF_STR 11
-
-static void test_cp_box_str() {
-	wchar_t buf[BUF_STR];
-	wchar_t tmp[BUF_STR];
-
-	swprintf(tmp, BUF_STR, L"%lc 1234   %lc", U_VLINE, U_VLINE);
-
-	cp_box_str(L"1234", buf, BUF_STR, U_VLINE);
-	ut_check_wstr(buf, tmp, "cp_box_str: 1234");
-
-	swprintf(tmp, BUF_STR, L"%lc 123456 %lc", U_VLINE, U_VLINE);
-
-	cp_box_str(L"123456", buf, BUF_STR, U_VLINE);
-	ut_check_wstr(buf, tmp, "cp_box_str: 123456");
-}
-
-/******************************************************************************
  * The function checks the cp_box_line() function.
  *****************************************************************************/
 
@@ -67,8 +46,6 @@ static void test_cp_box_line() {
  *****************************************************************************/
 
 void ut_info_area_exec() {
-
-	test_cp_box_str();
 
 	test_cp_box_line();
 }
