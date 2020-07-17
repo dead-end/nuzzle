@@ -207,7 +207,7 @@ void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad)
 void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt, ...) {
 
 	//
-	// Start variadic parameters
+	// Start variable argument lists
 	//
 	va_list argp;
 	va_start(argp, fmt);
@@ -243,6 +243,71 @@ void fmt_pad(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt
 	// Do the padding.
 	//
 	wmemset(&dst[result], pad, size - 1 - result);
+
+	//
+	// Set the terminating \0.
+	//
+	dst[size - 1] = U_TERM;
+}
+
+/******************************************************************************
+ * The function creates a a formated string with a given size. If the result of
+ * formating is smaller than the size, the string will centered. Example
+ *
+ * fmt_center(dst, 11, L'#', L"12%d", 34);
+ *
+ * 01234567890  <- index
+ * ###1234###\0 <- result
+ *
+ * The size parameter contains the size of the buffer including the \0.
+ *
+ * (Unit tested)
+ *****************************************************************************/
+
+void fmt_center(wchar_t *dst, const int size, const wchar_t pad, const wchar_t *fmt, ...) {
+	wchar_t tmp[size];
+
+	//
+	// Start variable argument lists
+	//
+	va_list argp;
+	va_start(argp, fmt);
+
+	const int result = vswprintf(tmp, size, fmt, argp);
+
+	//
+	// Error checking.
+	//
+	if (result == -1) {
+		log_exit("Calling: vswprintf() failed: %ls", fmt);
+	}
+
+	//
+	// The result was truncated.
+	//
+	if (result >= size) {
+		log_exit("Truncated: %ls", tmp);
+	}
+
+	va_end(argp);
+
+	//
+	// Fill the buffer with the padding character. The is only necessary if
+	// there is space left for padding.
+	//
+	if (size - 1 > result) {
+		wmemset(dst, pad, size - 1);
+	}
+
+	//
+	// Compute the starting index.
+	//
+	const int start = center(size - 1, result);
+
+	//
+	// Copy the result
+	//
+	wmemcpy(&dst[start], tmp, result);
 
 	//
 	// Set the terminating \0.
