@@ -203,6 +203,10 @@ static void color_pairs_alloc() {
 	//
 	short color_pair = CP_START;
 
+	//
+	// At this point we are implicitly defining the background color.
+	// (see: bkgd, wbkgd)
+	//
 	_color_pairs[CLR_NONE][CLR_NONE] = CP_DEFAULT;
 
 	//
