@@ -220,6 +220,10 @@ static void color_pairs_alloc() {
 	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_BLU, COLOR_BLACK);
 	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, FG_YEL, COLOR_BLACK);
 
+	//
+	// Initialize the color pairs with foreground CLR_NONE. They are used for
+	// the info area. The foreground color is the color of the writings.
+	//
 	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_RED);
 	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_GRE);
 	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_BLU);
