@@ -32,18 +32,28 @@
 
 void info_area_init();
 
-void info_area_add_to_score(WINDOW *win, const s_status *status, const int add_2_score);
+void info_area_update_score_turns(WINDOW *win, const s_status *status, const int add_2_score);
+
+void info_area_new_turn(WINDOW *win, const s_status *status);
 
 void info_area_set_pos(const int row, const int col);
 
 s_point info_area_get_size();
 
-void info_area_print();
+void info_area_print(WINDOW *win, const s_status *status);
 
 bool info_area_contains(const s_point *pixel);
 
 void info_area_print_pixel(WINDOW *win, const s_point *pixel, const t_block color);
 
-void info_area_set_msg(WINDOW *win, const char *msg, const s_status *status);
+void info_area_set_end(WINDOW *win, const s_status *status);
+
+/******************************************************************************
+ * The function declarations for unit tests
+ *****************************************************************************/
+
+void cp_box_str(const wchar_t *src, wchar_t *dst, const int size, const wchar_t chr);
+
+void cp_box_line(wchar_t *dst, const int size, const wchar_t start, const wchar_t end, const wchar_t pad);
 
 #endif /* INC_INFO_AREA_H_ */

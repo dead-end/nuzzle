@@ -29,16 +29,18 @@
 
 /******************************************************************************
  * Define of the array with the strings. The string array's have a fixed size.
- * The string itself can be shorter.
  *****************************************************************************/
 
 //
-// The info area has 5 rows. The size of a string array is the maximal size of
-// the title of the game.
+// The info area is surrounded by a box. So the first and the last row are part
+// of the box.
 //
 #define L_ROWS 7
 
-#define L_COLS SIZE_TITLE
+//
+// The column size is the size of the title plus the box with a padding space.
+//
+#define L_COLS SIZE_TITLE + 4
 
 //
 // The inner size including the terminating \0
@@ -78,15 +80,15 @@ static wchar_t _data[L_ROWS][L_COLS];
  * The format definitions for the lines.
  *****************************************************************************/
 
-#define FMT_TITLE L"Nuzzle v%s"
+#define FMT_TITLE L"Nuzzle    - v%s"
 
-#define FMT_GAME L"Game - %s"
+#define FMT_GAME  L"%s"
 
-#define FMT_HIGH  L"High score: %4d"
+#define FMT_HIGH  L"High score:   %4d"
 
-#define FMT_SCORE L"Current:    %4d"
+#define FMT_SCORE L"Current   :   %4d"
 
-#define FMT_TURN  L"Turn:       %4d"
+#define FMT_TURN  L"Turn      :   %4d"
 
 #define FMT_END   L"+++ END +++"
 
@@ -112,41 +114,6 @@ static s_point _pos;
 
 s_point info_area_get_size() {
 	s_point result = { L_ROWS, L_COLS - 1 };
-	return result;
-}
-
-s_point info_area_get_size2() {
-	s_point result;
-
-	//
-	// The number of rows is fixed.
-	//
-	result.row = L_ROWS;
-
-	//
-	// We compute the maximal string length inside the array of strings.
-	//
-	result.col = 0;
-
-	for (int i = 0; i < L_ROWS; i++) {
-
-		//
-		// Get the string length of the row.
-		//
-		const int len = wcslen(_data[i]);
-
-		//
-		// If the length is higher than the current maximal length, we have to
-		// update it.
-		//
-		if (len > result.col) {
-			result.col = len;
-			log_debug("len %d str: %ls", len, _data[i]);
-		}
-	}
-
-	log_debug("size row: %d col: %d", result.row, result.col);
-
 	return result;
 }
 
@@ -185,6 +152,7 @@ static void add_border(wchar_t *dst, const int size, const wchar_t border, const
 		log_exit("Strange: %ls", dst);
 	}
 #endif
+
 	dst[size - 3] = pad;
 	dst[size - 2] = border;
 	dst[size - 1] = U_TERM;
@@ -212,31 +180,31 @@ void info_area_init(const s_status *status) {
 	//
 	// Title
 	//
-	fmt_pad(&_data[IDX_TITLE][2], size_inner_get(), U_EMPTY, FMT_TITLE, VERSION);
+	fmt_center(&_data[IDX_TITLE][2], size_inner_get(), U_EMPTY, FMT_TITLE, VERSION);
 	add_border(_data[IDX_TITLE], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// Game
 	//
-	fmt_pad(&_data[IDX_GAME][2], size_inner_get(), U_EMPTY, FMT_GAME, status->game_cfg->title);
+	fmt_center(&_data[IDX_GAME][2], size_inner_get(), U_EMPTY, FMT_GAME, status->game_cfg->title);
 	add_border(_data[IDX_GAME], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// High score
 	//
-	fmt_pad(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
+	fmt_center(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
 	add_border(_data[IDX_HIGH], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// Current score
 	//
-	fmt_pad(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
+	fmt_center(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
 	add_border(_data[IDX_SCORE], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// Status
 	//
-	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
+	fmt_center(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
 	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
 }
 
@@ -250,19 +218,19 @@ static void info_area_print_score(WINDOW *win, const s_status *status) {
 	//
 	// High score
 	//
-	fmt_pad(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
+	fmt_center(&_data[IDX_HIGH][2], size_inner_get(), U_EMPTY, FMT_HIGH, _high_score);
 	add_border(_data[IDX_HIGH], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// Current score
 	//
-	fmt_pad(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
+	fmt_center(&_data[IDX_SCORE][2], size_inner_get(), U_EMPTY, FMT_SCORE, _cur_score);
 	add_border(_data[IDX_SCORE], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
 	// Status
 	//
-	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
+	fmt_center(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_TURN, _turn);
 	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
 
 	info_area_print(win, status);
@@ -385,7 +353,7 @@ void info_area_set_end(WINDOW *win, const s_status *status) {
 	//
 	// Set the inner status line
 	//
-	fmt_pad(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_END);
+	fmt_center(&_data[IDX_STATUS][2], size_inner_get(), U_EMPTY, FMT_END);
 	add_border(_data[IDX_STATUS], size_line_get(), U_VLINE, U_EMPTY);
 
 	//
