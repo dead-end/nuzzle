@@ -220,10 +220,10 @@ static void color_pairs_alloc() {
 	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_BLU, COLOR_BLACK);
 	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, FG_YEL, COLOR_BLACK);
 
-	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_RED);
-	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_GRE);
-	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_BLU);
-	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_BLACK, BG_YEL);
+	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_RED);
+	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_GRE);
+	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_BLU);
+	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_YEL);
 
 	//
 	// Initialize the color pairs for the rgby combinations.
