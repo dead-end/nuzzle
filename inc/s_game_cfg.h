@@ -53,7 +53,7 @@
  * The definition of the s_game struct.
  *****************************************************************************/
 
-#define SIZE_TITLE 32
+#define SIZE_TITLE 21
 
 #define SIZE_DATA 1024
 
