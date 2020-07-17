@@ -137,29 +137,37 @@ static void test_cp_pad() {
 }
 
 /******************************************************************************
- * The function checks the fmt_pad() function.
+ * Simple function that fills a wchar_t with a character.
+ *****************************************************************************/
+
+static void buf_fill(wchar_t *buf, const int size, const wchar_t wch) {
+	wmemset(buf, wch, size - 1);
+	buf[size - 1] = U_TERM;
+}
+
+/******************************************************************************
+ * The function checks the fmt_pad() function. We are filling the destination
+ * string with '#' to see, that all is overwritten.
  *****************************************************************************/
 
 static void test_fmt_pad() {
 	wchar_t buf[BUF_STR];
 
 	//
-	// Fill the destination string with data, to see that it works.
-	//
-	wmemset(buf, L'#', BUF_STR - 1);
-	buf[BUF_STR - 1] = U_TERM;
-
-	//
 	// Source string is smaller, so a padding is expected.
 	//
+	buf_fill(buf, BUF_STR, L'#');
 	fmt_pad(buf, BUF_STR, U_EMPTY, L"12%d", 34);
-	ut_check_wstr(buf, L"1234      ", "cp_pad: 1234");
+
+	ut_check_wstr(buf, L"1234      ", "cp_pad - short");
 
 	//
 	// Source string has the same length, so it is a simple copy.
 	//
+	buf_fill(buf, BUF_STR, L'#');
 	fmt_pad(buf, BUF_STR, U_EMPTY, L"123456%d", 7890);
-	ut_check_wstr(buf, L"1234567890", "cp_pad: 1234567890");
+
+	ut_check_wstr(buf, L"1234567890", "cp_pad - same");
 
 	//
 	// We what to ensure that the padding does not write over the limits. We
@@ -169,16 +177,88 @@ static void test_fmt_pad() {
 	// ##########T <- init with T as \0
 	// 1234 T####T <- result
 	//
-	wmemset(buf, L'#', BUF_STR - 1);
-	buf[BUF_STR - 1] = U_TERM;
-
+	buf_fill(buf, BUF_STR, L'#');
 	fmt_pad(buf, BUF_FIRST, U_EMPTY, L"12%d", 34);
 
 	//
 	// Check the two strings
 	//
-	ut_check_wstr(buf, L"1234 ", "cp_pad: - first 1234");
-	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_pad: - second ####");
+	ut_check_wstr(buf, L"1234 ", "cp_pad - first sort");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_pad - second short");
+
+	//
+	// Second test where the source string has the same length.
+	//
+	// 01234567890 <- index
+	// ##########T <- init with T as \0
+	// 12345T####T <- result
+	//
+	buf_fill(buf, BUF_STR, L'#');
+	fmt_pad(buf, BUF_FIRST, U_EMPTY, L"12%d", 345);
+
+	//
+	// Check the two strings
+	//
+	ut_check_wstr(buf, L"12345", "cp_pad - first same");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_pad - second same");
+}
+
+/******************************************************************************
+ * The function checks the fmt_center() function.
+ *****************************************************************************/
+
+static void test_fmt_center() {
+	wchar_t buf[BUF_STR];
+
+	//
+	// "01234567890"
+	// "   1234   "
+	//
+	buf_fill(buf, BUF_STR, L'#');
+	fmt_center(buf, BUF_STR, U_EMPTY, L"12%d", 34);
+
+	ut_check_wstr(buf, L"   1234   ", "cp_center - short");
+
+	//
+	// Source string has the same length, so it is a simple copy.
+	//
+	buf_fill(buf, BUF_STR, L'#');
+	fmt_center(buf, BUF_STR, U_EMPTY, L"123456%d", 7890);
+
+	ut_check_wstr(buf, L"1234567890", "cp_center - same");
+
+	//
+	// We what to ensure that the padding does not write over the limits. We
+	// are using only half of the buffer. The rest should be untouched.
+	//
+	// 01234567890 <- index
+	// ##########T <- init with T as \0
+	//  123 T####T <- result
+	//
+	buf_fill(buf, BUF_STR, L'#');
+	fmt_center(buf, BUF_FIRST, U_EMPTY, L"12%d", 3);
+
+	//
+	// Check the two strings
+	//
+	ut_check_wstr(buf, L" 123 ", "cp_center - first short");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_center - second short");
+
+	//
+	// Second test where the source string has the same length.
+	//
+	// 01234567890 <- index
+	// ##########T <- init with T as \0
+	// 12345T####T <- result
+	//
+	buf_fill(buf, BUF_STR, L'#');
+	fmt_center(buf, BUF_FIRST, U_EMPTY, L"12%d", 345);
+
+	//
+	// Check the two strings
+	//
+	ut_check_wstr(buf, L"12345", "cp_center - first same");
+	ut_check_wstr(&buf[BUF_FIRST], L"####", "cp_center - second same");
 }
 
 /******************************************************************************
@@ -196,4 +276,6 @@ void ut_common_exec() {
 	test_cp_pad();
 
 	test_fmt_pad();
+
+	test_fmt_center();
 }
