@@ -1,5 +1,5 @@
 .\"-----------------------------------------------------------------------------
-.\" groff -man -Tascii man/ccsvv.1
+.\" groff -man -Tascii man/nuzzle.6
 .\"
 .\" \fB .B Bold \fI .I Italic \fR Roman
 .\"-----------------------------------------------------------------------------
@@ -15,14 +15,38 @@ nuzzle \- terminal based puzzle game
 .SH DESCRIPTION
 .\"-----------------------------------------------------------------------------
 .PP
-Nuzzle is a terminal based puzzle game. It is implemented with ncurses and 
-requires color and mouse support. Playing is simple:
-.TP 
-\fB\-\fR Start the program and start a new game.
-.TP 
-\fB\-\fR Use ESC to enter the main menu during the game.
+Nuzzle is a terminal based puzzle game. It is implemented with ncurses and
+requires color and mouse support.
+
+The target of the game is to place as much blocks as possible, from a home area
+to the game. If the blocks on the game area form a certain pattern, they will be
+removed and the player gets one point for each block that was removed.
+
+There are 3 pattern that are supported:
+\fILines\fR
+The game is played with one color. If a complete row or column is filled with
+blocks, they will be removed.
+
+\fILines-squares\fR
+The game is palyed with one color. The game area consists of 9x9 blocks with 9
+squares, that consists of 3x3 blocks. If a complete row or column is filled with
+blocks or if one of the 9 squares is filled with blocks the blocks will be
+removed.
+
+\fI4-Colors\fR
+The game is played with 4 colors. If 4 or more adjacent blocks with the same
+color exist, then they will be removed.
+
+The game can be played with the mouse and / or the keyboard:
 .TP
-\fB\-\fR Click on the block of squares to pick them up.
+\fB\-\fR Use \fBESC\fR to enter the main menu during the game.
+.TP
+\fB\-\fR Use the \fBq\fR key to quit the game.
+.TP
+\fB\-\fR Use the \fBtab\fR key to pick up the next blocks from the home area.
+.TP
+\fB\-\fR Click on the home area to pick up the blocks. A right click on te mouse
+drops the blocks.
 .TP
 \fB\-\fR Move the block to the desired position.
 .TP
@@ -45,4 +69,3 @@ No known bugs.
 .\"-----------------------------------------------------------------------------
 .SH AUTHOR
 Dead End
-
