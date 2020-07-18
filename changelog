@@ -1,3 +1,12 @@
+nuzzle (0.3.0) stable; urgency=low
+  
+  * Created new games: Lines, Squares-and-Lines
+  * Added config files
+  * Changed colors
+  * Added deb package build
+
+ -- dead-end <dead.end@>  Sat, 18 Jul 2020 09:57:16 +0200
+
 nuzzle (0.2.0) stable; urgency=low
   
   * Fixed: Lookup color pairs #3
