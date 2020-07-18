@@ -28,6 +28,39 @@
 #include "common.h"
 
 /******************************************************************************
+ * The function initializes the ncurses mouse support.
+ *****************************************************************************/
+
+static void nzc_init_mouse() {
+
+	if (has_mouse()) {
+		log_exit_str("Terminal does not support a mouse!");
+	}
+
+	//
+	// Register mouse events (which do not have a propper error handling)
+	//
+	mousemask(BUTTON1_PRESSED | BUTTON2_RELEASED | BUTTON3_RELEASED | REPORT_MOUSE_POSITION, NULL);
+
+	printf("\033[?1003h\n");
+
+	mouseinterval(0);
+}
+
+/******************************************************************************
+ * The function finishes the ncurses mouse support.
+ *****************************************************************************/
+
+static void nzc_finish_mouse() {
+
+	//
+	// Disable mouse movement events, as l = low
+	//
+	printf("\033[?1003l\n");
+
+}
+
+/******************************************************************************
  * The function initializes the main features of ncurses .
  *****************************************************************************/
 
@@ -73,39 +106,25 @@ void nzc_init_curses() {
 	// or FALSE, except as noted." which seems not to be correct.
 	//
 	set_escdelay(0);
+
+	nzc_init_mouse();
 }
 
 /******************************************************************************
- * The function initializes the ncurses mouse support.
+ * The function finishes the main features of ncurses .
  *****************************************************************************/
 
-void nzc_init_mouse() {
+void nzc_finish_curses() {
 
-	if (has_mouse()) {
-		log_exit_str("Terminal does not support a mouse!");
+	nzc_finish_mouse();
+
+	//
+	// Reset the terminal.
+	//
+	if (!isendwin()) {
+		log_debug_str("Calling: endwin()");
+		endwin();
 	}
-
-	//
-	// Register mouse events (which do not have a propper error handling)
-	//
-	mousemask(BUTTON1_PRESSED | BUTTON2_RELEASED | BUTTON3_RELEASED | REPORT_MOUSE_POSITION, NULL);
-
-	printf("\033[?1003h\n");
-
-	mouseinterval(0);
-}
-
-/******************************************************************************
- * The function finishes the ncurses mouse support.
- *****************************************************************************/
-
-void nzc_finish_mouse() {
-
-	//
-	// Disable mouse movement events, as l = low
-	//
-	printf("\033[?1003l\n");
-
 }
 
 /******************************************************************************
