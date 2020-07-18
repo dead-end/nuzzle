@@ -57,11 +57,9 @@ static void exit_callback() {
 	game_free();
 
 	//
-	// Disable mouse movement events
+	// Finish ncurses
 	//
-	nzc_finish_mouse();
-
-	endwin();
+	nzc_finish_curses();
 
 	log_debug_str("Exit callback finished!");
 }
@@ -90,11 +88,6 @@ static void init() {
 	// Initialize the standard ncurses stuff
 	//
 	nzc_init_curses();
-
-	//
-	// Initialize the mouse support for ncurses.
-	//
-	nzc_init_mouse();
 
 	//
 	// Register exit callback.
