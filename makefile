@@ -3,8 +3,11 @@
 ################################################################################
 
 INCLUDE_DIR = inc
-SRC_DIR = src
-BUILD_DIR = build
+SRC_DIR     = src
+BUILD_DIR   = build
+CFG_DIR     = cfg
+
+PREFIX      = /usr/local
 
 ################################################################################
 # A variable that collects the optional flags.
@@ -47,7 +50,7 @@ WARN_FLAGS  = -Wall -Wextra -Wpedantic -Werror
 
 BUILD_FLAGS = -std=c11 -O2
 
-FLAGS      = $(BUILD_FLAGS) $(OPTION_FLAGS) $(WARN_FLAGS) -I$(INCLUDE_DIR) $(shell $(NCURSES_CONFIG) --cflags)
+FLAGS      = -DPREFIX='"$(PREFIX)"' $(BUILD_FLAGS) $(OPTION_FLAGS) $(WARN_FLAGS) -I$(INCLUDE_DIR) $(shell $(NCURSES_CONFIG) --cflags)
 
 LIBS        = $(shell $(NCURSES_CONFIG) --libs) -lm -lmenuw
 
@@ -79,6 +82,7 @@ SRC_LIBS = \
 	$(SRC_DIR)/ut_s_area.c \
 	$(SRC_DIR)/ut_rules.c \
 	$(SRC_DIR)/ut_file_system.c \
+	$(SRC_DIR)/ut_info_area.c \
 
 OBJ_LIBS = $(subst $(SRC_DIR),$(BUILD_DIR),$(subst .c,.o,$(SRC_LIBS)))
 
@@ -168,9 +172,9 @@ clean:
 # --owner=root --group=root 
 ################################################################################
 
-PREFIX = /usr/local
+BINDIR = $(PREFIX)/games
 
-BINDIR = $(PREFIX)/bin
+DATDIR = $(PREFIX)/share/games/$(EXEC)
 
 DOCDIR = $(PREFIX)/share/doc/$(EXEC)
 
@@ -186,7 +190,10 @@ install: $(EXEC)
 	install -D --mode=755 $(EXEC) --target-directory=$(BINDIR) --strip
 	install -D --mode=644 LICENSE $(DOCDIR)/copyright
 	gzip -9n -c changelog > $(BUILD_DIR)/changelog.gz
-	install -D --mode=644 $(BUILD_DIR)/changelog.gz $(DOCDIR)/changelog.gz
+	install -D --mode=644 $(BUILD_DIR)/changelog.gz   $(DOCDIR)/changelog.gz
+	install -D --mode=644 $(CFG_DIR)/5-shapes.cfg     $(DATDIR)/5-shapes.cfg
+	install -D --mode=644 $(CFG_DIR)/shapes-lines.cfg $(DATDIR)/shapes-lines.cfg
+	install -D --mode=644 $(CFG_DIR)/nuzzle.cfg       $(DATDIR)/nuzzle.cfg
 
 uninstall:
 	rm -f $(DOCDIR)/copyright
@@ -194,6 +201,8 @@ uninstall:
 	if [ -d "$(DOCDIR)" ]; then rmdir $(DOCDIR); fi
 	rm -f $(BINDIR)/$(EXEC)
 	rm -f $(MANDIR)/$(MANPAGE).gz
+	rm -f $(DATDIR)/*.cfg
+	if [ -d "$(DATDIR)" ]; then rmdir $(DATDIR); fi
 
 ################################################################################
 # The goal prints a help message the the nuzzle specific options for the build.
@@ -204,12 +213,14 @@ uninstall:
 help:
 	@echo "Targets:"
 	@echo ""
-	@echo "  make | make all              : Triggers the build of the executable."
-	@echo "  make clean                   : Removes executables and temporary files from the build."
-	@echo "  make intall | make uninstall : Installs / uninstalles the program."
-	@echo "  make help                    : Prints this message."
+	@echo "  make | make all               : Triggers the build of the executable."
+	@echo "  make clean                    : Removes executables and temporary files from the build."
+	@echo "  make install | make uninstall : Installs / uninstalles the program."
+	@echo "  make help                     : Prints this message."
 	@echo ""
 	@echo "Parameter:"
 	@echo ""
-	@echo "  DEBUG=[true|false]           : A debug flag for the application. (default: false)"
-	@echo "  NCURSES_MAJOR=[5|6]          : The major verion of ncurses. (default: 5)"
+	@echo "  DEBUG=[true|false]            : A debug flag for the application. (default: false)"
+	@echo "  NCURSES_MAJOR=[5|6]           : The major verion of ncurses. (default: 5)"
+	@echo "  PREFIX=<PATH>                 : The path prefix for the build, install and uninstall."
+	@echo "                                  (default: $(PREFIX))"
