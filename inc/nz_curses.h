@@ -30,9 +30,7 @@
 
 void nzc_init_curses();
 
-void nzc_init_mouse();
-
-void nzc_finish_mouse();
+void nzc_finish_curses();
 
 WINDOW* nzc_win_create_fully();
 
