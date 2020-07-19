@@ -91,12 +91,6 @@ s_game_cfg _game_cfg[S_GAMES_CFG_MAX];
 #define CFG_COLOR "color"
 
 /*******************************************************************************
- * The macro checks if the string starts with a prefix.
- ******************************************************************************/
-
-#define starts_with(s,p) (strncmp(p, s, strlen(p)) == 0)
-
-/*******************************************************************************
  * The function is called with a key value pair ("key=value") and returns a
  * pointer to the value.
  ******************************************************************************/
