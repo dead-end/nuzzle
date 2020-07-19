@@ -49,6 +49,22 @@ static s_status _status = { .game_cfg = NULL };
 
 static void exit_callback() {
 
+	//
+	// Ensure that the function is called once.
+	//
+	static bool called = false;
+
+	log_debug("Called: %s", bool_str(called));
+
+	if (called) {
+		return;
+	} else {
+		called = true;
+	}
+
+	//
+	// Free the game data
+	//
 	game_free_game(&_status);
 
 	//
@@ -90,11 +106,18 @@ static void init() {
 	nzc_init_curses();
 
 	//
-	// Register exit callback.
+	// Register exit callback. This is used on segmentation faults and exit(0)
+	// calls.
 	//
 	if (on_exit(exit_callback, NULL) != 0) {
 		log_exit_str("Unable to register exit function!");
 	}
+
+	//
+	// Register callback for log_exit calls. This ensures that ncurses was
+	// finished before the message is logged.
+	//
+	log_callback(exit_callback);
 
 	//
 	// Initialize the application stuff.
@@ -209,7 +232,7 @@ void show_menu(s_status *status, const bool show_continue) {
 	// Exit the game
 	//
 	else if (idx == idx_exit) {
-		exit(0);
+		exit(EXIT_SUCCESS);
 
 	} else {
 		log_exit("Unknown index: %d", idx);
@@ -376,7 +399,5 @@ int main() {
 		game_win_refresh();
 	}
 
-	log_debug_str("Nuzzle finished!");
-
-	return 0;
+	exit(EXIT_SUCCESS);
 }
