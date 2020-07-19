@@ -303,7 +303,7 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 		// Quit
 		//
 		if (c == 'q') {
-			exit(0);
+			exit(EXIT_SUCCESS);
 		}
 
 		//
