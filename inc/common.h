@@ -62,8 +62,8 @@
  * printing the error message.
  *****************************************************************************/
 
-#define log_exit(fmt, ...) fprintf(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(EXIT_FAILURE)
-#define log_exit_str(fmt)  fprintf(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__); exit(EXIT_FAILURE)
+#define log_exit(fmt, ...) log_fatal(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(EXIT_FAILURE)
+#define log_exit_str(fmt)  log_fatal(stderr, "FATAL %s:%d:%s() " fmt "\n", __FILE__, __LINE__, __func__); exit(EXIT_FAILURE)
 
 /******************************************************************************
  * Definitions
@@ -123,6 +123,10 @@ typedef struct s_point {
 /******************************************************************************
  * The definition of the functions.
  *****************************************************************************/
+
+void log_callback(void (*exit_callback_ptr)());
+
+void log_fatal(FILE *stream, const char *fmt, ...);
 
 void* xmalloc(const size_t size);
 

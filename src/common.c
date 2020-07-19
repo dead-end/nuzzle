@@ -30,6 +30,42 @@
 #include <stdarg.h>
 
 /******************************************************************************
+ * Register exit callback function.
+ *****************************************************************************/
+
+static void (*_exit_callback_ptr)() = NULL;
+
+void log_callback(void (*exit_callback_ptr)()) {
+	_exit_callback_ptr = exit_callback_ptr;
+}
+
+/******************************************************************************
+ * In case of an error we have to call the exit callback function first. This
+ * finishes ncurses. Then writing the log message is possible. If ncurses is
+ * not stopped writing to stderr does not work.
+ *****************************************************************************/
+
+void log_fatal(FILE *stream, const char *fmt, ...) {
+
+	//
+	// If a exit callback is registered, we call it.
+	//
+	if (_exit_callback_ptr != NULL) {
+		(*_exit_callback_ptr)();
+	}
+
+	//
+	// Start variable argument lists
+	//
+	va_list argp;
+	va_start(argp, fmt);
+
+	vfprintf(stream, fmt, argp);
+
+	va_end(argp);
+}
+
+/******************************************************************************
  * The function allocates memory and terminates the program in case of an
  * error.
  *****************************************************************************/
