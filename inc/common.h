@@ -98,6 +98,8 @@
 
 #define center(t,w) (((t) - (w)) / 2)
 
+#define starts_with(s,p) (strncmp(p, s, strlen(p)) == 0)
+
 /******************************************************************************
  * The s_point struct represents an element that has a row and a column. This
  * can be a pixel (terminal character), an array dimension, a block size...
