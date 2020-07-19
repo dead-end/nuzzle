@@ -163,6 +163,9 @@ $(UNIT_TEST): $(OBJ_LIBS) $(OBJ_UNIT_TEST)
 
 clean:
 	rm -f $(BUILD_DIR)/*.o
+	rm -f $(BUILD_DIR)/*.gz
+	rm -f $(BUILD_DIR)/*.deb
+	rm -rf $(BUILD_DIR)/nuzzle_*_amd64/
 	rm -f $(SRC_DIR)/*.c~
 	rm -f $(INCLUDE_DIR)/*.h~
 	rm -f $(EXEC) $(UNIT_TEST)
