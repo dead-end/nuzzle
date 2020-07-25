@@ -23,33 +23,87 @@
  */
 
 #include <ncurses.h>
+#include <stdio.h>
+#include <linux/limits.h>
+#include <errno.h>
 
 #include "colors.h"
+#include "file_system.h"
+
+/******************************************************************************
+ * Definitions.
+ *****************************************************************************/
+
+#define BUF_SIZE 1024
+
+#define COLOR_CFG "color.cfg"
+
+/******************************************************************************
+ * A color is defined by a r,g,b value. Each have a range between 0 and 999.
+ *****************************************************************************/
+
+#define COLOR_VALUE_MIN 0
+
+#define COLOR_VALUE_MAX 999
 
 /******************************************************************************
  * The definition of the colors, that are used inside this game. Additionally
  * COLOR_BLACK is used.
  *****************************************************************************/
 
-#define BG_L_G 16
-#define BG_M_G 17
-#define BG_D_G 18
+#define COL_DEF_OFFSET 16
 
-#define LG_RED 19
-#define FG_RED 20
-#define BG_RED 21
+#define COL_DEF_NUM 15
 
-#define LG_GRE 22
-#define FG_GRE 23
-#define BG_GRE 24
+//
+// "chess.light", "chess.middle", "chess.dark",
+//
+#define CHESS_LG 16
+#define CHESS_MD 17
+#define CHESS_DK 18
 
-#define LG_BLU 25
-#define FG_BLU 26
-#define BG_BLU 27
+//
+// "red.light", "red.dark", "red.bg",
+//
+#define RED_LG 19
+#define RED_DK 20
+#define RED_BG 21
 
-#define LG_YEL 28
-#define FG_YEL 29
-#define BG_YEL 30
+//
+// "green.light", "green.dark", "green.bg",
+//
+#define GREEN_LG 22
+#define GREEN_DK 23
+#define GREEN_BG 24
+
+//
+// "blue.light", "blue.dark", "blue.bg",
+//
+#define BLUE_LG 25
+#define BLUE_DK 26
+#define BLUE_BG 27
+
+//
+// "yellow.light", "yellow.dark", "yellow.bg"
+//
+#define YELLOW_LG 28
+#define YELLOW_DK 29
+#define YELLOW_BG 30
+
+//
+// The corresponding names for the config file.
+//
+static const char *_color_def_names[COL_DEF_NUM] = {
+
+"chess.light", "chess.middle", "chess.dark",
+
+"red.light", "red.dark", "red.bg",
+
+"green.light", "green.dark", "green.bg",
+
+"blue.light", "blue.dark", "blue.bg",
+
+"yellow.light", "yellow.dark", "yellow.bg" };
 
 /******************************************************************************
  * The color pairs are stored in a 2 dimensional array. The indices are the
@@ -148,47 +202,190 @@ static void colors_init_color(const short color, const short red, const short gr
 	}
 }
 
-/******************************************************************************
- * The function initializes the necessary colors. Black and white are not
- * created.
- *****************************************************************************/
+/*******************************************************************************
+ * The function initializes the color definition array with -1.
+ ******************************************************************************/
 
-static void colors_alloc() {
+static void color_def_init(int c_defs[][3], const int num) {
+
+	for (int i = 0; i < num; i++) {
+
+		c_defs[i][0] = -1;
+		c_defs[i][1] = -1;
+		c_defs[i][2] = -1;
+	}
+}
+
+/*******************************************************************************
+ * The function checks the array of color definitions. The array was initialized
+ * with -1. After the configuration file was read, all the -1 values should be
+ * overwritten. This is checked here.
+ ******************************************************************************/
+
+static void color_def_check(int c_defs[][3], const int num, const char *c_defs_names[]) {
+
+	for (int i = 0; i < num; i++) {
+
+		if (c_defs[i][0] == -1 || c_defs[i][1] == -1 || c_defs[i][2] == -1) {
+			log_exit("Color definition not valid: %s", c_defs_names[i]);
+		}
+	}
+}
+
+/*******************************************************************************
+ * The function allocates the colors defined in the array. Each color has an id
+ * which is the index in the array and an offset.
+ ******************************************************************************/
+
+static void color_def_allocate(int c_defs[][3], const int num, const int offset) {
+
+	for (int i = 0; i < num; i++) {
+
+		colors_init_color(i + offset, c_defs[i][0], c_defs[i][1], c_defs[i][2]);
+	}
+}
+
+/*******************************************************************************
+ * The function pares and checks a line from the configuration file. It is
+ * assumed, that the file starts with the prefix.
+ ******************************************************************************/
+
+static void color_def_parse(const char *line, const char *prefix, int *result) {
+	const int len = strlen(prefix);
+
+	sscanf(&line[len], "=%d,%d,%d", &result[0], &result[1], &result[2]);
+
+	if (result[0] < COLOR_VALUE_MIN || result[0] > COLOR_VALUE_MAX) {
+		log_exit("First value not valid - line: %s", line);
+	}
+
+	if (result[1] < COLOR_VALUE_MIN || result[1] > COLOR_VALUE_MAX) {
+		log_exit("Second value not valid - line: %s", line);
+	}
+
+	if (result[2] < COLOR_VALUE_MIN || result[2] > COLOR_VALUE_MAX) {
+		log_exit("Third value not valid - line: %s", line);
+	}
+
+	log_debug("color: %s %3d, %3d, %3d", prefix, result[0], result[1],result[2]);
+}
+
+/*******************************************************************************
+ * The function processes the file with the color definitions. Each line of the
+ * file contains a key and 3 int values, which represent red, green, blue.
+ ******************************************************************************/
+
+static void color_def_process_file(FILE *file, const char *path) {
+	char line[BUF_SIZE];
+
+	int color_defs[COL_DEF_NUM][3];
+
+	bool found;
 
 	//
-	// Chess pattern colors
+	// Initialize the array of color definitions with -1. If one of the color
+	// values is -1, we know that it was not set.
 	//
-	colors_init_color(BG_L_G, 250, 250, 250);
-	colors_init_color(BG_M_G, 200, 200, 200);
-	colors_init_color(BG_D_G, 150, 150, 150);
+	color_def_init(color_defs, COL_DEF_NUM);
 
 	//
-	// Red
+	// Read the file line by line.
 	//
-	colors_init_color(LG_RED, 999, 600, 600);
-	colors_init_color(FG_RED, 999, 300, 300);
-	colors_init_color(BG_RED, 700, 0, 0);
+	while (fgets(line, BUF_SIZE, file) != NULL) {
+
+		//
+		// Ensure that the IO operation succeeded.
+		//
+		if (ferror(file)) {
+			log_exit("Unable to read file: %s - %s", path, strerror(errno));
+		}
+
+		//
+		// Remove tailing white spaces.
+		//
+		trim_r(line);
+
+		//
+		// Ignore empty lines and comments.
+		//
+		if (strlen(line) == 0 || line[0] == '#') {
+			continue;
+		}
+
+		log_debug("line: %s", line);
+
+		found = false;
+
+		//
+		// Loop through the color definition names.
+		//
+		for (int i = 0; i < COL_DEF_NUM; i++) {
+
+			//
+			// If we found the correct definition, we can parse the result.
+			//
+			if (starts_with(line, _color_def_names[i])) {
+				color_def_parse(line, _color_def_names[i], color_defs[i]);
+				found = true;
+				break;
+			}
+		}
+
+		//
+		// Ensure that the line contains something useful.
+		//
+		if (!found) {
+			log_exit("Unknown definition: %s", line);
+		}
+	}
 
 	//
-	// Green
+	// Ensure that all colors are defined, by checking that there is no -1
+	// value.
 	//
-	colors_init_color(LG_GRE, 700, 999, 700);
-	colors_init_color(FG_GRE, 0, 900, 0);
-	colors_init_color(BG_GRE, 0, 500, 0);
+	color_def_check(color_defs, COL_DEF_NUM, _color_def_names);
 
 	//
-	// Blue
+	// Allocate the colors.
 	//
-	colors_init_color(LG_BLU, 700, 700, 999);
-	colors_init_color(FG_BLU, 400, 400, 999);
-	colors_init_color(BG_BLU, 0, 0, 600);
+	color_def_allocate(color_defs, COL_DEF_NUM, COL_DEF_OFFSET);
+}
+
+/*******************************************************************************
+ * The function does the IO stuff for reading the configuration file with the
+ * color definitions. The processing of the file is done in a separate function.
+ ******************************************************************************/
+
+void colors_alloc() {
+
+	char path[PATH_MAX];
 
 	//
-	// Yellow
+	//Find the file in one of the configuration directories.
 	//
-	colors_init_color(LG_YEL, 999, 999, 600);
-	colors_init_color(FG_YEL, 850, 850, 0);
-	colors_init_color(BG_YEL, 500, 500, 0);
+	if (!fs_get_cfg_file(COLOR_CFG, path, PATH_MAX)) {
+		log_exit("No config file found: %s", COLOR_CFG);
+	}
+
+	//
+	// Open the configuration file.
+	//
+	FILE *file = fopen(path, "r");
+	if (file == NULL) {
+		log_exit("Unable open file: %s - %s", path, strerror(errno));
+	}
+
+	//
+	// Delegate the processing to a separate function.
+	//
+	color_def_process_file(file, path);
+
+	//
+	// Close the file and check for errors.
+	//
+	if (fclose(file) == -1) {
+		log_exit("Unable close file: %s - %s", path, strerror(errno));
+	}
 }
 
 /******************************************************************************
@@ -212,64 +409,64 @@ static void color_pairs_alloc() {
 	//
 	// Initialize color pairs for the chess pattern.
 	//
-	_color_pairs[CLR_NONE][CLR_GREY_LIGHT] = colors_init_pair(color_pair++, BG_L_G, BG_L_G);
-	_color_pairs[CLR_NONE][CLR_GREY_MID__] = colors_init_pair(color_pair++, BG_M_G, BG_M_G);
-	_color_pairs[CLR_NONE][CLR_GREY_DARK_] = colors_init_pair(color_pair++, BG_D_G, BG_D_G);
+	_color_pairs[CLR_NONE][CLR_GREY_LIGHT] = colors_init_pair(color_pair++, CHESS_LG, CHESS_LG);
+	_color_pairs[CLR_NONE][CLR_GREY_MID__] = colors_init_pair(color_pair++, CHESS_MD, CHESS_MD);
+	_color_pairs[CLR_NONE][CLR_GREY_DARK_] = colors_init_pair(color_pair++, CHESS_DK, CHESS_DK);
 
 	//
 	// Initialize the color pairs with black.
 	//
-	_color_pairs[CLR_RED__N][CLR_NONE] = colors_init_pair(color_pair++, FG_RED, COLOR_BLACK);
-	_color_pairs[CLR_GREE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_GRE, COLOR_BLACK);
-	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, FG_BLU, COLOR_BLACK);
-	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, FG_YEL, COLOR_BLACK);
+	_color_pairs[CLR_RED__N][CLR_NONE] = colors_init_pair(color_pair++, RED_DK, COLOR_BLACK);
+	_color_pairs[CLR_GREE_N][CLR_NONE] = colors_init_pair(color_pair++, GREEN_DK, COLOR_BLACK);
+	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, BLUE_DK, COLOR_BLACK);
+	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_DK, COLOR_BLACK);
 
 	//
 	// Initialize the color pairs with foreground CLR_NONE. They are used for
 	// the info area. The foreground color is the color of the writings.
 	//
-	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_RED);
-	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_GRE);
-	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_BLU);
-	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_WHITE, BG_YEL);
+	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_WHITE, RED_BG);
+	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_WHITE, GREEN_BG);
+	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BLUE_BG);
+	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_WHITE, YELLOW_BG);
 
 	//
 	// Initialize the color pairs for the rgby combinations.
 	//
-	_color_pairs[CLR_RED__N][CLR_RED__N] = colors_init_pair(color_pair++, FG_RED, BG_RED);
-	_color_pairs[CLR_RED__N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_RED, BG_GRE);
-	_color_pairs[CLR_RED__N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_RED, BG_BLU);
-	_color_pairs[CLR_RED__N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_RED, BG_YEL);
+	_color_pairs[CLR_RED__N][CLR_RED__N] = colors_init_pair(color_pair++, RED_DK, RED_BG);
+	_color_pairs[CLR_RED__N][CLR_GREE_N] = colors_init_pair(color_pair++, RED_DK, GREEN_BG);
+	_color_pairs[CLR_RED__N][CLR_BLUE_N] = colors_init_pair(color_pair++, RED_DK, BLUE_BG);
+	_color_pairs[CLR_RED__N][CLR_YELL_N] = colors_init_pair(color_pair++, RED_DK, YELLOW_BG);
 
-	_color_pairs[CLR_GREE_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_GRE, BG_RED);
-	_color_pairs[CLR_GREE_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_GRE, BG_GRE);
-	_color_pairs[CLR_GREE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_GRE, BG_BLU);
-	_color_pairs[CLR_GREE_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_GRE, BG_YEL);
+	_color_pairs[CLR_GREE_N][CLR_RED__N] = colors_init_pair(color_pair++, GREEN_DK, RED_BG);
+	_color_pairs[CLR_GREE_N][CLR_GREE_N] = colors_init_pair(color_pair++, GREEN_DK, GREEN_BG);
+	_color_pairs[CLR_GREE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, GREEN_DK, BLUE_BG);
+	_color_pairs[CLR_GREE_N][CLR_YELL_N] = colors_init_pair(color_pair++, GREEN_DK, YELLOW_BG);
 
-	_color_pairs[CLR_BLUE_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_BLU, BG_RED);
-	_color_pairs[CLR_BLUE_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_BLU, BG_GRE);
-	_color_pairs[CLR_BLUE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_BLU, BG_BLU);
-	_color_pairs[CLR_BLUE_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_BLU, BG_YEL);
+	_color_pairs[CLR_BLUE_N][CLR_RED__N] = colors_init_pair(color_pair++, BLUE_DK, RED_BG);
+	_color_pairs[CLR_BLUE_N][CLR_GREE_N] = colors_init_pair(color_pair++, BLUE_DK, GREEN_BG);
+	_color_pairs[CLR_BLUE_N][CLR_BLUE_N] = colors_init_pair(color_pair++, BLUE_DK, BLUE_BG);
+	_color_pairs[CLR_BLUE_N][CLR_YELL_N] = colors_init_pair(color_pair++, BLUE_DK, YELLOW_BG);
 
-	_color_pairs[CLR_YELL_N][CLR_RED__N] = colors_init_pair(color_pair++, FG_YEL, BG_RED);
-	_color_pairs[CLR_YELL_N][CLR_GREE_N] = colors_init_pair(color_pair++, FG_YEL, BG_GRE);
-	_color_pairs[CLR_YELL_N][CLR_BLUE_N] = colors_init_pair(color_pair++, FG_YEL, BG_BLU);
-	_color_pairs[CLR_YELL_N][CLR_YELL_N] = colors_init_pair(color_pair++, FG_YEL, BG_YEL);
+	_color_pairs[CLR_YELL_N][CLR_RED__N] = colors_init_pair(color_pair++, YELLOW_DK, RED_BG);
+	_color_pairs[CLR_YELL_N][CLR_GREE_N] = colors_init_pair(color_pair++, YELLOW_DK, GREEN_BG);
+	_color_pairs[CLR_YELL_N][CLR_BLUE_N] = colors_init_pair(color_pair++, YELLOW_DK, BLUE_BG);
+	_color_pairs[CLR_YELL_N][CLR_YELL_N] = colors_init_pair(color_pair++, YELLOW_DK, YELLOW_BG);
 
 	//
 	// Initialize the color pairs for light colors.
 	//
-	_color_pairs[CLR_RED__L][CLR_NONE] = colors_init_pair(color_pair++, LG_RED, COLOR_BLACK);
-	_color_pairs[CLR_RED__L][CLR_RED__N] = colors_init_pair(color_pair++, LG_RED, BG_RED);
+	_color_pairs[CLR_RED__L][CLR_NONE] = colors_init_pair(color_pair++, RED_LG, COLOR_BLACK);
+	_color_pairs[CLR_RED__L][CLR_RED__N] = colors_init_pair(color_pair++, RED_LG, RED_BG);
 
-	_color_pairs[CLR_GREE_L][CLR_NONE] = colors_init_pair(color_pair++, LG_GRE, COLOR_BLACK);
-	_color_pairs[CLR_GREE_L][CLR_GREE_N] = colors_init_pair(color_pair++, LG_GRE, BG_GRE);
+	_color_pairs[CLR_GREE_L][CLR_NONE] = colors_init_pair(color_pair++, GREEN_LG, COLOR_BLACK);
+	_color_pairs[CLR_GREE_L][CLR_GREE_N] = colors_init_pair(color_pair++, GREEN_LG, GREEN_BG);
 
-	_color_pairs[CLR_BLUE_L][CLR_NONE] = colors_init_pair(color_pair++, LG_BLU, COLOR_BLACK);
-	_color_pairs[CLR_BLUE_L][CLR_BLUE_N] = colors_init_pair(color_pair++, LG_BLU, BG_BLU);
+	_color_pairs[CLR_BLUE_L][CLR_NONE] = colors_init_pair(color_pair++, BLUE_LG, COLOR_BLACK);
+	_color_pairs[CLR_BLUE_L][CLR_BLUE_N] = colors_init_pair(color_pair++, BLUE_LG, BLUE_BG);
 
-	_color_pairs[CLR_YELL_L][CLR_NONE] = colors_init_pair(color_pair++, LG_YEL, COLOR_BLACK);
-	_color_pairs[CLR_YELL_L][CLR_YELL_N] = colors_init_pair(color_pair++, LG_YEL, BG_YEL);
+	_color_pairs[CLR_YELL_L][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_LG, COLOR_BLACK);
+	_color_pairs[CLR_YELL_L][CLR_YELL_N] = colors_init_pair(color_pair++, YELLOW_LG, YELLOW_BG);
 }
 
 /******************************************************************************
