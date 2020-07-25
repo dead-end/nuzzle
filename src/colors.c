@@ -55,51 +55,52 @@
 #define COL_DEF_NUM 17
 
 //
+// "default.fg", "default.bg"
+//
+#define DEFAULT_FG 16
+#define DEFAULT_BG 17
+
+//
 // "chess.light", "chess.middle", "chess.dark",
 //
-#define CHESS_LG 16
-#define CHESS_MD 17
-#define CHESS_DK 18
+#define CHESS_LG 18
+#define CHESS_MD 19
+#define CHESS_DK 20
 
 //
 // "red.light", "red.dark", "red.bg",
 //
-#define RED_LG 19
-#define RED_DK 20
-#define RED_BG 21
+#define RED_LG 21
+#define RED_DK 22
+#define RED_BG 23
 
 //
 // "green.light", "green.dark", "green.bg",
 //
-#define GREEN_LG 22
-#define GREEN_DK 23
-#define GREEN_BG 24
+#define GREEN_LG 24
+#define GREEN_DK 25
+#define GREEN_BG 26
 
 //
 // "blue.light", "blue.dark", "blue.bg",
 //
-#define BLUE_LG 25
-#define BLUE_DK 26
-#define BLUE_BG 27
+#define BLUE_LG 27
+#define BLUE_DK 28
+#define BLUE_BG 29
 
 //
 // "yellow.light", "yellow.dark", "yellow.bg"
 //
-#define YELLOW_LG 28
-#define YELLOW_DK 29
-#define YELLOW_BG 30
-
-//
-// "default.fg", "default.bg"
-//
-#define DEFAULT_FG 31
-#define DEFAULT_BG 32
-// TODO: default first
+#define YELLOW_LG 30
+#define YELLOW_DK 31
+#define YELLOW_BG 32
 
 //
 // The corresponding names for the config file.
 //
 static const char *_color_def_names[COL_DEF_NUM] = {
+
+"default.fg", "default.bg",
 
 "chess.light", "chess.middle", "chess.dark",
 
@@ -109,9 +110,7 @@ static const char *_color_def_names[COL_DEF_NUM] = {
 
 "blue.light", "blue.dark", "blue.bg",
 
-"yellow.light", "yellow.dark", "yellow.bg",
-
-"default.fg", "default.bg"
+"yellow.light", "yellow.dark", "yellow.bg"
 
 };
 
