@@ -47,13 +47,12 @@
 #define COLOR_VALUE_MAX 999
 
 /******************************************************************************
- * The definition of the colors, that are used inside this game. Additionally
- * COLOR_BLACK is used.
+ * The definition of the colors, that are used inside this game.
  *****************************************************************************/
 
 #define COL_DEF_OFFSET 16
 
-#define COL_DEF_NUM 15
+#define COL_DEF_NUM 17
 
 //
 // "chess.light", "chess.middle", "chess.dark",
@@ -91,6 +90,13 @@
 #define YELLOW_BG 30
 
 //
+// "default.fg", "default.bg"
+//
+#define DEFAULT_FG 31
+#define DEFAULT_BG 32
+// TODO: default first
+
+//
 // The corresponding names for the config file.
 //
 static const char *_color_def_names[COL_DEF_NUM] = {
@@ -103,7 +109,11 @@ static const char *_color_def_names[COL_DEF_NUM] = {
 
 "blue.light", "blue.dark", "blue.bg",
 
-"yellow.light", "yellow.dark", "yellow.bg" };
+"yellow.light", "yellow.dark", "yellow.bg",
+
+"default.fg", "default.bg"
+
+};
 
 /******************************************************************************
  * The color pairs are stored in a 2 dimensional array. The indices are the
@@ -113,8 +123,6 @@ static const char *_color_def_names[COL_DEF_NUM] = {
 //
 // The default color pair is unchanged.
 //
-#define CP_DEFAULT 0
-
 #define CP_START   8
 
 #define CP_UNDEF  -1
@@ -396,15 +404,21 @@ void colors_alloc() {
 static void color_pairs_alloc() {
 
 	//
+	// We redefine the default color pair.
+	//
+	if (assume_default_colors(DEFAULT_FG, DEFAULT_BG) == ERR) {
+		log_exit_str("Unable to change default colors.");
+	}
+
+	//
+	// And we use the default color pair (which is 0)
+	//
+	_color_pairs[CLR_NONE][CLR_NONE] = 0;
+
+	//
 	// We use an offset to keep the first color pairs.
 	//
 	short color_pair = CP_START;
-
-	//
-	// At this point we are implicitly defining the background color.
-	// (see: bkgd, wbkgd)
-	//
-	_color_pairs[CLR_NONE][CLR_NONE] = CP_DEFAULT;
 
 	//
 	// Initialize color pairs for the chess pattern.
@@ -416,19 +430,19 @@ static void color_pairs_alloc() {
 	//
 	// Initialize the color pairs with black.
 	//
-	_color_pairs[CLR_RED__N][CLR_NONE] = colors_init_pair(color_pair++, RED_DK, COLOR_BLACK);
-	_color_pairs[CLR_GREE_N][CLR_NONE] = colors_init_pair(color_pair++, GREEN_DK, COLOR_BLACK);
-	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, BLUE_DK, COLOR_BLACK);
-	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_DK, COLOR_BLACK);
+	_color_pairs[CLR_RED__N][CLR_NONE] = colors_init_pair(color_pair++, RED_DK, DEFAULT_BG);
+	_color_pairs[CLR_GREE_N][CLR_NONE] = colors_init_pair(color_pair++, GREEN_DK, DEFAULT_BG);
+	_color_pairs[CLR_BLUE_N][CLR_NONE] = colors_init_pair(color_pair++, BLUE_DK, DEFAULT_BG);
+	_color_pairs[CLR_YELL_N][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_DK, DEFAULT_BG);
 
 	//
 	// Initialize the color pairs with foreground CLR_NONE. They are used for
 	// the info area. The foreground color is the color of the writings.
 	//
-	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, COLOR_WHITE, RED_BG);
-	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, COLOR_WHITE, GREEN_BG);
-	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, COLOR_WHITE, BLUE_BG);
-	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, COLOR_WHITE, YELLOW_BG);
+	_color_pairs[CLR_NONE][CLR_RED__N] = colors_init_pair(color_pair++, DEFAULT_FG, RED_BG);
+	_color_pairs[CLR_NONE][CLR_GREE_N] = colors_init_pair(color_pair++, DEFAULT_FG, GREEN_BG);
+	_color_pairs[CLR_NONE][CLR_BLUE_N] = colors_init_pair(color_pair++, DEFAULT_FG, BLUE_BG);
+	_color_pairs[CLR_NONE][CLR_YELL_N] = colors_init_pair(color_pair++, DEFAULT_FG, YELLOW_BG);
 
 	//
 	// Initialize the color pairs for the rgby combinations.
@@ -456,16 +470,16 @@ static void color_pairs_alloc() {
 	//
 	// Initialize the color pairs for light colors.
 	//
-	_color_pairs[CLR_RED__L][CLR_NONE] = colors_init_pair(color_pair++, RED_LG, COLOR_BLACK);
+	_color_pairs[CLR_RED__L][CLR_NONE] = colors_init_pair(color_pair++, RED_LG, DEFAULT_BG);
 	_color_pairs[CLR_RED__L][CLR_RED__N] = colors_init_pair(color_pair++, RED_LG, RED_BG);
 
-	_color_pairs[CLR_GREE_L][CLR_NONE] = colors_init_pair(color_pair++, GREEN_LG, COLOR_BLACK);
+	_color_pairs[CLR_GREE_L][CLR_NONE] = colors_init_pair(color_pair++, GREEN_LG, DEFAULT_BG);
 	_color_pairs[CLR_GREE_L][CLR_GREE_N] = colors_init_pair(color_pair++, GREEN_LG, GREEN_BG);
 
-	_color_pairs[CLR_BLUE_L][CLR_NONE] = colors_init_pair(color_pair++, BLUE_LG, COLOR_BLACK);
+	_color_pairs[CLR_BLUE_L][CLR_NONE] = colors_init_pair(color_pair++, BLUE_LG, DEFAULT_BG);
 	_color_pairs[CLR_BLUE_L][CLR_BLUE_N] = colors_init_pair(color_pair++, BLUE_LG, BLUE_BG);
 
-	_color_pairs[CLR_YELL_L][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_LG, COLOR_BLACK);
+	_color_pairs[CLR_YELL_L][CLR_NONE] = colors_init_pair(color_pair++, YELLOW_LG, DEFAULT_BG);
 	_color_pairs[CLR_YELL_L][CLR_YELL_N] = colors_init_pair(color_pair++, YELLOW_LG, YELLOW_BG);
 }
 
