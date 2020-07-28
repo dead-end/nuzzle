@@ -9,26 +9,87 @@ SYNOPSIS
 
 DESCRIPTION
        Nuzzle  is a terminal based puzzle game. It is implemented with ncurses
-       and requires color and mouse support. Playing is simple:
+       and requires color and mouse support.
 
-       - Start the program and start a new game.
+       The target of the game is to place as much blocks as possible,  from  a
+       home  area to the game area. If the blocks on the game area form a cer‐
+       tain pattern, they will be removed and the player gets  one  point  for
+       each block that was removed.
 
-       - Use ESC to enter the main menu during the game.
+       There are 3 games that are supported:
 
-       - Click on the block of squares to pick them up.
+       Lines  The  game  is played with one color. If a complete row or column
+              is filled with blocks, they will be removed.
 
-       - Move the block to the desired position.
+       Lines-squares
+              The game is played with one color. The game area consists of 9x9
+              blocks  with  9  squares, that consists of 3x3 blocks. If a com‐
+              plete row or column is filled with blocks or if  one  of  the  9
+              squares is filled with blocks the blocks will be removed.
 
-       - Click again to drop the block of squares at that position. It is  not
-       necessary to hold the button pressed while moving the blocks.
+       4-Colors
+              The  game  is played with 4 colors. If 4 or more adjacent blocks
+              with the same color exist, then they will be removed.
 
-       -  If more than 4 adjacent blocks exist, then they are removed from the
-       game. For each removed block you get one point for your score.
+       The game can be played with the mouse and/or the keyboard. The  follow‐
+       ing keys are supported.
+
+       <ESC>  Show the main menu during the game.
+
+       <TAB>  Pick  up a block in the home area or loop through the home area,
+              if a block is already picked up.
+
+       <ARROW-KEY>
+              If the blocks from the home area were not inside the game  area,
+              they are moved to the first possible drop area on the game area.
+              If the blocks are inside the game area, the blocks can be  moved
+              with the arrow keys.
+
+       <ENTER>
+              Drop to blocks on the game area if it is possible.
+
+       <q>    Quit the game.
+
+       To  play  nuzzle  with the mouse, you can simply left click on the home
+       area to pick up the blocks. Once the blocks are picked up you can  move
+       the  blocks  with  the mouse. The mouse needs not to be pressed to move
+       the blocks. A right click moves the blocks back to the  home  area.  If
+       blocks  are  picked  up and moved to the game area, an other left click
+       drops the blocks on the game area, if this is possible.
 
 Files
-       Nuzzle uses the following directory to store its data:
+       Nuzzle uses the following configuration files:
 
-              $HOME/.nuzzle/
+       nuzzle.cfg
+              The file contains the configurations for the three games.
+
+       color.cfg
+              The file contains the definitions of the colors  that  are  used
+              within the nuzzle.
+
+       5-shapes.cfg shapes-lines.cfg
+              The two file contain the definitions of the various block struc‐
+              tures that are used in the Lines and Squares-Lines games.
+
+       Nuzzle references the configuration files with their names. The default
+       files from the installation can be overwritten. Each configuration file
+       is resolved by looking in the following directories in the given order.
+       To  overwrite  one or more of the files, copy a the default file to one
+       of the directies.
+
+       ${PWD}/cfg/
+              Nuzzle first looks in  the  cfg  directory  inside  the  working
+              directory  of  the user. This is necessary to ensure that nuzzle
+              finds configurations after a build with make.
+
+       ${HOME}/.nuzzle/
+              Nuzzle uses this directory to store user specific files like the
+              score  files for the games. This is the recommanded directory to
+              place customized configuration files.
+
+       /usr/share/games/nuzzle/
+              The last directory contains the  default  configurations,  which
+              are provided with the installation.
 
 SEE ALSO
        nuzzle(6)
@@ -39,5 +100,5 @@ BUGS
 AUTHOR
        Dead End
 
-V 0.1                            February 2020                       NUZZLE(6)
+V 0.3                             August 2020                        NUZZLE(6)
 ```
