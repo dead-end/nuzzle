@@ -3,7 +3,7 @@
 .\"
 .\" \fB .B Bold \fI .I Italic \fR Roman
 .\"-----------------------------------------------------------------------------
-.TH "NUZZLE" "6" "February 2020" "V 0.1" "Game"
+.TH "NUZZLE" "6" "August 2020" "V 0.3" "Game"
 .\"-----------------------------------------------------------------------------
 .SH NAME
 nuzzle \- terminal based puzzle game
@@ -19,47 +19,87 @@ Nuzzle is a terminal based puzzle game. It is implemented with ncurses and
 requires color and mouse support.
 
 The target of the game is to place as much blocks as possible, from a home area
-to the game. If the blocks on the game area form a certain pattern, they will be
-removed and the player gets one point for each block that was removed.
+to the game area. If the blocks on the game area form a certain pattern, they 
+will be removed and the player gets one point for each block that was removed.
 
-There are 3 pattern that are supported:
-\fILines\fR
+There are 3 games that are supported:
+.\" ----------------------------------------------------------------------------
+.IP \fILines\fR
 The game is played with one color. If a complete row or column is filled with
 blocks, they will be removed.
-
-\fILines-squares\fR
-The game is palyed with one color. The game area consists of 9x9 blocks with 9
+.\" ----------------------------------------------------------------------------
+.IP \fILines-squares\fR
+The game is played with one color. The game area consists of 9x9 blocks with 9
 squares, that consists of 3x3 blocks. If a complete row or column is filled with
 blocks or if one of the 9 squares is filled with blocks the blocks will be
 removed.
-
-\fI4-Colors\fR
+.\" ----------------------------------------------------------------------------
+.IP \fI4-Colors\fR
 The game is played with 4 colors. If 4 or more adjacent blocks with the same
 color exist, then they will be removed.
-
-The game can be played with the mouse and / or the keyboard:
-.TP
-\fB\-\fR Use \fBESC\fR to enter the main menu during the game.
-.TP
-\fB\-\fR Use the \fBq\fR key to quit the game.
-.TP
-\fB\-\fR Use the \fBtab\fR key to pick up the next blocks from the home area.
-.TP
-\fB\-\fR Click on the home area to pick up the blocks. A right click on te mouse
-drops the blocks.
-.TP
-\fB\-\fR Move the block to the desired position.
-.TP
-\fB\-\fR Click again to drop the block of squares at that position. It is not necessary to hold the button pressed while moving the blocks.
-.TP
-\fB\-\fR If more than 4 adjacent blocks exist, then they are removed from the game. For each removed block you get one point for your score.
+.\" ----------------------------------------------------------------------------
+.P
+The game can be played with the mouse and/or the keyboard. The following keys
+are supported.
+.\" ----------------------------------------------------------------------------
+.IP <ESC>
+Show the main menu during the game.
+.\" ----------------------------------------------------------------------------
+.IP <TAB>
+Pick up a block in the home area or loop through the home area, if a block is 
+already picked up.
+.\" ----------------------------------------------------------------------------
+.IP <ARROW-KEY>
+If the blocks from the home area were not inside the game area, they are moved 
+to the first possible drop area on the game area. If the blocks are inside the
+game area, the blocks can be moved with the arrow keys.
+.\" ----------------------------------------------------------------------------
+.IP <ENTER>
+Drop to blocks on the game area if it is possible.
+.\" ----------------------------------------------------------------------------
+.IP <q>
+Quit the game.
+.\" ----------------------------------------------------------------------------
+.P 
+To play nuzzle with the mouse, you can simply left click on the home area to 
+pick up the blocks. Once the blocks are picked up you can move the blocks with 
+the mouse. The mouse needs not to be pressed to move the blocks. A right click 
+moves the blocks back to the home area. If blocks are picked up and moved to the 
+game area, an other left click drops the blocks on the game area, if this is 
+possible.
 .\"-----------------------------------------------------------------------------
-.SH Files
-Nuzzle uses the following directory to store its data:
-.PP
-.nf
-.RS
-$HOME/.nuzzle/
+.SH Files 
+Nuzzle uses the following configuration files:
+.\"-----------------------------------------------------------------------------
+.IP nuzzle.cfg
+The file contains the configurations for the three games.
+.\"-----------------------------------------------------------------------------
+.IP color.cfg
+The file contains the definitions of the colors that are used within the nuzzle. 
+.\"-----------------------------------------------------------------------------
+.IP "5-shapes.cfg shapes-lines.cfg"
+The two file contain the definitions of the various block structures that are 
+used in the \fILines\fR and \fISquares-Lines\fR games.
+.\"-----------------------------------------------------------------------------
+.P
+Nuzzle references the configuration files with their names. The default files 
+from the installation can be overwritten. Each configuration file is resolved by 
+looking in the following directories in the given order. To overwrite one or 
+more of the files, copy a the default file to one of the directies.
+.\"-----------------------------------------------------------------------------
+.IP ${PWD}/cfg/
+Nuzzle first looks in the \fIcfg\fR directory inside the working directory of 
+the user. This is necessary to ensure that nuzzle finds configurations after a
+build with \fImake\fR. 
+.\"-----------------------------------------------------------------------------
+.IP ${HOME}/.nuzzle/
+Nuzzle uses this directory to store user specific files like the score files for
+the games. This is the recommanded directory to place customized configuration
+files.
+.\"-----------------------------------------------------------------------------
+.IP /usr/share/games/nuzzle/
+The last directory contains the default configurations, which are provided with 
+the installation.
 .\"-----------------------------------------------------------------------------
 .SH SEE ALSO
 nuzzle(6)
