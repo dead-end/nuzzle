@@ -197,6 +197,7 @@ install: $(EXEC)
 	install -D --mode=644 $(CFG_DIR)/5-shapes.cfg     $(DATDIR)/5-shapes.cfg
 	install -D --mode=644 $(CFG_DIR)/shapes-lines.cfg $(DATDIR)/shapes-lines.cfg
 	install -D --mode=644 $(CFG_DIR)/nuzzle.cfg       $(DATDIR)/nuzzle.cfg
+	install -D --mode=644 $(CFG_DIR)/color.cfg       $(DATDIR)/color.cfg
 
 uninstall:
 	rm -f $(DOCDIR)/copyright
