@@ -8,8 +8,8 @@ SYNOPSIS
        nuzzle
 
 DESCRIPTION
-       Nuzzle  is a terminal based puzzle game. It is implemented with ncurses
-       and requires color and mouse support.
+       Nuzzle  is  a  terminal based puzzle game collection. It is implemented
+       with ncurses and requires color and mouse support.
 
        The target of the game is to place as much blocks as possible,  from  a
        home  area to the game area. If the blocks on the game area form a cer‐
