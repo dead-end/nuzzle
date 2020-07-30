@@ -4,7 +4,7 @@ Nuzzle is a terminal based puzzle game collection. It is implemented with
 ncurses and requires color and mouse support.
 
 The games can be played with the mouse or the terminal. See the 
-[https://github.com/dead-end/nuzzle/tree/master/man](man page)
+[man page](https://github.com/dead-end/nuzzle/tree/master/man)
 for details.
 
 ![Example](res/nuzzle-example.gif)
