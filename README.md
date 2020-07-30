@@ -3,9 +3,9 @@
 Nuzzle is a terminal based puzzle game collection. It is implemented with 
 ncurses and requires color and mouse support.
 
-The games can be played with the mouse or the terminal. See the 
-[man page](https://github.com/dead-end/nuzzle/tree/master/man)
-for details.
+The games can be played with the mouse or the terminal. 
+See the [man page](https://github.com/dead-end/nuzzle/tree/master/man) for 
+details.
 
 ![Example](res/nuzzle-example.gif)
 
@@ -35,7 +35,8 @@ nuzzle
 
 # Uninstall
 
-To uninstall nuzzle simply remove the installation directory and the directory which nuzzle uses for its data: 
+To uninstall nuzzle simply remove the installation directory and the directory 
+which nuzzle uses for its data: 
 
 ```
 sudo make uninstall
@@ -58,12 +59,8 @@ nuzzle, the following list of dependencies is relevant for ubuntu 18.0.4:
 
 # Customize nuzzle
 
-Nuzzle has several configuration files that can be customized by overwriting 
-them. The default configurations are located in:
-
-       /usr/share/games/nuzzle/
-
-Copy the configuration file that you want to customize to the directory:       
-
-       ${HOME}/.nuzzle/
+Nuzzle has several configuration files that can be overwritten to customize the
+games.
+See the [man page](https://github.com/dead-end/nuzzle/tree/master/man) for 
+details.
 
