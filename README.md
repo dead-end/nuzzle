@@ -1,21 +1,11 @@
 # Nuzzle (N-curses p-UZZLE)
 
-Nuzzle  is  a  terminal based puzzle game. It is implemented with ncurses
-and requires color and mouse support. Playing is simple:
+Nuzzle is a terminal based puzzle game collection. It is implemented with 
+ncurses and requires color and mouse support.
 
-- Start the program and start a new game.
-
-- Use ESC to enter the main menu during the game.
-
-- Click on the block of squares to pick them up.
-
-- Move the block to the desired position.
-
-- Click again to drop the block of squares at that position.  It  is  not
-necessary to hold the button pressed while moving the blocks.
-
--  If  more  than 4 adjacent blocks exist, then they are removed from the
-game. For each removed block you get one point for your score.
+The games can be played with the mouse or the terminal. See the 
+[https://github.com/dead-end/nuzzle/tree/master/man](man page)
+for details.
 
 ![Example](res/nuzzle-example.gif)
 
@@ -28,9 +18,9 @@ To install nuzzle download the latest released sources:
 Then build the program with the following commands:
 
 ```
-tar xvzf nuzzle-0.1.tar.gz
+tar xvzf nuzzle-0.3.tar.gz
 
-cd nuzzle-0.1/
+cd nuzzle-0.3/
 
 make
 
@@ -51,16 +41,29 @@ To uninstall nuzzle simply remove the installation directory and the directory w
 sudo make uninstall
 ```
 
+Additionally there is a user specific directory that has to be removed:
+
+```
+rm -rf ${HOME}/.nuzzle/
+```
+
 # Dependencies
 
-Nuzzle uses ncursesw which is the wide character version of ncurses. To build the nuzzle, the following list of dependencies is relevant for ubuntu 18.0.4:
+Nuzzle uses ncursesw which is the wide character version of ncurses. To build 
+nuzzle, the following list of dependencies is relevant for ubuntu 18.0.4:
 
 - libc6 (>=2.27)
 - libtinfo5 (>=6.1)
 - libncursesw5 (>=6.1)
 
-# Internals
+# Customize nuzzle
 
-Nuzzle uses the following directory to store its data:
+Nuzzle has several configuration files that can be customized by overwriting 
+them. The default configurations are located in:
 
-$HOME/.nuzzle/
+       /usr/share/games/nuzzle/
+
+Copy the configuration file that you want to customize to the directory:       
+
+       ${HOME}/.nuzzle/
+
