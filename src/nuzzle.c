@@ -171,7 +171,7 @@ void show_menu(s_status *status, const bool show_continue) {
 	//
 	if (show_continue) {
 		clear();
-		refresh();
+		nzc_win_refresh(stdscr);
 	}
 
 	const int offset = show_continue ? 1 : 0;
@@ -301,7 +301,7 @@ int main() {
 	//
 	// Without the refresh() the centered window will not be printed.
 	//
-	refresh();
+	nzc_win_refresh(stdscr);
 
 	game_do_center(&_status);
 
@@ -327,7 +327,7 @@ int main() {
 			//
 			// Without the refresh() the centered window will not be printed.
 			//
-			refresh();
+			nzc_win_refresh(stdscr);
 
 			game_do_center(&_status);
 
