@@ -592,6 +592,18 @@ void game_init() {
 	// Create the game window
 	//
 	_win_game = nzc_win_create_fully();
+
+	//
+	// Set the default color pairs
+	//
+	wbkgd(_win_game, color_default_bg());
+
+	wbkgd(stdscr, color_default_bg());
+
+	//
+	// Refresh the game window to show the default color pairs.
+	//
+	nzc_win_refresh(stdscr);
 }
 
 /******************************************************************************
