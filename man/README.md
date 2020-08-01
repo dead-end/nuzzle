@@ -100,5 +100,5 @@ BUGS
 AUTHOR
        Dead End
 
-V 0.3                             August 2020                        NUZZLE(6)
+V 0.3.0                           August 2020                        NUZZLE(6)
 ```
