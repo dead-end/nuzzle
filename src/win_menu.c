@@ -29,6 +29,7 @@
 #include "nz_curses.h"
 #include "win_menu.h"
 #include "common.h"
+#include "colors.h"
 
 const char *headers[] = {
 
@@ -372,6 +373,16 @@ static int wm_event_loop(WINDOW *menu_win, MENU *menu, const bool ignore_esc) {
 			if (event.bstate & BUTTON1_PRESSED) {
 				return idx;
 			}
+		} else if (c == KEY_RESIZE) {
+
+			//
+			// We need the refresh to add the default color pairs if the window
+			// is enlarged.
+			//
+			nzc_win_refresh(stdscr);
+
+			// TODO: center the menu. this means, the menu has to be unposted,
+			// then centered and then posted again.
 		}
 	}
 }
@@ -423,6 +434,17 @@ int wm_process_menu(const char **labels, const int selected, const bool ignore_e
 	//
 	menu = wm_create_menu(label_block_ptr);
 
+	//
+	// Set the default color pairs for the menu and the menu window.
+	//
+	wbkgd(menu_win, color_default_bg());
+
+	set_menu_back(menu, color_default_bg());
+	set_menu_fore(menu, color_default_bg() | A_REVERSE);
+
+	//
+	// Connect the window, the menu and the items.
+	//
 	wm_menu_link(menu_win, menu_derwin, menu);
 
 	nzc_menu_set_cur_item_idx(menu, selected);
