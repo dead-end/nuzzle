@@ -403,21 +403,14 @@ void colors_alloc() {
 static void color_pairs_alloc() {
 
 	//
-	// We redefine the default color pair.
-	//
-	if (assume_default_colors(DEFAULT_FG, DEFAULT_BG) == ERR) {
-		log_exit_str("Unable to change default colors.");
-	}
-
-	//
-	// And we use the default color pair (which is 0)
-	//
-	_color_pairs[CLR_NONE][CLR_NONE] = 0;
-
-	//
 	// We use an offset to keep the first color pairs.
 	//
 	short color_pair = CP_START;
+
+	//
+	// Define the default color pairs
+	//
+	_color_pairs[CLR_NONE][CLR_NONE] = colors_init_pair(color_pair++, DEFAULT_FG, DEFAULT_BG);
 
 	//
 	// Initialize color pairs for the chess pattern.
@@ -641,4 +634,13 @@ wchar_t colors_chess_attr_char(WINDOW *win, t_block ga_color, const t_block da_c
 	wattrset(win, COLOR_PAIR(color_pair));
 
 	return chr;
+}
+
+/******************************************************************************
+ * The function returns the default color pair. This is used for the menu
+ * foreground / background definition.
+ *****************************************************************************/
+
+short color_default_bg() {
+	return COLOR_PAIR(_color_pairs[CLR_NONE][CLR_NONE]);
 }

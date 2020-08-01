@@ -102,4 +102,6 @@ void colors_normal_end_attr(WINDOW *win);
 
 wchar_t colors_chess_attr_char(WINDOW *win, const t_block ga_color, const t_block da_color, const s_point *idx, const e_chess_type chess_type);
 
+short color_default_bg();
+
 #endif /* INC_COLORS_H_ */
