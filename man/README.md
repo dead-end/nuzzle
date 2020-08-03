@@ -57,7 +57,7 @@ DESCRIPTION
        blocks  are  picked  up and moved to the game area, an other left click
        drops the blocks on the game area, if this is possible.
 
-Files
+FILES
        Nuzzle uses the following configuration files:
 
        nuzzle.cfg
