@@ -155,8 +155,10 @@ Architecture: amd64
 Homepage: https://github.com/dead-end/nuzzle
 Depends: ${dependencies=}
 Maintainer: dead-end
-Description: Curses based puzzle games
- Nuzzle is a puzzle game collection for one player.
+Description: Curses based puzzle game collection
+ Nuzzle is a puzzle game collection for the terminal. It currently containing 
+ three games that can be played with one player. Nuzzle requires mouse and color 
+ support.
 EOF
 
   #
