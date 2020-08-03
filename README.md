@@ -37,7 +37,7 @@ Uninstall the package with:
 ## Build from sources
 
 The [latest release](https://github.com/dead-end/nuzzle/releases) of nuzzle 
-contains a zip /tar file with the sources. Download the sources and build the
+contains a zip / tar file with the sources. Download the sources and build the
 program with the following commands:
 
 ```
