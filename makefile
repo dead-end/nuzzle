@@ -187,10 +187,18 @@ MANPAGE = nuzzle.6
 
 .PHONY: install uninstall
 
+
+#
+# lintian says that: "install --strip" does not remove .comment and .note 
+# informations. 
+# Use: "strip -s --remove-section=.comment --remove-section=.note"
+#
 install: $(EXEC)
 	gzip -9n -c man/$(MANPAGE) > $(BUILD_DIR)/$(MANPAGE).gz
 	install -D --mode=644 $(BUILD_DIR)/$(MANPAGE).gz --target-directory=$(MANDIR)
-	install -D --mode=755 $(EXEC) --target-directory=$(BINDIR) --strip
+	cp $(EXEC) $(BUILD_DIR)/$(EXEC)
+	strip -s --remove-section=.comment --remove-section=.note $(BUILD_DIR)/$(EXEC)
+	install -D --mode=755 $(BUILD_DIR)/$(EXEC) --target-directory=$(BINDIR)
 	install -D --mode=644 LICENSE $(DOCDIR)/copyright
 	gzip -9n -c changelog > $(BUILD_DIR)/changelog.gz
 	install -D --mode=644 $(BUILD_DIR)/changelog.gz   $(DOCDIR)/changelog.gz
