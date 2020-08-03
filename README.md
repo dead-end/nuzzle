@@ -11,11 +11,34 @@ details.
 
 # Installation
 
-To install nuzzle download the latest released sources:
+## Debian Package
 
-[https://github.com/dead-end/nuzzle/releases](https://github.com/dead-end/nuzzle/releases)
+The [latest release](https://github.com/dead-end/nuzzle/releases) of nuzzle 
+contains a debian package. Download the package and verify the result with 
+md5sum:
 
-Then build the program with the following commands:
+```
+# md5sum nuzzle_0.3.0_amd64.deb 
+42892538bf9a18bfeb93b5b68f6b7ced  nuzzle_0.3.0_amd64.deb
+```
+
+Install the package with:
+
+```
+# sudo dpkg -i nuzzle_0.3.0_amd64.deb
+```
+
+Uninstall the package with:
+
+```
+# sudo dpkg -r nuzzle
+```
+
+## Build from sources
+
+The [latest release](https://github.com/dead-end/nuzzle/releases) of nuzzle 
+contains a zip /tar file with the sources. Download the sources and build the
+program with the following commands:
 
 ```
 tar xvzf nuzzle-0.3.tar.gz
@@ -27,14 +50,6 @@ make
 sudo make install
 ```
 
-Now you can start the program with:
-
-```
-nuzzle
-```
-
-# Uninstall
-
 To uninstall nuzzle simply remove the installation directory and the directory 
 which nuzzle uses for its data: 
 
@@ -42,7 +57,10 @@ which nuzzle uses for its data:
 sudo make uninstall
 ```
 
-Additionally there is a user specific directory that has to be removed:
+## Completely uninstall nuzzle
+
+Additionally there is a user specific directory that has to be removed to 
+completely uninstall nuzzle
 
 ```
 rm -rf ${HOME}/.nuzzle/
