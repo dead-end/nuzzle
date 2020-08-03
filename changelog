@@ -5,7 +5,7 @@ nuzzle (0.3.0) stable; urgency=low
   * Changed colors
   * Added deb package build
 
- -- dead-end <dead.end@>  Sat, 18 Jul 2020 09:57:16 +0200
+ -- dead-end <dead.end@>  Mon, 03 Aug 2020 21:56:32 +0200
 
 nuzzle (0.2.0) stable; urgency=low
   
