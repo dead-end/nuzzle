@@ -19,7 +19,7 @@ md5sum:
 
 ```
 # md5sum nuzzle_0.3.0_amd64.deb 
-42892538bf9a18bfeb93b5b68f6b7ced  nuzzle_0.3.0_amd64.deb
+72ef2180a9c12ffbf471e8dbc4b936c6  nuzzle_0.3.0_amd64.de
 ```
 
 Install the package with:
