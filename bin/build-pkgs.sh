@@ -13,6 +13,16 @@ version_header="inc/common.h"
 program="nuzzle"
 
 ################################################################################
+# Definition of the mail to prevent spam.
+################################################################################
+
+mail_name=dead.end
+
+mail_host=inbox.ru
+
+mail_address="${mail_name}@${mail_host}" 
+
+################################################################################
 # Error function.
 ################################################################################
 
@@ -133,7 +143,7 @@ create_deb() {
   #
   # The prefix for the installation
   #
-  make PREFIX="${root_dir}/usr" install || do_exit "Unable to call make install"
+  make PREFIX="${root_dir}/usr" MAIL="${mail_address}" install || do_exit "Unable to call make install"
 
   #
   # Get the dependencies
@@ -154,7 +164,7 @@ Section: games
 Architecture: amd64
 Homepage: https://github.com/dead-end/nuzzle
 Depends: ${dependencies=}
-Maintainer: dead-end
+Maintainer: ${mail_name} <${mail_address}>
 Description: Curses based puzzle game collection
  Nuzzle is a puzzle game collection for the terminal. It currently containing 
  three games that can be played with one player. Nuzzle requires mouse and color 
@@ -172,6 +182,11 @@ EOF
   # fakeroot sets permissions and owner:group
   #
   fakeroot dpkg-deb --build ${root_dir} || do_exit "dpkg-deb"
+
+  #
+  # Ensure that the result is a proper debian package.
+  #
+  lintian --check --verbose --info --display-info --fail-on-warnings "build/${program}_${version}_amd64.deb" 
 }
 
 ################################################################################
