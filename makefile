@@ -200,7 +200,9 @@ install: $(EXEC)
 	strip -s --remove-section=.comment --remove-section=.note $(BUILD_DIR)/$(EXEC)
 	install -D --mode=755 $(BUILD_DIR)/$(EXEC) --target-directory=$(BINDIR)
 	install -D --mode=644 LICENSE $(DOCDIR)/copyright
-	gzip -9n -c changelog > $(BUILD_DIR)/changelog.gz
+	cp changelog $(BUILD_DIR)/changelog
+	if [ -n "${MAIL}" ]; then sed -i "s/<MAIL>/<${MAIL}>/g" $(BUILD_DIR)/changelog ; fi
+	gzip -9n -c $(BUILD_DIR)/changelog > $(BUILD_DIR)/changelog.gz
 	install -D --mode=644 $(BUILD_DIR)/changelog.gz   $(DOCDIR)/changelog.gz
 	install -D --mode=644 $(CFG_DIR)/5-shapes.cfg     $(DATDIR)/5-shapes.cfg
 	install -D --mode=644 $(CFG_DIR)/shapes-lines.cfg $(DATDIR)/shapes-lines.cfg
