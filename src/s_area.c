@@ -129,15 +129,16 @@ bool s_area_is_inside(const s_area *area, const s_point *point) {
 	//
 	if (point->row < area->pos.row || point->col < area->pos.col) {
 		result = false;
-	}
+	} else {
 
-	const s_point lower_right = s_area_get_lr(area);
+		const s_point lower_right = s_area_get_lr(area);
 
-	//
-	// lower right corner
-	//
-	if (point->row > lower_right.row || point->col > lower_right.col) {
-		result = false;
+		//
+		// lower right corner
+		//
+		if (point->row > lower_right.row || point->col > lower_right.col) {
+			result = false;
+		}
 	}
 
 	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", point->row, point->col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
