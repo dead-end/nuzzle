@@ -291,7 +291,7 @@ static void info_area_print_inner(WINDOW *win, const s_status *status, const int
 	//
 	// Copy the inner part of the line to a temporary variable.
 	//
-	wmempcpy(tmp, &_data[idx][2], size_inner_get() - 1);
+	wmemcpy(tmp, &_data[idx][2], size_inner_get() - 1);
 
 	//
 	// Add a terminating \0.
