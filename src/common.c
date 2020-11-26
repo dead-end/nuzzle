@@ -210,7 +210,7 @@ void cp_pad(const wchar_t *src, wchar_t *dst, const int size, const wchar_t pad)
 		log_exit("String to long: %ls", src);
 	}
 
-	wmempcpy(dst, src, len);
+	wmemcpy(dst, src, len);
 
 	//
 	// If the source is smaller we do the padding.
