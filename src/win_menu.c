@@ -31,7 +31,7 @@
 #include "common.h"
 #include "colors.h"
 
-const char *headers[] = {
+static const char *headers[] = {
 
 "                     _ ",
 
