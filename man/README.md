@@ -54,7 +54,7 @@ DESCRIPTION
        area to pick up the blocks. Once the blocks are picked up you can  move
        the  blocks  with  the mouse. The mouse needs not to be pressed to move
        the blocks. A right click moves the blocks back to the  home  area.  If
-       blocks  are  picked  up and moved to the game area, an other left click
+       blocks  are  picked  up  and moved to the game area, another left click
        drops the blocks on the game area, if this is possible.
 
 FILES
@@ -84,7 +84,7 @@ FILES
 
        ${HOME}/.nuzzle/
               Nuzzle uses this directory to store user specific files like the
-              score  files for the games. This is the recommanded directory to
+              score  files for the games. This is the recommended directory to
               place customized configuration files.
 
        /usr/share/games/nuzzle/
@@ -100,5 +100,5 @@ BUGS
 AUTHOR
        Dead End
 
-V 0.3.1                           August 2020                        NUZZLE(6)
+V 0.3.2                           August 2020                        NUZZLE(6)
 ```
