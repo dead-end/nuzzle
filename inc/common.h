@@ -31,7 +31,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#define VERSION "0.3.1"
+#define VERSION "0.3.2"
 
 /******************************************************************************
  * Definition of the print_debug macro. It is only defined if the DEBUG flag is
