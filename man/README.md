@@ -78,8 +78,8 @@ FILES
        of the directies.
 
        ${PWD}/cfg/
-              Nuzzle first looks in  the  cfg  directory  inside  the  working
-              directory  of  the user. This is necessary to ensure that nuzzle
+              Nuzzle first looks in the cfg directory inside the  working  di‐
+              rectory  of  the  user.  This is necessary to ensure that nuzzle
               finds configurations after a build with make.
 
        ${HOME}/.nuzzle/
@@ -100,5 +100,5 @@ BUGS
 AUTHOR
        Dead End
 
-V 0.3.2                           August 2020                        NUZZLE(6)
+V 0.3.2                           August 2021                        NUZZLE(6)
 ```
