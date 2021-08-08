@@ -18,7 +18,7 @@ program="nuzzle"
 
 mail_name=dead.end
 
-mail_host=inbox.ru
+mail_host=internet.ru
 
 mail_address="${mail_name}@${mail_host}" 
 
@@ -30,6 +30,18 @@ do_exit() {
   echo "ERROR: ${1}" 
   exit 1
 }
+
+################################################################################
+# Ensure that the programs are installed.
+################################################################################
+
+if ! type "fakeroot" > /dev/null; then
+  do_exit "Program is not installed: fakeroot"
+fi
+
+if ! type "lintian" > /dev/null; then
+  do_exit "Program is not installed: lintian"
+fi
 
 ################################################################################
 # Ensure that we are in the correct directory.
@@ -181,12 +193,12 @@ EOF
   #
   # fakeroot sets permissions and owner:group
   #
-  fakeroot dpkg-deb --build ${root_dir} || do_exit "dpkg-deb"
+  fakeroot dpkg-deb --build ${root_dir} || do_exit "dpkg-deb - ${root_dir}"
 
   #
   # Ensure that the result is a proper debian package.
   #
-  lintian --check --verbose --info --display-info --fail-on-warnings "build/${program}_${version}_amd64.deb" 
+  lintian --check --verbose --info --display-info "build/${program}_${version}_amd64.deb" 
 }
 
 ################################################################################
