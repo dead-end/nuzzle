@@ -11,6 +11,7 @@ $ sh bin/build-pkgs.sh deb
 Copy the debian package to the `tmp` directory.
 
 ```
+$ rm -f docker/tmp/nuzzle_0.3.*_amd64.deb
 $ cp build/nuzzle_*_amd64.deb docker/tmp/
 ```
 
