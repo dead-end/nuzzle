@@ -15,9 +15,11 @@ program="nuzzle"
 ################################################################################
 # Debian (buster) has lower versions than ubuntu. So building the package with 
 # dependencies from ubuntu may not work on debian.
+#
+# The defaults are from ubuntu 18.0.4
 ################################################################################
 
-debian_debs="libc6 (>=2.28), libncursesw6 (>=6.1), libtinfo6 (>=6.1)"
+debian_debs="libc6 (>=2.27), libncursesw6 (>=6.1), libtinfo6 (>=6.1)"
 
 ################################################################################
 # Definition of the mail to prevent spam.
