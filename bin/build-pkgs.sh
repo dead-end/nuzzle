@@ -13,6 +13,13 @@ version_header="inc/common.h"
 program="nuzzle"
 
 ################################################################################
+# Debian (buster) has lower versions than ubuntu. So building the package with 
+# dependencies from ubuntu may not work on debian.
+################################################################################
+
+debian_debs="libc6 (>=2.28), libncursesw6 (>=6.1), libtinfo6 (>=6.1)"
+
+################################################################################
 # Definition of the mail to prevent spam.
 ################################################################################
 
@@ -35,13 +42,10 @@ do_exit() {
 # Ensure that the programs are installed.
 ################################################################################
 
-if ! type "fakeroot" > /dev/null; then
-  do_exit "Program is not installed: fakeroot"
-fi
 
-if ! type "lintian" > /dev/null; then
-  do_exit "Program is not installed: lintian"
-fi
+type "fakeroot" > /dev/null || do_exit "Program is not installed: fakeroot"
+
+type "lintian" > /dev/null || do_exit "Program is not installed: lintian"
 
 ################################################################################
 # Ensure that we are in the correct directory.
@@ -71,10 +75,11 @@ echo "Version: ${version}"
 ################################################################################
 
 usage() {
-  echo "Usage: ${0} [help|src|deb"
-  echo "  help : Prints this message"
-  echo "  src  : Creates a tarball with the ${program} sources"
-  echo "  deb  : Creates a debian package"
+  echo "Usage: ${0} [help|src|deb]"
+  echo "  help        : Prints this message"
+  echo "  src         : Creates a tarball with the ${program} sources"
+  echo "  deb         : Creates a debian package"
+  echo "  deb-default : Creates a debian package with deps: ${debian_debs}"
 
   if [ "${#}" != "0" ] ; then
     echo "\nERROR: ${1}"
@@ -160,7 +165,9 @@ create_deb() {
   #
   # Get the dependencies
   #
-  dependencies=$(sh bin/pkg-deps.sh no-debug ${program})
+  if [ -z "$dependencies" ] ; then
+    dependencies=$(sh bin/pkg-deps.sh no-debug ${program})
+  fi   
 
   echo "dependencies: ${dependencies}"
 
@@ -218,6 +225,11 @@ elif [ "${mode}" = "src" ] ; then
   create_src
 
 elif [ "${mode}" = "deb" ] ; then
+  dependencies=""
+  create_deb
+
+elif [ "${mode}" = "deb-default" ] ; then
+  dependencies="${debian_debs}"
   create_deb
 
 else
