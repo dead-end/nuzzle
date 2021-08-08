@@ -3,6 +3,7 @@
 #
 # Build the image:
 #
+#   rm -f docker/tmp/nuzzle_0.3.*_amd64.deb
 #   cp build/nuzzle_*_amd64.deb docker/tmp/
 #
 #   sudo docker build -t nuzzle_debian -f docker/deb-test.debian.dockerfile docker/
@@ -20,7 +21,7 @@ FROM debian
 #
 # The nuzzle version
 #
-ARG VERSION=0.3.1
+ARG VERSION=0.3.2
 
 #
 # Add color support for the terminal
@@ -48,6 +49,7 @@ COPY tmp/nuzzle_${VERSION}_amd64.deb /tmp
 RUN apt-get update && \
 	apt-get install -y bash && \
 	apt-get install -y man && \
+	apt-get install -y procps && \
 	rm -f /etc/dpkg/dpkg.cfg.d/excludes && \
-	apt-get install -y /tmp/nuzzle_${VERSION}_amd64.deb && \
-	apt-get install -y procps
+	apt-get install -y /tmp/nuzzle_${VERSION}_amd64.deb
+	
