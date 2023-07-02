@@ -25,11 +25,11 @@
 #include "s_area.h"
 #include "colors.h"
 
-/******************************************************************************
- * The function copies one area to an other. The blocks are shared.
- *
- * (Unit tested)
- *****************************************************************************/
+ /******************************************************************************
+  * The function copies one area to an other. The blocks are shared.
+  *
+  * (Unit tested)
+  *****************************************************************************/
 
 void s_area_copy(const s_area *from, s_area *to) {
 
@@ -129,6 +129,8 @@ bool s_area_is_inside(const s_area *area, const s_point *point) {
 	//
 	if (point->row < area->pos.row || point->col < area->pos.col) {
 		result = false;
+
+		log_debug("pixel: %d/%d lb: %d/%d result: %s", point->row, point->col, area->pos.row, area->pos.col, bool_str(result));
 	} else {
 
 		const s_point lower_right = s_area_get_lr(area);
@@ -139,9 +141,9 @@ bool s_area_is_inside(const s_area *area, const s_point *point) {
 		if (point->row > lower_right.row || point->col > lower_right.col) {
 			result = false;
 		}
-	}
 
-	log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", point->row, point->col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
+		log_debug("pixel: %d/%d lb: %d/%d ub: %d/%d result: %s", point->row, point->col, area->pos.row, area->pos.col, lower_right.row, lower_right.col, bool_str(result));
+	}
 
 	return result;
 }
@@ -541,7 +543,6 @@ void s_area_normalize(s_area *area) {
 				//
 				if (row + ul.row < area->dim.row && col + ul.col < area->dim.col) {
 					area->blocks[row][col] = area->blocks[row + ul.row][col + ul.col];
-
 				}
 				//
 				// If the index is outside fill the blocks with NONE.
