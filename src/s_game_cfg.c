@@ -32,13 +32,13 @@
 #include "file_system.h"
 #include "rules.h"
 
-/*******************************************************************************
- * Forward declaration of the functions for the function pointers to prevent
- * cyclic includes.
- *
- * The s_shapes file has to include "s_game_cfg.h", to be able to use the
- * s_game_cfg struct.
- ******************************************************************************/
+ /*******************************************************************************
+  * Forward declaration of the functions for the function pointers to prevent
+  * cyclic includes.
+  *
+  * The s_shapes file has to include "s_game_cfg.h", to be able to use the
+  * s_game_cfg struct.
+  ******************************************************************************/
 
 void init_random_shapes_read(const char *path);
 
@@ -90,12 +90,12 @@ s_game_cfg _game_cfg[S_GAMES_CFG_MAX];
 
 #define CFG_COLOR "color"
 
-/*******************************************************************************
- * The function is called with a key value pair ("key=value") and returns a
- * pointer to the value.
- ******************************************************************************/
+ /*******************************************************************************
+  * The function is called with a key value pair ("key=value") and returns a
+  * pointer to the value.
+  ******************************************************************************/
 
-static char* cfg_get_value(const char *line) {
+static char *cfg_get_value(const char *line) {
 
 	//
 	// Get a pointer to the equals sign.
@@ -127,7 +127,7 @@ static inline void cfg_get_str(char *to, const char *line, const size_t size) {
 		log_exit("Value too long: %s", value);
 	}
 
-	strncpy(to, cfg_get_value(line), size);
+	strcpy(to, cfg_get_value(line));
 }
 
 /*******************************************************************************
@@ -209,10 +209,10 @@ static int cfg_get_color(const int type, const char *line) {
 
 #define cfg_get_int(l) str_2_int(cfg_get_value(l))
 
-/*******************************************************************************
- * The function prints a game config structure. With non debug mode, the
- * function is empty and produces unused-parameter warnings.
- ******************************************************************************/
+ /*******************************************************************************
+  * The function prints a game config structure. With non debug mode, the
+  * function is empty and produces unused-parameter warnings.
+  ******************************************************************************/
 
 #ifdef DEBUG
 
