@@ -27,9 +27,9 @@
 
 #include "common.h"
 
-/******************************************************************************
- * The function initializes the ncurses mouse support.
- *****************************************************************************/
+ /******************************************************************************
+   * The function initializes the ncurses mouse support.
+   *****************************************************************************/
 
 static void nzc_init_mouse() {
 
@@ -40,7 +40,7 @@ static void nzc_init_mouse() {
 	//
 	// Register mouse events (which do not have a propper error handling)
 	//
-	mousemask(BUTTON1_PRESSED | BUTTON2_RELEASED | BUTTON3_RELEASED | REPORT_MOUSE_POSITION, NULL);
+	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION | BUTTON1_PRESSED | BUTTON2_RELEASED | BUTTON3_RELEASED, NULL);
 
 	printf("\033[?1003h\n");
 
@@ -57,7 +57,6 @@ static void nzc_finish_mouse() {
 	// Disable mouse movement events, as l = low
 	//
 	printf("\033[?1003l\n");
-
 }
 
 /******************************************************************************
@@ -131,7 +130,7 @@ void nzc_finish_curses() {
  * The function creates a window with the size of the stdscr.
  *****************************************************************************/
 
-WINDOW* nzc_win_create_fully() {
+WINDOW *nzc_win_create_fully() {
 
 	WINDOW *win = newwin(getmaxy(stdscr), getmaxx(stdscr), 0, 0);
 	if (win == NULL) {
@@ -269,4 +268,3 @@ void nzc_menu_set_cur_item_idx(MENU *menu, const int idx) {
 		log_exit("Unable to set the item index: %d", idx);
 	}
 }
-
