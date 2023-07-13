@@ -1,3 +1,5 @@
-build/*.o
+build/*
 nuzzle
 ut_test
+*.gz
+*.deb
