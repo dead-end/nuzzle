@@ -25,11 +25,11 @@
 #include "home_area.h"
 #include "colors.h"
 
-/******************************************************************************
- * The home area consists of areas that can be picked up. They are stored in an
- * array with at most HOME_MAX entries. The actual number of entries is
- * _home_num.
- *****************************************************************************/
+ /******************************************************************************
+  * The home area consists of areas that can be picked up. They are stored in an
+  * array with at most HOME_MAX entries. The actual number of entries is
+  * _home_num.
+  *****************************************************************************/
 
 typedef struct s_home {
 
@@ -286,14 +286,35 @@ bool home_area_refill(const s_game_cfg *game_cfg, const bool force) {
 }
 
 /******************************************************************************
- * The function picks up a home area. The data is copied to the drop area and
- * a backup is created.
+ * The function picks up a home area if possible. If so, the data is copied to
+ * the drop area and a backup is created.
+ *
+ * The function returns true if a home area was picked up and false if this is
+ * not possible.
  *****************************************************************************/
 
-void home_area_pickup(s_area *area, const s_point *pixel) {
+bool home_area_pickup(s_area *area, const s_point *pixel) {
 	log_debug("picking up home area at: %d/%d", pixel->row, pixel->col);
 
 	_pickup_idx = home_area_get_idx(pixel);
+
+	//
+	// The function returns PICKUP_IDX_UNDEF if the event is outside the home
+	// area. In this case, there is no index.
+	//
+	if (_pickup_idx == PICKUP_IDX_UNDEF) {
+		log_debug_str("Event is outside the homearea!");
+		return false;
+	}
+
+	//	
+	// If the event is inside the home area, we have an index, but we have to 
+	// ensure that the area is not already empty, which means dropped.
+	//
+	if (_home_area[_pickup_idx].droped) {
+		log_debug("Home area with idx: %d is already dropped!", _pickup_idx);
+		return false;
+	}
 
 #ifdef DEBUG
 
@@ -340,6 +361,8 @@ void home_area_pickup(s_area *area, const s_point *pixel) {
 	// Normalize the drop area, by removing the empty rows / columns.
 	//
 	s_area_normalize(area);
+
+	return true;
 }
 
 /******************************************************************************

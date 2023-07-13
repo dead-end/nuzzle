@@ -38,7 +38,7 @@ void home_area_mark_drop();
 
 bool home_area_refill(const s_game_cfg *game_cfg, const bool force);
 
-void home_area_pickup(s_area *area, const s_point *pixel);
+bool home_area_pickup(s_area *area, const s_point *pixel);
 
 void home_area_undo_pickup();
 

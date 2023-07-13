@@ -35,11 +35,11 @@
 #include "bg_area.h"
 #include "rules.h"
 
-/******************************************************************************
- * Definition of a sleep time. It is used between the dropping of an area and
- * the deletion of blocks. The pause gives the user the chance to see, why the
- * blocks are removed. On debug mode the sleep time is higher.
- *****************************************************************************/
+ /******************************************************************************
+  * Definition of a sleep time. It is used between the dropping of an area and
+  * the deletion of blocks. The pause gives the user the chance to see, why the
+  * blocks are removed. On debug mode the sleep time is higher.
+  *****************************************************************************/
 
 #ifdef DEBUG
 
@@ -51,9 +51,9 @@
 
 #endif
 
-/******************************************************************************
- * Definition of the meaning of a flag that make the code more readable.
- *****************************************************************************/
+  /******************************************************************************
+   * Definition of the meaning of a flag that make the code more readable.
+   *****************************************************************************/
 
 #define DO_PRINT true
 
@@ -63,24 +63,24 @@
 
 #define LAYOUT_VERTICAL false
 
-/******************************************************************************
- * The number of characters that are used to adjust a block. This means, if an
- * area should be dropped and the drop area is not perfectly aligned with the
- * game area, it is in some cases possible to move the drop area, so that it is
- * aligned after the movement.
- *
- * The definition is the number of columns that can be moved.
- *****************************************************************************/
+   /******************************************************************************
+	* The number of characters that are used to adjust a block. This means, if an
+	* area should be dropped and the drop area is not perfectly aligned with the
+	* game area, it is in some cases possible to move the drop area, so that it is
+	* aligned after the movement.
+	*
+	* The definition is the number of columns that can be moved.
+	*****************************************************************************/
 
 #define ADJUST 1
 
-/******************************************************************************
- * The structs for the game.
- *****************************************************************************/
+	/******************************************************************************
+	 * The structs for the game.
+	 *****************************************************************************/
 
-//
-// The game area struct
-//
+	 //
+	 // The game area struct
+	 //
 static s_area _game_area = { .blocks = NULL };
 
 //
@@ -719,17 +719,12 @@ void game_process_do_pickup(s_status *status, const s_point *event) {
 #endif
 
 	//
-	// If the event is outside the home areas, there is nothing to pick up.
+	// If we can pickup something, we mark the home area as picked up
+	// and print the empty home area.
 	//
-	if (home_area_get_idx(event) < 0) {
-		log_debug("Not picked up but event outside home area: %d/%d", event->row, event->col);
+	if (!home_area_pickup(&_drop_area, event)) {
 		return;
 	}
-
-	//
-	// Mark the home area as picked up and print the empty home area.
-	//
-	home_area_pickup(&_drop_area, event);
 	home_area_print(_win_game, status);
 
 	//
@@ -812,7 +807,7 @@ void game_event_keyboard_mv(s_status *status, const int diff_row, const int diff
 		//
 		// Move the drop area if possible.
 		//
-		const bool moved = s_area_move_inner_area(&_game_area, &_drop_area, &event, &(s_point ) { diff_row, diff_col });
+		const bool moved = s_area_move_inner_area(&_game_area, &_drop_area, &event, &(s_point) { diff_row, diff_col });
 
 		if (aligned || moved) {
 			game_event_move(status, &event);
