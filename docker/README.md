@@ -2,7 +2,8 @@
 
 A simple way to test nuzzle and the debian nuzzle package is to use docker.
 
-The first step is to create the debian package.
+The first step is to create the debian package. The script requires `lintian`
+to be installed.
 
 ```
 $ sh bin/build-pkgs.sh deb
@@ -19,7 +20,7 @@ Build the docker image:
 
 ```
 $ sudo docker build -t nuzzle_debian -f docker/deb-test.debian.dockerfile docker/
-[sudo] password for dead-end: 
+[sudo] password for dead-end:
 Sending build context to Docker daemon  68.61kB
 Step 1/7 : FROM debian
  ---> ee11c54e6bb7
@@ -48,6 +49,6 @@ Successfully tagged nuzzle_debian:latest
 Run docker an call nuzzle inside the container:
 
 ```
-$ docker run -it nuzzle_debian 
+$ docker run -it nuzzle_debian
 root@1e2fe6fbc8e5:/# nuzzle
 ```
